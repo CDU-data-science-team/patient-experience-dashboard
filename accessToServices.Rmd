@@ -1,0 +1,91 @@
+---
+title: "Access to services"
+output: word_document
+---
+
+```{r, echo=FALSE, results='asis'}
+
+library(plyr)
+
+# Access to services, waiting times, location, raw numbers, percentages and verbatim
+
+# generate table - improve one thing
+
+myImprove = function(){
+  
+  theCodes = c(passData()$Imp1, passData()$Imp2)
+  
+  # current sub themes
+  
+  subcommentList = lapply(SubList, function(x)
+    theCodes[theCodes %in% unlist(x)])
+  
+  subfinalList = subcommentList[order(unlist(lapply(subcommentList, length)), decreasing = TRUE)]
+  
+  subtheComments = sapply(1 : length(names(subfinalList)),
+                          function(x) c(names(subfinalList)[x],
+                                        round(length(subfinalList[[x]]) /
+                                                length(unlist(subcommentList)) * 100, 1)))
+  
+  subtheCommentsRaw = sapply(1 : length(names(subfinalList)),
+                             function(x) c(names(subfinalList)[x],
+                                           length(subfinalList[[x]])))
+  
+  # split the super from sub themes
+  
+  splitThemes = strsplit(as.character(subtheComments[1, ]), " - ")
+  
+  ### put it all together
+  
+  finalFrame = data.frame("Category" = unlist(lapply(splitThemes, "[", 1)),
+                          "Subcategory" = unlist(lapply(splitThemes, "[", 2)),
+                          "Percentage subcategory" = as.numeric(subtheComments[2, ]),
+                          "Raw numbers" = as.numeric(subtheCommentsRaw[2, ]))
+  
+  ### get rid of missing data
+  
+  finalFrame = within(finalFrame, {
+    
+    Percentage.subcategory[is.nan(Percentage.subcategory)] = 0
+  })
+  
+  finalFrame = finalFrame[finalFrame$Percentage.subcategory > 0, ]
+  
+  if(nrow(finalFrame) < 2){
+    
+    finalFrame = data.frame("Not", "Enough", "Data", "!")
+    
+    names(finalFrame) = c("Category", "Subcategory", "% subcategory", "Raw count")
+    
+  } else {
+    
+    finalFrame = finalFrame[order(finalFrame$Percentage.subcategory, decreasing = TRUE),]
+    
+    names(finalFrame) = c("Category", "Subcategory", "% subcategory", "Raw count")
+    
+  }
+  
+  return(finalFrame)
+  
+}
+
+
+wholeFrame = myImprove()
+
+wholeFrame = wholeFrame[wholeFrame$Category == "Access to Services", ]
+
+kable(wholeFrame, row.names = FALSE)
+
+```
+
+```{r, echo=FALSE, results='asis'}
+
+commentFrame = passData()[, c("Location", "Improve", "Imp1", "Imp2")]
+
+commentFrame = commentFrame[commentFrame$Imp1 %in% SuperList[["Access to Services"]] | 
+                              commentFrame$Imp2 %in% SuperList[["Access to Services"]], ]
+
+cat(paste0("<p>", commentFrame$Improve, " (", commentFrame$Location, ")", "</p>"))
+
+```
+
