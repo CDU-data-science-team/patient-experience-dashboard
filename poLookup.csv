@@ -1,0 +1,248 @@
+NACS,TeamN,Division,Directorate,TeamC
+252-community-nursing,Community nursing,2,25,2250
+255-podiatry,Podiatry ,2,25,25500
+261-sure-start,Sure Start,2,33,2330
+263-child-health,Child & family health team ,2,26,2260
+273-nutrition,Nutrition & dietetics,2,31,2330
+302-community-nursing,Community nursing,2,30,2300
+304-community-matrons,Community matrons ,2,30,2300
+305-school-nursing,School nursing ,2,30,2300
+306-health-visiting,Health visiting,2,30,2300
+313-podiatry,Podiatry,2,31,2310
+RHA,Trust,NA,NA,2000
+RHA_10001,Crisis resolution,0,2,2020
+RHA_10002,Assertive outreach,0,2,2020
+RHA_10003,Early intervention,0,2,2020
+RHA_10004,Primary care mental health,0,NA,1700
+RHA_656,Clinical psychology,0,14,2140
+RHA_700,Learning disability,0,6,2060
+RHA_710,Adult mental health,0,2,2020
+RHA_710h,Homeless mental health ,0,2,2020
+RHA_710i,Inpatient mental health care,0,2,2020
+RHA_711,Child and adolescent mental health,0,4,2040
+RHA_712,Forensic mental health,1,NA,1800
+RHA_713,Psychotherapy,0,14,2140
+RHA_715,Older people's mental health ,0,7,2070
+RHA_720,Eating disorders,0,14,1404
+RHA_721,Addiction services,0,13,2130
+RHA_722,Liaison psychiatry,0,2,2020
+RHA_723,Psychiatric intensive care,0,2,2020
+RHA_724,Perinatal psychiatry,0,2,2020
+RHA_cs,Carer services,0,NA,1700
+RHA-alcohol-drug-liaison-team,Alcohol & Drug Hospital Liaison Team,0,13,1306
+rha-amh-city,Adult Mental Health Services - Community (City),0,2,2020
+rha-amh-county,Adult Mental Health Services - Community (County),0,2,2020
+rha-camhs-city,Child and Adolescent Mental Health Services – Community(City),0,4,2040
+rha-camhs-county,Child and Adolescent Mental Health Services – Community(County),0,4,2040
+rha-camhs-inpatient,Child and Adolescent Mental Health Services – Inpatient,0,4,2040
+rha-community-forensic-services,Community forensic services ,1,5,2050
+RHA-coss,COSS (Chill Out Sound Support),0,13,2130
+RHA-dual-diagnosis,Dual Diagnosis Team Nottinghamshire,0,13,1303
+RHA-gender-services,Gender dysphoria services,0,14,1405
+RHA-health-shop,Health Shop,0,13,1312
+rha-hmp-stocken,HMP Stocken,1,16,1610
+rha-hmp-stocken-pc,Stocken Primary care ,1,16,1610.6
+rha-hmp-stocken-sms,Substance misuse services,1,16,1610.9
+rha-iapt-bassetlaw,Let’s Talk Well Being  (IAPT) – Bassetlaw,0,24,24001
+rha-iapt-city,Let’s Talk Well Being (IAPT) – Nottingham,0,24,24000
+rha-iapt-county,Let’s Talk Well Being (IAPT) – Nottinghamshire,0,24,24000
+RHA-jsc-pcl,Primary Care Liaison Team (John Storer Clinic),0,13,1310
+RHA-jsc-sms,John Storer Clinic (Community Drug Team),0,13,2130
+rha-ld-city,Intellectual Developmental Disabilities /Learning Disability Services – Community (City) ,0,6,2060
+rha-ld-county,Intellectual Developmental Disabilities /Learning Disability Services – Community (County),0,6,2060
+rha-ld-inpatient,Intellectual Developmental Disabilities/ Learning Disability Services – Inpatient ,0,6,2060
+rha-low-secure-services,Low secure services,1,5,2050
+rha-mhsop-city,Mental Health Services for Older People – Community (City),0,7,2070
+rha-mhsop-county,Mental Health Services for Older People – Community (County),0,7,2070
+rha-mhsop-inpatient,Mental Health Services for Older People – Inpatient,0,7,2070
+rha-offender-health,Offender healthcare ,1,16,2160
+RHA-oxford-corner,Oxford Corner (Specialist Alcohol Team),0,13,1308
+rha-perinatal-community,Perinatal – Community,0,14,2140
+rha-perinatal-inpatients,Perinatal - Inpatients ,0,14,119
+rha-physical-healthcare-psychology,Physical Healthcare Psychology,0,14,1408
+rha-recovery-college,Nottingham Recovery College,0,2,128
+rha-trauma,Trauma Services,0,14,1402
+RHA-woodlands,Woodland Inpatient Treatment,0,13,1309
+RHA03,Duncan Macmillan House (Trust Headquarters),NA,NA,2000
+RHA04,Rampton Hospital,1,NA,2170
+RHA20,Health Partnerships ,2,NA,1900
+rha20-25100,Continence service,2,25,25100
+rha20-25101,Community therapy,2,25,25101
+rha20-25102,Day rehabilitation,2,25,25102
+rha20-25103,Dental community service,2,25,25103
+rha20-25105,Falls service,2,25,25105
+rha20-25106,Health visiting ,2,25,25106
+rha20-25107,Long term conditions team (neuro),2,25,25107
+rha20-25108,Pulmonary rehab ,2,25,25108
+rha20-25109,Rapid response team ,2,25,25109
+rha20-25110,Single point of access,2,25,25110
+rha20-25111,Community stroke team,2,25,25111
+rha20-25112,Evening nursing service (twilight),2,25,25112
+rha20-25113,School nursing (universal) ,2,25,25113
+rha20-25114,Residential intermediate care (Westwood) ,2,25,25114
+rha20-252-community-matrons,Community matrons,2,25,2250
+rha20-25211,Residential Intermediate Care ,2,25,25211
+rha20-25212,Tissue viability service,2,25,25212
+rha20-25213,Multiple sclerosis nurse ,2,25,25123
+rha20-25214,Diabetes nurse for nursing & care homes,2,25,25214
+rha20-25215,Parkinson's nurse ,2,25,25215
+rha20-25216,Epilepsy nurse,2,25,25216
+rha20-25301,Contraception & sexual health,2,25,25301
+rha20-25302,Emotional health and wellbeing,2,25,25302
+rha20-25303,Stop smoking service ,2,25,25303
+rha20-25304,Zest weight management service ,2,25,25304
+rha20-25401,Hospice at home ,2,25,25401
+rha20-25402,Macmillan specialist nurses ,2,25,25402
+rha20-25403,Day care (Retford Hospice),2,25,25403
+rha20-25507,"Podiatry, Diabetes Clinic (BDGH)",2,25,25507
+rha20-25508,"Podiatry, Dermatology Clinic (BDGH)  ",2,25,25508
+rha20-25509,Specialist children's services ,2,25,25509
+rha20-26201,"Macmillan nurses, Mansfield & Ashfield",2,26,26201
+rha20-26202,"Macmillan nurses, Newark & Sherwood",2,26,22602
+rha20-26203,Hospice at home,2,26,26203
+rha20-26204,"John Eastwood Hospice, in care ",2,26,26204
+rha20-26205,"John Eastwood Hospice, day care",2,26,26205
+rha20-26401,"Community nursing, Ashfield ",2,26,26401
+rha20-26402,"Community nursing, Mansfield",2,26,26402
+rha20-26403,Oates Hill leg ulcer clinic,2,26,26403
+rha20-26404,Continence advisory service (north) ,2,26,26404
+rha20-26405,"COPD, Mansfield",2,26,26405
+rha20-26406,"COPD, Ashfield",2,26,2260
+rha20-26407,Out of hours nursing service ,2,26,26407
+rha20-27101,"School nursing, Newark ",2,27,27101
+rha20-27102,"School nursing, Sherwood",2,27,27102
+rha20-27201,"Health visiting, Newark",2,27,27201
+rha20-27202,"Health visiting, Sherwood",2,27,27202
+rha20-27203,Children in care and adoption team (North) ,2,27,27203
+rha20-27301,"Community adult services, Newark ",2,27,27301
+rha20-27305,"Community adult services, Sherwood",2,27,27305
+rha20-27306,COPD team,2,27,27306
+rha20-27307,Diabetes specialist nurse ,2,27,27307
+rha20-27308,Community heart failure specialist nurse ,2,27,27308
+rha20-27309,Tissue viability service ,2,27,2270
+rha20-27406,Intermediate care,2,27,27406
+rha20-281-community-matrons,Community matrons ,2,28,2280
+rha20-281-sure-start,Sure Start,2,33,2330
+rha20-28105,Phlebotomy,2,28,2280
+rha20-28200,Primary care therapy,2,28,28200
+rha20-283-health-visiting,Health visiting,2,28,2280
+rha20-28409,Respiratory team ,2,28,28409
+rha20-285-school-nursing,School nursing,2,28,2280
+rha20-286,Child and adolescent mental health services (CAMHS) ,2,28,2280
+rha20-291-sure-start,Sure Start,2,33,2330
+rha20-292-community-matrons,Community matrons,2,29,2290
+rha20-292-community-nursing,Community nursing ,2,29,2290
+rha20-29202,Community stroke team ,2,29,29202
+rha20-29208,Phlebotomy,2,29,29208
+rha20-29301,Intermediate care (at home),2,29,29301
+rha20-29302,Primary care rehab,2,29,29302
+rha20-29303,Intermediate care (residential) ,2,29,29303
+rha20-29304,Falls service,2,29,2290
+rha20-294-health-visiting,Health visiting ,2,29,2290
+rha20-294-school-nursing,School nursing,2,29,2290
+rha20-29407,Children in care and adoption team,2,29,29407
+rha20-29408,Breastfeeding promotion service,2,29,29408
+rha20-29409,Paediatric liaison health visiting team (QMC) ,2,29,29409
+rha20-30404,COPD team ,2,30,30404
+rha20-30405,Heart failure team ,2,30,30405
+rha20-30701,Community rehabilitation,2,30,30701
+rha20-311-speech,Adult speech & language therapy,2,31,2310
+rha20-312-paediatric-therapies,Paediatric therapies ,2,31,2310
+rha20-31206,Children's community nursing,2,31,31207
+rha20-31306,Podiatric surgery ,2,31,31306
+rha20-31401,Special needs dental service,2,31,31401
+rha20-31402,Integrated dental unit,2,31,31402
+rha20-31501,Falls prevention service ,2,31,2310
+rha20-31506,Clinical specialist physiotherapy (CLISP) ,2,31,2310
+rha20-31507,Hip and knee pathway ,2,31,2310
+rha20-321-childrens-development,Children's development centre,2,31,2310
+rha20-abbey-lady-bay-cc,Abbey and Lady Bay Children's Centre,2,33,33128
+rha20-arnbrook-cc,Arnbrook Children's Centre,2,33,33100
+rha20-awsworth-cc,Awsworth Children's Centre,2,33,33103
+rha20-balderton-cc,Balderton Children's Centre,2,33,33122
+rha20-bassetlaw,Bassetlaw,2,25,2250
+rha20-bassetlaw-rural-cc,Bassetlaw Rural Children's Centre,2,33,33112
+rha20-beeston-cental-cc,Beeston Central Children's Centre,2,33,33102
+rha20-beeston-north-cc,Beeston North with Leyton Abbey Children's Centre,2,33,33102
+rha20-bellamy-cc,Bellamy Children's Centre,2,33,33117
+rha20-bingham-cc,Bingham Children's Centre,2,33,33126
+rha20-blidworth-oaks-cc,Blidworth Oaks Primary School Children's Centre (Sherwood West),2,33,2330
+rha20-brinsley-greasley-cc,Brinsley with Greasley Children's Centre,2,33,33103
+rha20-butlers-hill-cc,Butler's Hill & Broomhill Children's Centre,2,33,33104
+rha20-calverton-cc,Calverton Children's Centre,2,33,33101
+rha20-chilwell-cc,Chilwell Children's Centre,2,33,33102
+rha20-cotgrave-cc,Cotgrave Children's Centre,2,33,33126
+rha20-crompton-view-cc,Crompton View Primary School Children's Centre,2,33,2330
+rha20-east-leake-cc,East Leake Children's Centre,2,33,33127
+rha20-eastwood-cc,Eastwood Children's Centre,2,33,33103
+rha20-forest-town-cc,Forest Town Children's Centre,2,33,33120
+rha20-hallcroft-cc,Hallcroft Children's Centre,2,33,33112
+rha20-harworth-bircotes-cc,Harworth & Bircotes Children's centre,2,33,33116
+rha20-hawtonville-cc,Hawtonville Children's Centre,2,33,33122
+rha20-high-leys-cc,High Leys Children's Centre,2,33,33104
+rha20-huthwaite-cc,Huthwaite Children's Centre,2,33,33105
+rha20-keyworth-cc,Keyworth Children's Centre,2,33,33127
+rha20-killisick-cc,Killisick Children's Centre,2,33,33100
+rha20-krikby-central-west-cc,Kirkby Central & West Children's Centre,2,33,33110
+rha20-krikby-east-cc,Kirkby East Children's Centre,2,33,33110
+rha20-ladybrook-cc,Ladybrook Children's Centre,2,33,33118
+rha20-lincoln-road-cc,Lincoln Road Children's Centre,2,33,2330
+rha20-mansfield-ashfield,Mansfield & Ashfield ,2,26,2260
+rha20-mansfield-woodhouse-cc,Mansfield Woodhouse Children's Centre,2,33,33119
+rha20-manton-cc,Manton Children's Centre,2,33,33113
+rha20-msk-physio,Musculoskeletal physiotherapy,2,31,2310
+rha20-netherfield-cc,Netherfield Children's Centre,2,33,33111
+rha20-new-woods-cc,New Woods Children's Centre,2,33,33106
+rha20-newark-sherwood,Newark & Sherwood,2,27,2270
+rha20-newstead-cc,Newstead Children's Centre,2,33,33107
+rha20-north-leverton-cc,North Leverton Children's Centre,2,33,33114
+rha20-north-worksop-gateford-cc,North Workshop Children's Centre (Gateford Site),2,33,33115
+rha20-north-worksop-rhodesia-cc,North Workshop Children's Centre (Rhodesia Site),2,33,33115
+rha20-nottingham-ne,Nottingham North & East ,2,28,2280
+rha20-nottingham-w,Nottingham West ,2,29,2290
+rha20-oak-tree-cc,Oak Tree Chhildren's Centre,2,33,33117
+rha20-oak-tree-leg-ulcer,Oak tree leg ulcer clinic,2,26,26408
+rha20-ollerton-boughton-cc,Ollerton & Boughton Children's Cente,2,33,33124
+rha20-oral-health,Oral Health Promotion,2,NA,1900
+rha20-pleasley-hill-cc,Pleasley Hill Children's Centre,2,33,33118
+rha20-prospect-kilton-cc,Prospect Kilton Children's Centre,2,33,33113
+rha20-rainworth-water-cc,Rainworth Water Road Children's Centre (Sherwood West),2,33,33125
+rha20-ravensdale-cc,Ravensdale Children's Centre,2,33,33120
+rha20-retford-central-cc,Retford Central Children's Centre,2,33,33114
+rha20-ruddington-edwalton-cc,Ruddington & Edwalton Children's Centre,2,33,33128
+rha20-rural-families-cc,Rural Families Children's Centre,2,33,33107
+rha20-rushcliffe,Rushcliffe,2,30,2300
+rha20-sherwood-east-ccc,Sherwood East Children's Centre,2,33,33125
+rha20-specialist,Specialist services,2,31,2310
+rha20-stanhope-cc,Stanhope Children's Centre,2,33,33108
+rha20-stapleford-cc,Stapleford Children's Centre,2,33,33109
+rha20-summer-house-cc,Summer House Children's centre,2,33,33106
+rha20-sure-start,Sure Start,2,33,2330
+rha20-sutton-central-cc,Sutton Central Children's Centre,2,33,33105
+rha20-titchfield-cc,Titchfield Children's Centre,2,33,33121
+rha20-trent-villages-north-cc,Trent Villages North Children's Cente,2,33,33124
+rha20-trent-villages-south-cc,Trent Villages South Children's Cente,2,33,33124
+rha20-warsop-cc,Warsop Children's Centre,2,33,33119
+rha20-west-bassetlaw-cc,West Bassetlaw Children's Centre,2,33,33116
+RHAAR,Arnold Lodge Regional Secure Unit,1,3,2030
+RHANN,Lings Bar Hospital ,2,30,2300
+RHANN-inpatient,Inpatient nursing and rehabilitation,NA,NA,2000
+RHARY,Wathwood Hospital,1,15,2150
+RHAX1,Stapleford Care Centre,0,NA,1700
+RHAX2,HMP Stocken,1,16,1610
+RHAX3,HMP & YOI New Hall,1,16,1612
+RHAX4,HMP & YOI Doncaster,1,16,1605
+RHAX5,Worksop Clinic ,0,NA,1700
+RHAX6,Hucknall Health Centre,0,NA,1700
+RHAX7,Clifton Cornerstone,0,NA,1700
+RHAX8,Park House Health & Social Care Centre ,0,NA,1700
+RHAX9,HMP Nottingham,1,16,1602
+RHAY1,HMP Wakefield,1,16,1611
+RHAY2,HMP & YOI New Hall,1,16,1612
+RHAY3,HMP Lindholme,1,16,1608
+RHAY4,HMP Whatton,1,16,1604
+RHAY5,HMP Lowdham Grange,1,16,1601
+RHAY6,HMP Moorland,1,16,1609
+RHAY7,HMP Ranby,1,16,1603
+RHAY8,Retford Clinic,0,NA,1700
+RHAY9,Mansfield Clinic ,0,NA,1700

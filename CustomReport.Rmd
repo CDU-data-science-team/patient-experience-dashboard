@@ -1,0 +1,130 @@
+# Custom report
+
+```{r, echo=FALSE, results='asis'}
+
+# selecting Trust/ directorate/ team
+
+if(input$Division == 9){ # if the whole Trust is selected do this
+  
+  locationText = "the whole Trust"
+  
+} else { # otherwise look at the directorate code
+  
+  if(is.null(input$selDirect)){ # if all directorates are selected do this
+    
+    locationText = 
+      c("Local services", "Forensic services", "Health Partnerships")[as.numeric(input$Division) + 1]
+
+  }
+  
+  if(!is.null(input$selDirect)){ # if one or more directorates are selected do this
+    
+    if(!is.null(input$selTeam) | !is.null(input$selSubDistrictTeam)){ # specific teams
+      
+      locationText = paste(unique(passData()$Location))
+    }
+    
+    if(is.null(input$selTeam) & is.null(input$selSubDistrictTeam)){ # all teams
+      
+    locationText = paste(directorate[as.numeric(input$selDirect)])
+
+    }
+    
+  }
+  
+}
+
+if(length(locationText) == 1){
+  
+  locationText = locationText # Do nothing!
+  
+} else if(length(locationText) == 2){
+  
+  locationText = paste0(locationText[1], " and ", locationText[2])
+} else if(length(locationText) > 2){
+  
+  locationText = paste0(paste0(locationText[-length(locationText)], ", ", collapse = ""), 
+                        "and ", locationText[length(locationText)])
+}
+
+```
+
+This report summarises all of the data available within `r locationText` between `r strftime(input$dateRange[1], format = "%d %B %Y")` and `r strftime(input$dateRange[2], format = "%d %B %Y")`.
+
+```{r, echo=FALSE, results='asis'}
+
+storeData = passData()
+
+# FFT score
+
+FFT = round(sum(storeData[, "Promoter2"] %in% 4:5, na.rm=TRUE)/
+                    sum(storeData[, "Promoter2"] %in% 0:5, na.rm=TRUE) * 100, 0)
+
+# Quality score
+
+SQ = round(mean(storeData[, "Service"], na.rm = TRUE), 1) * 20
+
+# Number of responses
+
+NR = nrow(storeData)
+
+NSQ = length(storeData$Service[!is.na(storeData$Service)])
+
+NFFT = length(storeData$Promoter2[!is.na(storeData$Promoter2)])
+
+# number of comments
+
+IC = length(storeData[,"Improve"][!is.na(storeData[,"Improve"])])
+BC = length(storeData[,"Best"][!is.na(storeData[,"Best"])])
+
+myString = paste0("<p>Within the selected time and area there were ", NR, " responses.</p><br>",
+                  "<p>There were ", IC, " 'Improve one thing' responses and ", BC,
+                  " 'Best thing' responses</p><br>",
+                  ifelse(NFFT > 15,
+                         paste0("<p>The Friends and Family Test Score is calculated as the proportion of patients who would strongly
+                                recommend or recommend a service. In the selected period of time it was ",
+                                FFT, "% (based on ", NFFT, " responses.)", "</p><br>"), ""),
+                  ifelse(NSQ > 9,
+                         paste0("<p>Service quality rating was ", SQ, "% (based on ", NSQ,
+                                " responses.)</p>"), "")
+                  )
+
+cat(as.character(div(HTML(myString))))
+
+```
+
+```{r fig.width=7, fig.height=6, echo=FALSE, warning=FALSE, fig.cap="Percentage of responses", dpi=400}
+
+print(myStack())
+
+```
+
+```{r fig.width=7, fig.height=6, echo=FALSE, warning=FALSE, fig.cap="Scores over time", dpi=400}
+
+print(myTrend())
+
+```
+
+If you could improve one thing what would it be?
+-------------------------------------------------------
+
+```{r, echo=FALSE, results='asis'}
+
+kable(myImprove(), row.names = FALSE)
+
+```
+
+What was the best thing about the service?
+-------------------------------------------------------
+
+```{r, echo=FALSE, results='asis'}
+
+kable(myBest(), row.names = FALSE)
+
+```
+
+```{r, echo=FALSE, results='asis'}
+
+cat(myComments())
+
+```
