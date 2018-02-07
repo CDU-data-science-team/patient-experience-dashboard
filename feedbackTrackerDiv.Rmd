@@ -182,7 +182,7 @@ for(i in theList[[passDivision]]){
   
   ### IF NOT FORENSIC remove teams that no longer exist
   
-  if(passDivision != "Forensic"){
+  if(passDivision != "Forensic division"){
     
     finalTab = finalTab[finalTab$TeamC %in% subset(subCounts, Time == Quarter)$TeamC, ]
     
