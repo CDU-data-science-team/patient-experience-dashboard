@@ -630,8 +630,8 @@ shinyServer(function(input, output, session){
       
       myString = paste0("<p>Within ", theArea, " in the selected time there were ", NR, 
                         " responses.</p><br>",
-                        "<p>There were ", IC, " 'Improve one thing' responses and ", BC,
-                        " 'Best thing' responses</p><br>",
+                        "<p>There were ", IC, " 'What could we do better' responses and ", BC,
+                        " 'What did we do well' responses</p><br>",
                         ifelse(NFFT > 9,
                                paste0("<p>The Friends and Family Test Score is the proportion of patients
         who are extremely likely or likely to recommend a service. In the selected period of time it was ",
@@ -1176,13 +1176,26 @@ shinyServer(function(input, output, session){
       message = 'Please wait',
       detail = 'Fetching comments...', value = 0, {
         
+        # if they searched by demographic, scrub PO and PALS data
+        
+        if(input$sex != "All" | input$ethnic != "All" | 
+           input$disability != "All" | input$religion != "All" |
+           input$sexuality != "All" | input$age != "All") {
+          
+          searchDemographic = TRUE
+        } else {
+          
+          searchDemographic = FALSE
+        }
+        
         # make empty list and add all four comment types
         
         storyList = list()
         
         if(!is.null(input$criticality)){
           
-          # if they select by criticality we need to only return those stories
+          # if they select by criticality or demographic 
+          # we need only return SUCE comments
           
           impCriticality = input$criticality[input$criticality %in% 1:3]
           
@@ -1193,6 +1206,14 @@ shinyServer(function(input, output, session){
           returnComments = list("Improve" = ifelse(length(impCriticality) > 0, TRUE, FALSE), 
                                 "Best" = ifelse(length(bestCriticality) > 0, TRUE, FALSE), 
                                 "Other" = FALSE)
+          
+        } else if(searchDemographic){
+          
+          returnComments = list("Improve" = TRUE, "Best" = TRUE, "Other" = FALSE)
+          
+          impCriticality = numeric(0)
+          
+          bestCriticality = numeric(0)
           
         } else {
           
@@ -1303,8 +1324,8 @@ shinyServer(function(input, output, session){
         }
         
         storyName = recode(names(storyList), 
-                           "Improve" = "Survey- Improve one thing", 
-                           "Best" = "Survey- Best thing",
+                           "Improve" = "Survey- What could we do better", 
+                           "Best" = "Survey- What did we do well",
                            "PO" = "Patient Opinion")
         
         incProgress(1/3)
@@ -1313,6 +1334,20 @@ shinyServer(function(input, output, session){
           
           return("No comments in this time period!")
           
+        }
+        
+        # we're going to kick them out with an error if they searched by demographic and there are <10 comments
+        
+        if(length(unlist(storyList)) < 10 & searchDemographic) {
+          
+          showModal(modalDialog(
+            title = "Error",
+            "Sorry, you searched on patient characteristics and there are 
+            fewer than 10 comments- individuals may be identifiable. Please 
+            broaden your search"
+          ))
+          
+          return()
         }
         
         # set search to FALSE, we'll change later if they do search
@@ -1388,7 +1423,7 @@ shinyServer(function(input, output, session){
                 c(
                   paste0(
                     "<h2>", x, "</h2>", 
-                    ifelse(x == "Survey- Improve one thing" & countRecode > 0 & search == FALSE, 
+                    ifelse(x == "Survey- What could we do better" & countRecode > 0 & search == FALSE, 
                            paste("<h4>We received ", countRecode,
                                  " comments which stated that nothing could be improved.</h4>"),
                            "") # print nothing if recode value is 0

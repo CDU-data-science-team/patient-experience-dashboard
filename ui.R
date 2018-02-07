@@ -188,8 +188,8 @@ function(request) {
             # positive/ negative stories
             
             checkboxGroupInput("stories", "Story type", 
-                               list("Survey- Improve one thing" = "Improve",
-                                    "Survey- Best thing" = "Best",
+                               list("Survey- What could we do better?" = "Improve",
+                                    "Survey- What did we do well?" = "Best",
                                     "Patient Opinion" = "PO",
                                     "PALS" = "PALS"),
                                selected = c("Improve", "Best", "PO", "PALS")
@@ -289,9 +289,9 @@ function(request) {
                                plotOutput("TrendPlot"),
                                downloadButton('downloadData.trend','Download Graph'),
                                value = "trendTab"), 
-                      tabPanel("Improve one thing", downloadButton('downloadData.imptable','Download Table'), 
+                      tabPanel("What could we do better", downloadButton('downloadData.imptable','Download Table'), 
                                DT::dataTableOutput("TableImprove"), value = "improveTab"),
-                      tabPanel("Best thing", downloadButton('downloadData.besttable','Download Table'),
+                      tabPanel("What did we do well", downloadButton('downloadData.besttable','Download Table'),
                                DT::dataTableOutput("TableBest"), value = "bestTab"),
                       tabPanel("Comments", downloadButton('downloadData.comments','Download Comments'),
                                htmlOutput("TextResponses"), value = "commentsTab")#,
