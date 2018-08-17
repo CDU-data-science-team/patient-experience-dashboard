@@ -1,3 +1,6 @@
 
 ## global.R ##
-enableBookmarking(store = "url")
+
+load("shiny.Rdata")
+
+enableBookmarking(store = "server")

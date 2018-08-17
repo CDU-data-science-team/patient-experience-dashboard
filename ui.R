@@ -190,7 +190,7 @@ function(request) {
             checkboxGroupInput("stories", "Story type", 
                                list("Survey- What could we do better?" = "Improve",
                                     "Survey- What did we do well?" = "Best",
-                                    "Patient Opinion" = "PO",
+                                    "Care Opinion" = "PO",
                                     "PALS" = "PALS"),
                                selected = c("Improve", "Best", "PO", "PALS")
             ),
