@@ -38,8 +38,6 @@ new_theme_empty$plot.margin <- structure(c(0, 0, -1, -1), unit = "lines", valid.
 
 shinyServer(function(input, output, session){
   
-  load("shiny.Rdata")
-  
   # PO$Title = enc2utf8(PO$Title)
   # 
   # PO$PO = enc2utf8(PO$PO)
@@ -71,7 +69,7 @@ shinyServer(function(input, output, session){
       
       selectInput("selDistrict", "Choose district(s)",
                   list("Ashfield", "Bassetlaw", "Broxtowe", "Gedling", "Mansfield", 
-                       "Newark and Sherwood", "Rushcliffe"), multiple = TRUE, selected = "All")
+                       "Newark and Sherwood", "Rushcliffe", "YOT"), multiple = TRUE, selected = "All")
     } else {
       
       teams = names(table(subset(trustData, Directorate %in% input$selDirect &
@@ -1326,7 +1324,7 @@ shinyServer(function(input, output, session){
         storyName = recode(names(storyList), 
                            "Improve" = "Survey- What could we do better", 
                            "Best" = "Survey- What did we do well",
-                           "PO" = "Patient Opinion")
+                           "PO" = "Care Opinion")
         
         incProgress(1/3)
         

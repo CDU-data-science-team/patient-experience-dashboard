@@ -8,7 +8,7 @@ library(car)
 library(RCurl)
 library(XML)
 
-# setwd("~/Dropbox/R-files/SUCE_DATA")
+# setwd("~/Nextcloud/R-files/SUCE_DATA")
 
 setwd("/opt/shiny-server/apps/SUCE/")
 
@@ -88,6 +88,7 @@ scaleNames = names(trustData[, -which(names(trustData) %in%
 
 trustData[, scaleNames][trustData[, scaleNames] == 9] = NA
 trustData[, scaleNames][trustData[, scaleNames] == 8] = NA
+trustData[, scaleNames][trustData[, scaleNames] == 99] = NA
 
 # also remove "NA"s
 
