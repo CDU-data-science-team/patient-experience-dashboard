@@ -11,6 +11,8 @@ library(shinyBS)
 library(DT)
 library(lubridate)
 library(pander)
+library(rlang)
+library(magrittr)
 
 # lappend
 
@@ -1014,150 +1016,215 @@ shinyServer(function(input, output, session){
     
   })
   
+  ### subcategory tables
+  
+  subCategories = function(y){ # this is a function that calculates
+    # subcategories given a supercategory string
+    
+    if(input$theTabs == "Improve"){
+      
+      variableName = c("Imp1", "Imp2")
+    }
+    
+    if(input$theTabs == "Best"){
+      
+      variableName = c("Best1", "Best2")
+    }
+    
+    tableData = passData() %>%
+      filter(UQ(sym(variableName[1])) %in% staffCategories$Number) %>%
+      filter(UQ(sym(variableName[2])) %in% staffCategories$Number)
+    
+    impCodes = c(
+      tableData %>%
+        filter(!is.na(UQ(sym(variableName[1]))) & UQ(sym(variableName[1])) < 4000) %>%
+        pull(UQ(sym(variableName[1]))),
+      tableData %>%
+        filter(!is.na(UQ(sym(variableName[2]))) & UQ(sym(variableName[2])) < 4000) %>%
+        pull(UQ(sym(variableName[2])))
+    )
+    
+    data.frame(
+      "Category" = 
+        staffCategories %>% # rownames made from
+        filter(Super == y) %$% # the unique values below
+        unique(Category), 
+      "Percent" = 
+        staffCategories %>% # for unique values of subcategory
+        filter(Super == y) %$% # that match the supercategory
+        unique(Category) %>% # given by string y
+        
+        map(function(x) {
+          staffCategories %>% # for every category pull all the numbers
+            filter(Category == x) %>% # related to it
+            pull(Number)
+        }) %>%
+        
+        map_dbl(function(x) {
+          
+          sum(impCodes %in% x) # then add up how many times 
+          # the codes feature those numbers
+        })
+    ) %>% 
+      mutate(Percent = # now we change the column to be a proportion 
+               round(Percent / sum(Percent) * 100, 1)) %>% # of the column sums
+      arrange(desc(Percent))
+  }
+  
   # generate table - improve one thing
   
-  myImprove = reactive({
+  superCategories = function(){ 
     
-    #    if(is.null(passData())) return()
+    # this runs three ways, one for each tab box
+    # relevant variables are TeamDoBetter, TeamDoWell, Improvements
     
-    theCodes = c(passData()$Imp1, passData()$Imp2)
+    # make the variable names
     
-    # current sub themes
-    
-    subcommentList = lapply(SubList, function(x)
-      theCodes[theCodes %in% unlist(x)])
-    
-    subfinalList = subcommentList[order(unlist(lapply(subcommentList, length)), decreasing = TRUE)]
-    
-    subtheComments = sapply(1:length(names(subfinalList)),
-                            function(x) c(names(subfinalList)[x],
-                                          round(length(subfinalList[[x]]) /
-                                                  length(unlist(subcommentList)) * 100, 1)))
-    
-    # split the super from sub themes
-    
-    splitThemes = strsplit(as.character(subtheComments[1,]), " - ")
-    
-    ### put it all together
-    
-    finalFrame = data.frame("Category" = unlist(lapply(splitThemes, "[", 1)),
-                            "Subcategory" = unlist(lapply(splitThemes, "[", 2)),
-                            "Percentage subcategory" = as.numeric(subtheComments[2,]))
-    
-    # add up super themes
-    
-    finalFrame = finalFrame %>%
-      group_by(Category) %>%
-      mutate(PercentageCategory = sum(Percentage.subcategory))
-    
-    # ddply(finalFrame, "Category", mutate,
-    #                  PercentageCategory = sum(Percentage.subcategory))
-    
-    ### get rid of missing data
-    
-    finalFrame = within(finalFrame, {
+    if(input$theTabs == "Improve"){
       
-      Percentage.subcategory[is.nan(Percentage.subcategory)] = 0
-      PercentageCategory[is.nan(PercentageCategory)] = 0
-    })
-    
-    finalFrame = finalFrame[finalFrame$Percentage.subcategory > 0, ]
-    
-    if(nrow(finalFrame) < 2){
-      
-      finalFrame = data.frame("Not", "Enough", "Data", "!")
-      
-      names(finalFrame) = c("Category", "% category", "Subcategory", "Subcategory %")
-      
-    } else {
-      
-      finalFrame = finalFrame[order(finalFrame$Percentage.subcategory, decreasing = TRUE),]
-      
-      names(finalFrame) = c("Category", "Subcategory", "% subcategory", "% category")
-      
+      variableName = c("Imp1", "Imp2")
     }
     
-    finalFrame
-    
-  })
-  
-  output$TableImprove = DT::renderDataTable({
-    
-    datatable(myImprove(), rownames = FALSE)
-    
-  })
-  
-  # output table - best thing
-  
-  output$TableBest = DT::renderDataTable({
-    
-    datatable(myBest(), rownames = FALSE)
-    
-  })
-  
-  # generate table - best thing
-  
-  myBest = reactive({
-    
-    if(is.null(passData())) return()
-    
-    theCodes = c(passData()$Best1, passData()$Best2)
-    
-    # current sub themes
-    
-    subcommentList = lapply(SubList, function(x)
-      theCodes[theCodes %in% unlist(x)])
-    
-    subfinalList = subcommentList[order(unlist(lapply(subcommentList, length)), decreasing = TRUE)]
-    
-    subtheComments = sapply(1:length(names(subfinalList)),
-                            function(x) c(names(subfinalList)[x],
-                                          round(length(subfinalList[[x]]) /
-                                                  length(unlist(subcommentList)) * 100, 1)))
-    
-    # split the super from sub themes
-    
-    splitThemes = strsplit(as.character(subtheComments[1,]), " - ")
-    
-    ### put it all together
-    
-    finalFrame = data.frame("Category" = unlist(lapply(splitThemes, "[", 1)),
-                            "Subcategory" = unlist(lapply(splitThemes, "[", 2)),
-                            "Percentage subcategory" = as.numeric(subtheComments[2,]))
-    
-    # add up super themes
-    
-    finalFrame = finalFrame %>%
-      group_by(Category) %>%
-      mutate(PercentageCategory = sum(Percentage.subcategory))
-    
-    ### get rid of missing data
-    
-    finalFrame = within(finalFrame, {
+    if(input$theTabs == "Best"){
       
-      Percentage.subcategory[is.nan(Percentage.subcategory)] = 0
-      PercentageCategory[is.nan(PercentageCategory)] = 0
-    })
-    
-    finalFrame = finalFrame[finalFrame$Percentage.subcategory > 0, ]
-    
-    if(nrow(finalFrame) < 2){
-      
-      finalFrame = data.frame("Not", "Enough", "Data", "!")
-      
-      names(finalFrame)=c("Category", "% category", "Subcategory", "Subcategory %")
-      
-    } else {
-      
-      finalFrame = finalFrame[order(finalFrame$Percentage.subcategory, decreasing = TRUE),]
-      
-      names(finalFrame) = c("Category", "Subcategory", "% subcategory", "% category")
-      
+      variableName = c("Best1", "Best2")
     }
     
-    finalFrame
+    # remove invalid categories
     
+    tableData = passData() %>%
+      filter(Imp1 %in% staffCategories$Number) %>%
+      filter(Imp2 %in% staffCategories$Number)
+    
+    impCodes = c(
+      tableData %>%
+        filter(!is.na(UQ(sym(variableName[1]))) & UQ(sym(variableName[1])) < 4000) %>%
+        pull(UQ(sym(variableName[1]))),
+      tableData %>%
+        filter(!is.na(UQ(sym(variableName[2]))) & UQ(sym(variableName[2])) < 4000) %>%
+        pull(UQ(sym(variableName[2])))
+    )
+    
+    data.frame(
+      "Category" = unique(staffCategories$Super),
+      "Percentage" = unique(staffCategories$Super) %>% # for unique values of supercategory
+        map(function(x) {
+          staffCategories %>% 
+            filter(Super == x) %>% # just pull the numbers for that supercategory
+            pull(Number)
+        }) %>%
+        map_dbl(function(x) {
+          
+          round(sum(impCodes %in% x) %>% # find how many there are and divide by the total
+                  `/`(., length(impCodes)) * 100, 1)
+        })
+    ) %>%
+      arrange(desc(Percentage))
+  }
+  
+  output$SuperTableImprove = renderDataTable({
+    
+    superCategories()
+  }, selection = 'single', rownames = FALSE,
+  options = list(pageLength = 5))
+  
+  output$SubTableImprove = renderDataTable({
+    
+    rowIndices = input$SuperTableImprove_rows_selected
+    
+    subCategories(
+      superCategories()$Category[rowIndices]
+    )
+    
+  }, selection = 'single', rownames = FALSE,
+  options = list(pageLength = 5))
+  
+  output$SuperTableBest = renderDataTable({
+    
+    superCategories()
+  }, selection = 'single', rownames = FALSE,
+  options = list(pageLength = 5))
+  
+  output$SubTableBest = renderDataTable({
+    
+    rowIndices = ifelse(input$theTabs == "Improve",
+           input$SuperTableImprove_rows_selected,
+           input$SuperTableBest_rows_selected)
+
+    subCategories(
+      superCategories()$Category[rowIndices]
+    )
+    
+  }, selection = 'single', rownames = FALSE,
+  options = list(pageLength = 5))
+  
+  output$improveText = renderText({
+    
+    returnText()
   })
+  
+  output$bestText = renderText({
+    
+    returnText()
+  })
+
+  returnText = function(){
+    
+    superRow = ifelse(input$theTabs == "Improve",
+                    input$SuperTableImprove_rows_selected,
+                    input$SuperTableBest_rows_selected)
+    
+      
+    superCategorySelected = 
+      as.character(
+        superCategories()$Category[superRow]
+      )
+    
+    wholeTable = subCategories(
+      superCategorySelected
+    )
+    
+    # now find the one they clicked
+    
+    subRow = ifelse(input$theTabs == "Improve",
+                        input$SubTableImprove_rows_selected,
+                        input$SubTableBest_rows_selected)
+    
+    theClick = as.character(wholeTable$Category[subRow])
+
+    theNumbers = staffCategories %>% # for unique values of subcategory
+      filter(Super == superCategorySelected) %>% # that match the supercategory
+      filter(Category == theClick) %>% # that match the subcategory
+      pull(Number)
+
+    debug = paste("Super= ", superCategorySelected,
+                  "Sub= ", theClick,
+                  "Numbers = ", paste(theNumbers, collapse=","))
+    
+    cat(debug)
+        
+    if(input$theTabs == "Improve"){
+      
+      variableName = c("Imp1", "Imp2")
+    }
+    
+    if(input$theTabs == "Best"){
+      
+      variableName = c("Best1", "Best2")
+    }
+    
+    theComments = filter(passData(),
+                         UQ(sym(variableName[1])) %in% theNumbers |
+                           UQ(sym(variableName[2])) %in% theNumbers) %>%
+      pull(UQ(sym(input$theTabs)))
+    
+    HTML(
+      paste(
+        map_chr(theComments, 
+                function(x) paste0("<p>", x, "</p>")
+        ), collapse = "")
+    )
+  }
   
   # output for the text responses
   
