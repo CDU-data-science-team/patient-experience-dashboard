@@ -4,7 +4,7 @@
 library(httr)
 library(RMySQL)
 library(gtools)
-library(car)
+library(dplyr)
 library(RCurl)
 library(XML)
 
@@ -111,8 +111,8 @@ trustData$Directorate[trustData$Directorate == 0] = NA
 
 trustData$Directorate2 = directorate[trustData$Directorate]
 
-trustData$Division2 = recode(trustData$Division,
-                             '0 = "Local services"; 1 = "Forensic services"; 2 = "Health Partnerships"')
+trustData$Division2 = recode(trustData$Division, `0` = "Local partnerships- MH",
+                             `1` = "Forensic services", `2` = "Local partnerships- CH", default = NA_character_)
 
 trustData$Location = trustData$TeamN
 
@@ -262,8 +262,8 @@ PO$Directorate[PO$Directorate ==0] = NA
 PO$Directorate2 = directorate[PO$Directorate]
 
 PO$Division2 = recode(PO$Division,
-                      '0 = "Local services"; 1 = "Forensic services"; 
-                      2 = "Health Partnerships"')
+                      `0` = "Local partnerships- MH",
+                      `1` = "Forensic services", `2` = "Local partnerships- CH", default = NA_character_)
 
 PO$Location = PO$TeamN
 
@@ -288,7 +288,8 @@ PALS$Directorate[PALS$Directorate ==0] = NA
 PALS$Directorate2 = directorate[PALS$Directorate]
 
 PALS$Division2 = recode(PALS$Division,
-                        '0 = "Local services"; 1 = "Forensic services"; 2 = "Health Partnerships"')
+                        `0` = "Local partnerships- MH",
+                        `1` = "Forensic services", `2` = "Local partnerships- CH", default = NA_character_)
 
 PALS$Location = PALS$TeamN
 
@@ -347,6 +348,6 @@ trustData[trustData$Best %in% omitlist[, 1], "Best"] = NA
 ### save all objects
 
 save("directDiv", "trustData", "PALS", "PO", "questionFrame", "SubList", "directorate",
-     "SuperList", "timelabels", "recodelist", "counts", "communityTeams",
+     "SuperList", "timelabels", "recodelist", "counts", "communityTeams", "dirTable",
      "inpatientTeams", "taxonomy", file = "shiny.Rdata")
 
