@@ -110,7 +110,7 @@ If you could improve one thing what would it be?
 
 ```{r, echo=FALSE, results='asis'}
 
-kable(myImprove(), row.names = FALSE)
+# kable(myImprove(), row.names = FALSE)
 
 ```
 
@@ -119,12 +119,12 @@ What was the best thing about the service?
 
 ```{r, echo=FALSE, results='asis'}
 
-kable(myBest(), row.names = FALSE)
+# kable(myBest(), row.names = FALSE)
 
 ```
 
-```{r, echo=FALSE, results='asis'}
+```{r, echo=FALSE}
 
-cat(myComments())
+HTML(myComments())
 
 ```

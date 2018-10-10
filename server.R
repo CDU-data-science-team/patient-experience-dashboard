@@ -21,7 +21,6 @@ lappend = function(lst, obj){
   lst[[length(lst) + 1]] <- obj
   
   return(lst)
-  
 }
 
 # blank ggplot2 theme
@@ -1016,6 +1015,38 @@ shinyServer(function(input, output, session){
     
   })
   
+  ### criticality tables 
+  
+  output$impCritTable = renderTable({
+    
+    impVariable = passData()$ImpCrit
+    
+    impVariable = factor(impVariable, levels = 1:3)
+    
+    impFrame = data.frame(table(impVariable))
+    
+    names(impFrame) = c("Criticality", "Frequency")
+    
+    impFrame$Criticality = c("Mildly critical", "Fairly Critical", "Highly Critical")
+    
+    xtable(impFrame)
+  })
+  
+  output$bestCritTable = renderTable({
+    
+    bestVariable = passData()$BestCrit
+    
+    bestVariable = factor(bestVariable, levels = 1:3)
+    
+    bestFrame = data.frame(table(bestVariable))
+    
+    names(bestFrame) = c("Criticality", "Frequency")
+    
+    bestFrame$Criticality = c("Mildly Complimentary", "Fairly Complimentary", "Highly Complimentary")
+    
+    xtable(bestFrame)
+  })
+  
   ### subcategory tables
   
   subCategories = function(y){ # this is a function that calculates
@@ -1032,8 +1063,8 @@ shinyServer(function(input, output, session){
     }
     
     tableData = passData() %>%
-      filter(UQ(sym(variableName[1])) %in% staffCategories$Number) %>%
-      filter(UQ(sym(variableName[2])) %in% staffCategories$Number)
+      filter(UQ(sym(variableName[1])) %in% categoriesTable$Number) %>%
+      filter(UQ(sym(variableName[2])) %in% categoriesTable$Number)
     
     impCodes = c(
       tableData %>%
@@ -1197,12 +1228,12 @@ shinyServer(function(input, output, session){
       filter(Category == theClick) %>% # that match the subcategory
       pull(Number)
 
-    debug = paste("Super= ", superCategorySelected,
-                  "Sub= ", theClick,
-                  "Numbers = ", paste(theNumbers, collapse=","))
-    
-    cat(debug)
-        
+    # debug = paste("Super= ", superCategorySelected,
+    #               "Sub= ", theClick,
+    #               "Numbers = ", paste(theNumbers, collapse=","))
+    # 
+    # cat(debug)
+    #     
     if(input$theTabs == "Improve"){
       
       variableName = c("Imp1", "Imp2")
@@ -1230,7 +1261,7 @@ shinyServer(function(input, output, session){
   
   output$TextResponses <- renderText({
     
-    print(myComments())
+    print(HTML(myComments()))
     
   })
   
@@ -1403,12 +1434,12 @@ shinyServer(function(input, output, session){
         
         # we're going to kick them out with an error if they searched by demographic and there are <10 comments
         
-        if(length(unlist(storyList)) < 10 & searchDemographic) {
+        if(length(unlist(storyList)) < 30 & searchDemographic) {
           
           showModal(modalDialog(
             title = "Error",
             "Sorry, you searched on patient characteristics and there are 
-            fewer than 10 comments- individuals may be identifiable. Please 
+            fewer than 30 comments- individuals may be identifiable. Please 
             broaden your search"
           ))
           
