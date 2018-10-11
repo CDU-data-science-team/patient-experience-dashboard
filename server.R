@@ -1,17 +1,13 @@
 
-library(shiny)
-library(ggplot2)
-library(reshape)
+library(shinydashboard)
+
 library(scales)
 library(knitr)
-library(xtable)
 library(tidyverse)
 library(rmarkdown)
-library(shinyBS)
 library(DT)
 library(lubridate)
 library(pander)
-library(rlang)
 library(magrittr)
 
 # lappend
@@ -37,23 +33,36 @@ new_theme_empty$plot.margin <- structure(c(0, 0, -1, -1), unit = "lines", valid.
 
 ### Define server logic
 
-shinyServer(function(input, output, session){
-  
-  # PO$Title = enc2utf8(PO$Title)
-  # 
-  # PO$PO = enc2utf8(PO$PO)
-  # 
-  # PO$Location = enc2utf8(PO$Location)
+function(input, output, session){
   
   # handle reactive UI from division selection
   
   output$divControls <- renderUI({
     
-    if(is.null(input$Division)) return()
+    # if directorate is empty return all directorates
     
-    directorates = unlist(directDiv[(as.numeric(input$Division) + 1)])
+    if(is.null(input$Division)){
+      
+      finalTable = dirTable
+      
+    } else {
+      
+      finalTable = dirTable %>%
+        filter(Division %in% input$Division)
+    }
     
-    if(is.null(directorates)) return()
+    # get rid of corporate and unknown
+    
+    finalTable = finalTable %>%
+      filter(!DirC %in% c(0, 40))
+    
+    # finally pull the directorates and names
+    
+    directorates = finalTable %>%
+      pull(DirC)
+    
+    names(directorates) = finalTable %>%
+      pull(DirT)
     
     selectInput("selDirect", "Choose directorate(s)",
                 directorates, multiple = TRUE)
@@ -66,65 +75,9 @@ shinyServer(function(input, output, session){
     
     if(is.null(input$selDirect)) return()
     
-    if(length(input$selDirect) == 1 & input$selDirect == 34){
-      
-      selectInput("selDistrict", "Choose district(s)",
-                  list("Ashfield", "Bassetlaw", "Broxtowe", "Gedling", "Mansfield", 
-                       "Newark and Sherwood", "Rushcliffe", "YOT"), multiple = TRUE, selected = "All")
-    } else {
-      
-      teams = names(table(subset(trustData, Directorate %in% input$selDirect &
-                                   Date %in% seq.Date(input$dateRange[1],
-                                                      input$dateRange[2], by = "days"))$TeamC))
-      
-      if(is.null(teams)) return()
-      
-      teams = teams[!teams == 1700]
-      
-      nameteams = lapply(teams, function(x) tail(trustData$TeamN[which(trustData$TeamC == x)], 1))
-      
-      names(teams) = nameteams
-      
-      ### removing all missing names
-      
-      teams = teams[!is.na(names(teams))]
-      
-      # if(is.null(teams)) return()
-      
-      selectInput("selTeam", "Choose team(s)",
-                  unlist(list(teams[order(names(teams))])), multiple = TRUE, selected = "All")
-    }
-    
-  })
-  
-  output$distControls <- renderUI({
-    
-    # if(is.null(input$Division)) return()
-    
-    subDistricts = counts %>%
-      filter(District %in% input$selDistrict) %>%
-      select(SubDistrict) %>%
-      distinct()
-    
-    if(is.null(subDistricts)) return()
-    
-    selectInput("selSubDistrict", "Choose subdistricts",
-                subDistricts, multiple = TRUE)
-    
-  })
-  
-  output$subDistrictTeams = renderUI({
-    
-    teams = trustData %>%
-      filter(SubDistrict %in% input$selSubDistrict, 
-             Date %in% seq.Date(input$dateRange[1],
-                                input$dateRange[2], by = "days")) %>%
-      group_by(TeamC) %>%
-      summarise(n()) %>%
-      select(TeamC) %>%
-      unlist(use.names = FALSE)
-    
-    # teams = names(table(teamsData$TeamC))
+    teams = names(table(subset(trustData, Directorate %in% input$selDirect &
+                                 Date %in% seq.Date(input$dateRange[1],
+                                                    input$dateRange[2], by = "days"))$TeamC))
     
     if(is.null(teams)) return()
     
@@ -140,107 +93,47 @@ shinyServer(function(input, output, session){
     
     # if(is.null(teams)) return()
     
-    # selectInput("selSubDistrictTeam", "Choose team(s)",
-    #             unlist(list(teams[order(names(teams))])), multiple = TRUE, selected = "All")
-    
-    selectInput("selSubDistrictTeam", "Choose team(s)",
-                teams, multiple = TRUE, selected = "All")
+    selectInput("selTeam", "Choose team(s)",
+                unlist(list(teams[order(names(teams))])), multiple = TRUE, selected = "All")
   })
   
-  # handle reactive list containing variable and column names 
+  # handle reactive list containing variable and column names
   # ready to pass to UI and graphics commands
   
   myQuestions = reactive({
     
-    if(is.null(input$Division)) return()
-    
-    if(input$carerSU == "carer"){
-      
-      questions = as.list(questionFrame[questionFrame$carers == 1, "code"])
-      
-      names(questions) = questionFrame[questionFrame$carers == 1, "value"]
-      
-    } else if(as.numeric(input$Division) == 9){
+    if(is.null(input$Division)){
       
       questions = as.list(questionFrame[questionFrame$trust == 1, "code"])
       
       names(questions) = questionFrame[questionFrame$trust == 1, "value"]
       
-    } else if(as.numeric(input$Division) == 0){
-      
-      questions = as.list(questionFrame[questionFrame$local == 1, "code"])
-      
-      names(questions) = questionFrame[questionFrame$local == 1, "value"]
-      
-    } else if(as.numeric(input$Division) == 2){
-      
-      questions = as.list(questionFrame[questionFrame$hp == 1, "code"])
-      
-      names(questions) = questionFrame[questionFrame$hp == 1, "value"]
-      
-    } else if(as.numeric(input$Division) == 1){
-      
-      # if there's only one value and it's 16 then HMP
-      
-      if(length(input$selDirect) == 1){
-        
-        if(input$selDirect == 16){
-          
-          questions = as.list(questionFrame[questionFrame$hmp == 1, "code"])
-          
-          names(questions) = questionFrame[questionFrame$hmp == 1, "value"]
-          
-        } else if(is.null(input$selDirect)){ # all directorates selected
-          
-          questions = as.list(questionFrame[questionFrame$trust == 1, "code"])
-          
-          names(questions) = questionFrame[questionFrame$trust == 1, "value"]
-          
-        } else {
-          
-          questions = as.list(questionFrame[questionFrame$forensic == 1, "code"])
-          
-          names(questions) = questionFrame[questionFrame$forensic == 1, "value"]
-          
-        }
-        
-      } else { # if there's multiple values:
-        
-        if(16 %in% input$selDirect){
-          
-          questions = as.list(questionFrame[questionFrame$trust == 1, "code"])
-          
-          names(questions) = questionFrame[questionFrame$trust == 1, "value"]
-          
-        } else {
-          
-          questions = as.list(questionFrame[questionFrame$forensic == 1, "code"])
-          
-          names(questions) = questionFrame[questionFrame$forensic == 1, "value"]
-          
-        }
-      }
+      return(questions)
     }
     
-    if(input$carerSU == "SU"){
+    # create an empty list
+    
+    questions = list()
+    
+    if(0 %in% input$Division | 1 %in% input$Division){
       
-      # do nothing!
+      addQuestions = as.list(questionFrame[questionFrame$local == 1, "code"])
       
+      names(addQuestions) = questionFrame[questionFrame$local == 1, "value"]
+      
+      questions = c(questions, addQuestion)
     }
     
-    if(input$carerSU == "bothCarerSU"){
+    if(2 %in% input$Division){
       
-      carerQuestions = as.list(questionFrame[questionFrame$carers == 1, "code"])
+      addMoreQuestions = as.list(questionFrame[questionFrame$hp == 1, "code"])
       
-      names(carerQuestions) = questionFrame[questionFrame$carers == 1, "value"]
+      names(addMoreQuestions) = questionFrame[questionFrame$hp == 1, "value"]
       
-      combinedQuestions = c(questions, carerQuestions)
-      
-      questions = combinedQuestions[!duplicated(combinedQuestions)]
-    }
+      questions = c(questions, addMoreQuestions)
+    } 
     
     return(questions)
-    
   })
   
   # handle reactive UI from question selection
@@ -265,13 +158,13 @@ shinyServer(function(input, output, session){
     
     if(input$carerSU == "carer"){
       
-      updateSelectInput(session, "responder", "Responder type", 
+      updateSelectInput(session, "responder", "Responder type",
                         list("Carer" = 9)
       )
       
     } else if(input$carerSU == "SU"){
       
-      updateSelectInput(session, "responder", "Responder type", 
+      updateSelectInput(session, "responder", "Responder type",
                         list("All" = 9, "Service user" = 0, "Carer" = 1)
       )
       
@@ -333,7 +226,7 @@ shinyServer(function(input, output, session){
         # combine with apply so if there are any matches the data is included
         
         finaldata = finaldata[apply(
-          sapply(unlist(input$carertype), function(x) grepl(x, finaldata$carertype)), 1, 
+          sapply(unlist(input$carertype), function(x) grepl(x, finaldata$carertype)), 1,
           function(y) sum(y) > 0), ]
         
       }
@@ -342,7 +235,7 @@ shinyServer(function(input, output, session){
     
     # selecting Trust/ directorate/ team
     
-    if(input$Division == 9){ # if the whole Trust is selected do this
+    if(is.null(input$Division)){ # if the whole Trust is selected do this
       
       finaldata = finaldata[finaldata$Date %in% seq.Date(input$dateRange[1],
                                                          input$dateRange[2], by = "days"), ]
@@ -354,7 +247,7 @@ shinyServer(function(input, output, session){
       if(is.null(input$selDirect)){ # if all directorates are selected do this
         
         finaldata = finaldata[!is.na(finaldata$Division) &
-                                finaldata$Division %in% as.numeric(input$Division) &
+                                finaldata$Division %in% input$Division &
                                 finaldata$Date %in% seq.Date(input$dateRange[1],
                                                              input$dateRange[2], by = "days"), ]
         
@@ -368,7 +261,7 @@ shinyServer(function(input, output, session){
           
           if(is.null(input$selDistrict)){ # if they haven't selected a district just show CYP results
             
-            finaldata = filter(trustData, Directorate == 34, 
+            finaldata = filter(trustData, Directorate == 34,
                                Date %in% seq.Date(input$dateRange[1], input$dateRange[2], by = "days"))
             
             return(finaldata)
@@ -499,14 +392,14 @@ shinyServer(function(input, output, session){
     
     if(input$age != "All") finalComp = finalComp[finalComp$Age %in% input$age,]
     
-    if(as.numeric(input$Division) == 2) {
+    if(input$Division == 2) {
       
       finalComp[, c(which(names(finalComp) == "InvMed") : which(names(finalComp) == "OtherValue"),
                     which(names(finalComp) == "Staff"))] = NA
       
     }
     
-    finalComp   
+    finalComp
     
   })
   
@@ -516,7 +409,7 @@ shinyServer(function(input, output, session){
     
     # fix the time variable
     
-    if(input$Division == 9){ # if the whole Trust is selected do this
+    if(is.null(input$Division)){ # if the whole Trust is selected do this
       
       passPO = PO[PO$Date %in% seq.Date(input$dateRange[1], input$dateRange[2], by = "days"),]
       passPALS = PALS[PALS$Date %in% seq.Date(input$dateRange[1], input$dateRange[2], by = "days"),]
@@ -599,7 +492,7 @@ shinyServer(function(input, output, session){
       
       # name of the area
       
-      if(input$Division == 9){
+      if(is.null(input$Division)){
         
         theArea = "the selected area"
         
@@ -627,7 +520,7 @@ shinyServer(function(input, output, session){
         
       }
       
-      myString = paste0("<p>Within ", theArea, " in the selected time there were ", NR, 
+      myString = paste0("<p>Within ", theArea, " in the selected time there were ", NR,
                         " responses.</p><br>",
                         "<p>There were ", IC, " 'What could we do better' responses and ", BC,
                         " 'What did we do well' responses</p><br>",
@@ -646,25 +539,11 @@ shinyServer(function(input, output, session){
     
   })
   
-  # Generate stacked plot of the requested variable 
+  # Generate stacked plot of the requested variable
   
   myStack <- reactive({
     
-    if(is.null(passData())){
-      
-      df <- data.frame()
-      
-      b = ggplot(df) + geom_point() + xlim(0, 5) + ylim(0, 3)
-      
-      b = b + annotate("text", label = "Not enough data in the specified time and",
-                       x = 2, y = 2, size = 7, colour = "red") +
-        annotate("text", label = "location, please broaden your search terms",
-                 x = 2, y = 1, size = 7, colour = "red")
-      b = b + options(theme = new_theme_empty)
-      
-      return(b)
-      
-    }
+    req(passData())
     
     # different questions needed for carers' survey when Advanced controls not selected
     
@@ -693,7 +572,7 @@ shinyServer(function(input, output, session){
       mygraph = melt(lapply(names(missnum[missnum > 2]), function(x)
         prop.table(table(fixedData[, which(names(fixedData) == x)])) * 100))
       
-      mygraph$L1 = factor(mygraph$L1, labels = c(names(missnum[missnum > 2]))) 
+      mygraph$L1 = factor(mygraph$L1, labels = c(names(missnum[missnum > 2])))
       
       mylabels = names(myQuestions()[which(unlist(myQuestions()) %in% names(missnum[missnum > 2]))])
       
@@ -785,7 +664,7 @@ shinyServer(function(input, output, session){
       mygraph = melt(lapply(theVariables, function(x)
         prop.table(table(fixedData[, which(names(fixedData) == x)])) * 100))
       
-      mygraph$L1 = factor(mygraph$L1, labels = theVariables) 
+      mygraph$L1 = factor(mygraph$L1, labels = theVariables)
       
       # Quality score
       
@@ -809,7 +688,7 @@ shinyServer(function(input, output, session){
     
   })
   
-  # Generate line plot for trend 
+  # Generate line plot for trend
   
   myTrend = reactive({
     
@@ -857,13 +736,13 @@ shinyServer(function(input, output, session){
         md = melt(x, measure.vars = unlist(theQuestions),
                   id.vars = c("Time"))
         
-        md$variable = factor(md$variable, 
-                             labels = names(myQuestions()[which(unlist(myQuestions()) %in% 
+        md$variable = factor(md$variable,
+                             labels = names(myQuestions()[which(unlist(myQuestions()) %in%
                                                                   unlist(theQuestions))]))
         
         # generate sums and lengths of variables
         
-        mycast = data.frame(cast(md, variable + Time ~., sum, na.rm=TRUE), 
+        mycast = data.frame(cast(md, variable + Time ~., sum, na.rm=TRUE),
                             cast(md, variable + Time ~., function(x) sum(!is.na(x)))[,3])
         
         # remove missing Time rows
@@ -876,7 +755,7 @@ shinyServer(function(input, output, session){
         
         # merge with an empty frame to fill in the blanks
         
-        mymerge = data.frame("variable" = as.vector(sapply(unlist(theQuestions), 
+        mymerge = data.frame("variable" = as.vector(sapply(unlist(theQuestions),
                                                            function(x) rep(x, length(mytime)))),
                              "Time" = rep(mytime, length(unlist(theQuestions))),
                              "sum" = NA,
@@ -918,7 +797,7 @@ shinyServer(function(input, output, session){
         
         theMerge = theMerge[order(as.numeric(theMerge$Time)), ]
         
-        theMerge$Time = factor(theMerge$Time, levels = unique(as.numeric(theMerge$Time)), 
+        theMerge$Time = factor(theMerge$Time, levels = unique(as.numeric(theMerge$Time)),
                                labels = names(timelabels[unique(as.numeric(theMerge$Time))]))
         
         return(theMerge)
@@ -929,10 +808,10 @@ shinyServer(function(input, output, session){
       
       ### now comparison data
       
-      if(input$comparison == TRUE & input$Division != 9 & 
+      if(input$comparison == TRUE & input$Division != 9 &
          length(unique(myfinal$Time[!is.na(myfinal$value)])) > 1 &
          !(as.numeric(input$Division) == 2 &
-           sum(unlist(theQuestions) %in% 
+           sum(unlist(theQuestions) %in%
                c("Service", "Listening", "Communication", "Respect", "InvCare")) == 0)){
         
         mycomp = helpTrend(compData())
@@ -972,7 +851,7 @@ shinyServer(function(input, output, session){
                      y = floor(min(myfinal$value * 20, na.rm=TRUE)*.8),
                      label = myfinal$length[!duplicated(myfinal$Time)], angle = 90) +
             theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ylab("% score") +
-            labs(colour = "Question") 
+            labs(colour = "Question")
           
         } else {
           
@@ -1015,7 +894,7 @@ shinyServer(function(input, output, session){
     
   })
   
-  ### criticality tables 
+  ### criticality tables
   
   output$impCritTable = renderTable({
     
@@ -1076,11 +955,11 @@ shinyServer(function(input, output, session){
     )
     
     data.frame(
-      "Category" = 
+      "Category" =
         staffCategories %>% # rownames made from
         filter(Super == y) %$% # the unique values below
-        unique(Category), 
-      "Percent" = 
+        unique(Category),
+      "Percent" =
         staffCategories %>% # for unique values of subcategory
         filter(Super == y) %$% # that match the supercategory
         unique(Category) %>% # given by string y
@@ -1093,18 +972,18 @@ shinyServer(function(input, output, session){
         
         map_dbl(function(x) {
           
-          sum(impCodes %in% x) # then add up how many times 
+          sum(impCodes %in% x) # then add up how many times
           # the codes feature those numbers
         })
-    ) %>% 
-      mutate(Percent = # now we change the column to be a proportion 
+    ) %>%
+      mutate(Percent = # now we change the column to be a proportion
                round(Percent / sum(Percent) * 100, 1)) %>% # of the column sums
       arrange(desc(Percent))
   }
   
   # generate table - improve one thing
   
-  superCategories = function(){ 
+  superCategories = function(){
     
     # this runs three ways, one for each tab box
     # relevant variables are TeamDoBetter, TeamDoWell, Improvements
@@ -1140,7 +1019,7 @@ shinyServer(function(input, output, session){
       "Category" = unique(staffCategories$Super),
       "Percentage" = unique(staffCategories$Super) %>% # for unique values of supercategory
         map(function(x) {
-          staffCategories %>% 
+          staffCategories %>%
             filter(Super == x) %>% # just pull the numbers for that supercategory
             pull(Number)
         }) %>%
@@ -1179,9 +1058,9 @@ shinyServer(function(input, output, session){
   output$SubTableBest = renderDataTable({
     
     rowIndices = ifelse(input$theTabs == "Improve",
-           input$SuperTableImprove_rows_selected,
-           input$SuperTableBest_rows_selected)
-
+                        input$SuperTableImprove_rows_selected,
+                        input$SuperTableBest_rows_selected)
+    
     subCategories(
       superCategories()$Category[rowIndices]
     )
@@ -1198,15 +1077,15 @@ shinyServer(function(input, output, session){
     
     returnText()
   })
-
+  
   returnText = function(){
     
     superRow = ifelse(input$theTabs == "Improve",
-                    input$SuperTableImprove_rows_selected,
-                    input$SuperTableBest_rows_selected)
+                      input$SuperTableImprove_rows_selected,
+                      input$SuperTableBest_rows_selected)
     
-      
-    superCategorySelected = 
+    
+    superCategorySelected =
       as.character(
         superCategories()$Category[superRow]
       )
@@ -1218,22 +1097,22 @@ shinyServer(function(input, output, session){
     # now find the one they clicked
     
     subRow = ifelse(input$theTabs == "Improve",
-                        input$SubTableImprove_rows_selected,
-                        input$SubTableBest_rows_selected)
+                    input$SubTableImprove_rows_selected,
+                    input$SubTableBest_rows_selected)
     
     theClick = as.character(wholeTable$Category[subRow])
-
+    
     theNumbers = staffCategories %>% # for unique values of subcategory
       filter(Super == superCategorySelected) %>% # that match the supercategory
       filter(Category == theClick) %>% # that match the subcategory
       pull(Number)
-
+    
     # debug = paste("Super= ", superCategorySelected,
     #               "Sub= ", theClick,
     #               "Numbers = ", paste(theNumbers, collapse=","))
-    # 
+    #
     # cat(debug)
-    #     
+    #
     if(input$theTabs == "Improve"){
       
       variableName = c("Imp1", "Imp2")
@@ -1251,7 +1130,7 @@ shinyServer(function(input, output, session){
     
     HTML(
       paste(
-        map_chr(theComments, 
+        map_chr(theComments,
                 function(x) paste0("<p>", x, "</p>")
         ), collapse = "")
     )
@@ -1274,7 +1153,7 @@ shinyServer(function(input, output, session){
         
         # if they searched by demographic, scrub PO and PALS data
         
-        if(input$sex != "All" | input$ethnic != "All" | 
+        if(input$sex != "All" | input$ethnic != "All" |
            input$disability != "All" | input$religion != "All" |
            input$sexuality != "All" | input$age != "All") {
           
@@ -1290,7 +1169,7 @@ shinyServer(function(input, output, session){
         
         if(!is.null(input$criticality)){
           
-          # if they select by criticality or demographic 
+          # if they select by criticality or demographic
           # we need only return SUCE comments
           
           impCriticality = input$criticality[input$criticality %in% 1:3]
@@ -1299,8 +1178,8 @@ shinyServer(function(input, output, session){
           
           # we'll make a whole list about which to return and the values within each
           
-          returnComments = list("Improve" = ifelse(length(impCriticality) > 0, TRUE, FALSE), 
-                                "Best" = ifelse(length(bestCriticality) > 0, TRUE, FALSE), 
+          returnComments = list("Improve" = ifelse(length(impCriticality) > 0, TRUE, FALSE),
+                                "Best" = ifelse(length(bestCriticality) > 0, TRUE, FALSE),
                                 "Other" = FALSE)
           
         } else if(searchDemographic){
@@ -1364,7 +1243,7 @@ shinyServer(function(input, output, session){
           storyList = lappend(storyList, commentData()[[2]][, c("Location", "PALS")])
         }
         
-        theNames = c(ifelse(returnComments[["Improve"]] & "Improve" %in% input$stories, "Improve", NA), 
+        theNames = c(ifelse(returnComments[["Improve"]] & "Improve" %in% input$stories, "Improve", NA),
                      ifelse(returnComments[["Best"]] & "Best" %in% input$stories, "Best", NA),
                      ifelse(returnComments[["Other"]] & "PO" %in% input$stories, "PO", NA),
                      ifelse(returnComments[["Other"]] & "PALS" %in% input$stories, "PALS", NA))
@@ -1408,7 +1287,7 @@ shinyServer(function(input, output, session){
           storyList[["Improve"]] = storyList$Improve[!storyList$Improve$Improve %in%
                                                        c(recodelist$Recode, recodelist$Omit), ]
           
-          storyList[["Improve"]] = storyList$Improve[!storyList$Improve$Imp1 == 4444 | 
+          storyList[["Improve"]] = storyList$Improve[!storyList$Improve$Imp1 == 4444 |
                                                        is.na(storyList$Improve$Imp1), ]
           
         }
@@ -1419,8 +1298,8 @@ shinyServer(function(input, output, session){
           
         }
         
-        storyName = recode(names(storyList), 
-                           "Improve" = "Survey- What could we do better", 
+        storyName = recode(names(storyList),
+                           "Improve" = "Survey- What could we do better",
                            "Best" = "Survey- What did we do well",
                            "PO" = "Care Opinion")
         
@@ -1438,8 +1317,8 @@ shinyServer(function(input, output, session){
           
           showModal(modalDialog(
             title = "Error",
-            "Sorry, you searched on patient characteristics and there are 
-            fewer than 30 comments- individuals may be identifiable. Please 
+            "Sorry, you searched on patient characteristics and there are
+            fewer than 30 comments- individuals may be identifiable. Please
             broaden your search"
           ))
           
@@ -1454,12 +1333,12 @@ shinyServer(function(input, output, session){
           
           if(input$taxonomy != "None"){
             
-            storyList = lapply(storyList, function(x) 
+            storyList = lapply(storyList, function(x)
               x[grep(
                 paste0(
-                  paste0("\\b", 
-                         taxonomy[, input$taxonomy][!is.na(taxonomy[, input$taxonomy])], 
-                         collapse = "\\b|"), "\\b"), 
+                  paste0("\\b",
+                         taxonomy[, input$taxonomy][!is.na(taxonomy[, input$taxonomy])],
+                         collapse = "\\b|"), "\\b"),
                 x[, names(x) %in% c("Improve", "Best", "PO", "PALS")],
                 perl = TRUE, ignore.case = TRUE), ])
             
@@ -1473,7 +1352,7 @@ shinyServer(function(input, output, session){
         
         if(length(grep("[[:alpha:]]", input$keyword)) != 0){ # if keyword search is not blank then do this
           
-          storyList = lapply(storyList, function(x) 
+          storyList = lapply(storyList, function(x)
             x[grep(input$keyword, x[, names(x) %in% c("Improve", "Best", "PO", "PALS")], ignore.case = TRUE), ])
           
           search = TRUE
@@ -1484,7 +1363,7 @@ shinyServer(function(input, output, session){
         
         if(length(unlist(storyList)) > 6000){ # if too many results then do this
           
-          return(as.character(div(HTML("<h3>Too many comments in this time and area, 
+          return(as.character(div(HTML("<h3>Too many comments in this time and area,
                                    please narrow your search</h3>"))))
           
         }
@@ -1518,12 +1397,12 @@ shinyServer(function(input, output, session){
               names(toPrint), function(x)
                 c(
                   paste0(
-                    "<h2>", x, "</h2>", 
-                    ifelse(x == "Survey- What could we do better" & countRecode > 0 & search == FALSE, 
+                    "<h2>", x, "</h2>",
+                    ifelse(x == "Survey- What could we do better" & countRecode > 0 & search == FALSE,
                            paste("<h4>We received ", countRecode,
                                  " comments which stated that nothing could be improved.</h4>"),
                            "") # print nothing if recode value is 0
-                  ), 
+                  ),
                   paste0("<p>", toPrint[[x]], "</p>")
                 )
             )
@@ -1697,13 +1576,13 @@ shinyServer(function(input, output, session){
                                            "Medicines Advice", "Dose", "Drug Error", "Incident", "Prescription", "Side-effect",
                                            "Injection"), function(x) grep(x, passData()$Best, ignore.case = TRUE))
                       
-                      bestData = passData()[unique(unlist(bestIndex)), 
+                      bestData = passData()[unique(unlist(bestIndex)),
                                             c("Date", "TeamN", "Directorate2", "Division2", "Best")]
                       
-                      write.table(improveData, file = "pharmacy.csv", 
+                      write.table(improveData, file = "pharmacy.csv",
                                   row.names = FALSE, col.names = TRUE, sep = ",")
                       
-                      write.table(bestData, file="pharmacy.csv", 
+                      write.table(bestData, file="pharmacy.csv",
                                   append = TRUE, row.names = FALSE, col.names = TRUE,  sep = ",")
                       
                       # copy csv to 'file'
@@ -1734,11 +1613,11 @@ shinyServer(function(input, output, session){
                         
                         # remove data columns
                         
-                        dataColumns = names(writeData) %in% 
+                        dataColumns = names(writeData) %in%
                           c("key", "paperindex", "addedby", "refused",
                             "Doctor", "Nurse", "SW", "Psycho",
                             "Therapist", "OtherName", "OtherValue",
-                            "Optout", "date_from", "date_from", 
+                            "Optout", "date_from", "date_from",
                             "date_to", "Contacts", "Gender",
                             "Ethnic", "Disability", "Religion",
                             "Sexuality", "Age", "Relationship",
@@ -1746,7 +1625,7 @@ shinyServer(function(input, output, session){
                         
                         writeData = writeData[, -which(dataColumns)]
                         
-                        write.table(writeData, file = "alldata.csv", row.names = FALSE, 
+                        write.table(writeData, file = "alldata.csv", row.names = FALSE,
                                     col.names = TRUE, sep = ",")
                         
                         # copy csv to 'file'
@@ -1759,7 +1638,7 @@ shinyServer(function(input, output, session){
                     }
     )
   
-  ### custom report docx 
+  ### custom report docx
   
   output$downloadDoc <-
     downloadHandler(filename = "CustomReport.docx",
@@ -1790,13 +1669,13 @@ shinyServer(function(input, output, session){
                     
     )
   
-  ### access to services report 
+  ### access to services report
   
   output$downloadAccess <-
     downloadHandler(filename = "accessToServices.docx",
                     content = function(file){
                       
-                      render("accessToServices.Rmd", output_format = "word_document", 
+                      render("accessToServices.Rmd", output_format = "word_document",
                              output_file = file,
                              quiet = TRUE, envir = environment())
                       
@@ -1814,7 +1693,7 @@ shinyServer(function(input, output, session){
                       
                       passDivision = "Local Partnerships - Mental Healthcare"
                       
-                      render("feedbackTrackerDiv.Rmd", output_format = "word_document", 
+                      render("feedbackTrackerDiv.Rmd", output_format = "word_document",
                              output_file = file,
                              quiet = TRUE, envir = environment())
                       
@@ -1830,7 +1709,7 @@ shinyServer(function(input, output, session){
                       
                       passDivision = "Local Partnerships - Community Healthcare"
                       
-                      render("feedbackTrackerDiv.Rmd", output_format = "word_document", 
+                      render("feedbackTrackerDiv.Rmd", output_format = "word_document",
                              output_file = file,
                              quiet = TRUE, envir = environment())
                       
@@ -1846,7 +1725,7 @@ shinyServer(function(input, output, session){
                       
                       passDivision = "Forensic division"
                       
-                      render("feedbackTrackerDiv.Rmd", output_format = "word_document", 
+                      render("feedbackTrackerDiv.Rmd", output_format = "word_document",
                              output_file = file,
                              quiet = TRUE, envir = environment())
                       
@@ -1856,23 +1735,4 @@ shinyServer(function(input, output, session){
                     }
     )
   
-  ## send message to wordcloud script- long string with all comments
-  
-  observe({
-    
-    if(input$theTabs == "wordCloud"){
-      
-      # form reactivity with word selector
-      
-      test = input$noWords
-      
-      theComments = passData()$Improve[!is.na(passData()$Improve)]
-      
-      theText = paste(theComments, collapse = " ")
-      
-      session$sendCustomMessage(type = 'sendMessage',
-                                message = theText)
-    }
-  })
-  
-})
+}
