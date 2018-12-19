@@ -38,6 +38,7 @@ function(input, output, session){
   source("scoresTab.R", local = TRUE)
   source("commentsTab.R", local = TRUE)
   source("allCommentsTab.R", local = TRUE)
+  source("reportPage.R", local = TRUE)
   
   # handle reactive UI from division selection
   
@@ -79,26 +80,30 @@ function(input, output, session){
     
     if(is.null(input$selDirect)) return()
     
-    teams = names(table(subset(trustData, Directorate %in% input$selDirect &
-                                 Date %in% seq.Date(input$dateRange[1],
-                                                    input$dateRange[2], by = "days"))$TeamC))
+    teams <- trustData %>% 
+      filter(Directorate %in% input$selDirect) %>% 
+      filter(Date > input$dateRange[1], Date < input$dateRange[2]) %>% 
+      distinct(TeamC) %>% 
+      inner_join(
+        counts %>% 
+          group_by(TeamC) %>%
+          slice(which.max(as.Date(date_from)))
+      )
     
-    if(is.null(teams)) return()
+    if(nrow(teams) < 1) return()
     
-    teams = teams[!teams == 1700]
+    ### removing all missing names and sort
     
-    nameteams = lapply(teams, function(x) tail(trustData$TeamN[which(trustData$TeamC == x)], 1))
+    teams = teams %>% 
+      filter(!is.na(TeamN)) %>% 
+      arrange(TeamN)
     
-    names(teams) = nameteams
+    team_numbers <- teams %>% pull(TeamC)
     
-    ### removing all missing names
-    
-    teams = teams[!is.na(names(teams))]
-    
-    # if(is.null(teams)) return()
+    names(team_numbers) <- teams %>% pull(TeamN)
     
     selectInput("selTeam", "Choose team(s)",
-                unlist(list(teams[order(names(teams))])), multiple = TRUE, selected = "All")
+                team_numbers, multiple = TRUE, selected = "All")
   })
   
   # handle reactive list containing variable and column names
