@@ -2,14 +2,13 @@
 library(shinydashboard)
 library(DT)
 
-# Define application
-
-# shinyUI(
-
 function(request) {
   
   dashboardPage(
-    dashboardHeader(),
+    dashboardHeader(title = "Survey summary"),
+    
+    # dashboard siderbar----
+    
     dashboardSidebar(
       
       sidebarMenu(
@@ -194,15 +193,17 @@ function(request) {
         selectInput("age", "Age", list("All" = "All", "Under 12" = 1, "12- 17" = 2, "18-25" = 3,
                                        "26-39" = 4, "40-64" = 5, "65-79" = 6, "80+" = 7))
       )
-      
     ),
+    
+    # dashboard body ----
+    
     dashboardBody(
       
       tabItems(
         tabItem(tabName = "summary",
                 fluidRow(
                   column(6, htmlOutput("SummaryOutput")),
-                  column(6, h2("Report builder"))
+                  column(6, uiOutput("reportPage"))
                 )
         ),
         tabItem(tabName = "scores",
