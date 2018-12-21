@@ -79,10 +79,6 @@ function(request) {
       
       # download custom report
       
-      downloadButton("downloadDoc", "Download report"),
-      
-      # download custom report
-      
       downloadButton("downloadCustomReport", "Printer friendly"),
       
       # toggle advanced controls
@@ -202,8 +198,7 @@ function(request) {
       tabItems(
         tabItem(tabName = "summary",
                 fluidRow(
-                  column(6, htmlOutput("SummaryOutput")),
-                  column(6, uiOutput("reportPage"))
+                  uiOutput("summaryPage")
                 )
         ),
         tabItem(tabName = "scores",
