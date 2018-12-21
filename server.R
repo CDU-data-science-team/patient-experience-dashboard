@@ -38,8 +38,7 @@ function(input, output, session){
   source("scoresTab.R", local = TRUE)
   source("commentsTab.R", local = TRUE)
   source("allCommentsTab.R", local = TRUE)
-  source("reportPage.R", local = TRUE)
-  
+
   # handle reactive UI from division selection
   
   output$divControls <- renderUI({
@@ -470,37 +469,6 @@ function(input, output, session){
                       
                       
                     }
-    )
-  
-  ### custom report docx
-  
-  output$downloadDoc <-
-    downloadHandler(filename = "CustomReport.docx",
-                    content = function(file){
-                      
-                      render("CustomReport.Rmd", output_format = "word_document",
-                             quiet = TRUE, envir = environment())
-                      
-                      # copy docx to 'file'
-                      file.copy("CustomReport.docx", file, overwrite = TRUE)
-                      
-                    }
-    )
-  
-  ###  HTML report
-  
-  output$downloadCustomReport <-
-    downloadHandler(filename = "CustomReport.html",
-                    content = function(file){
-                      
-                      render("CustomReport.Rmd", output_format = "html_document", # output_file = file,
-                             quiet = TRUE, envir = environment())
-                      
-                      # copy HTML to 'file'
-                      file.copy("CustomReport.html", file, overwrite = TRUE)
-                      
-                    }
-                    
     )
   
   ### access to services report
