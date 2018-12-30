@@ -157,6 +157,15 @@ output$summary_text = renderText({
     IC = length(suceData[, "Improve"][!is.na(suceData[, "Improve"])])
     BC = length(suceData[, "Best"][!is.na(suceData[, "Best"])])
     
+    # were you aware of how to raise a concern yes/ no/ maybe
+    
+    complaint_numbers <- map_int(c("D", "N", "Y"), function(x){
+      
+      suceData %>% 
+      filter(Complaint == x) %>% 
+      nrow()
+    })
+    
     # name of the area
     
     if(is.null(input$Division)){
@@ -184,7 +193,6 @@ output$summary_text = renderText({
       nameteams = lapply(teams, function(x) tail(trustData$TeamN[which(trustData$TeamC == x)], 1))
       
       theArea = paste(nameteams, collapse = ", ")
-      
     }
     
     myString = paste0("<p>Within ", theArea, " in the selected time there were ", NR,
@@ -197,7 +205,11 @@ output$summary_text = renderText({
                                     FFT, "% (based on ", NFFT, " responses.)", "</p><br>"), ""),
                       ifelse(NSQ > 9,
                              paste0("<p>Service quality rating was ", SQ, "% (based on ", NSQ,
-                                    " responses.)</p>"), "")
+                                    " responses.)</p>"), ""),
+                      ifelse(sum(complaint_numbers) > 3,
+                             paste0("<p>", complaint_numbers[3], " individuals reported that they knew how to make a complaint, ",
+                                    complaint_numbers[2], " reported that they did not know how to make a complaint, and ", 
+                                    complaint_numbers[1], " reported that they were unsure if they knew.</p>"), "")
     )
     
     HTML(myString)
