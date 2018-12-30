@@ -30,11 +30,13 @@ function(request) {
       # first set up All/ Division results
       
       selectInput("Division", HTML("Select division<br/> (defaults to whole Trust)"),
-                  list("Local Partnerships- Mental Healthcare"= 0,
+                  list("Local Partnerships- Mental Healthcare" = 0,
                        "Local Partnerships- Community Healthcare" = 2, "Forensic" = 1),
                   multiple = TRUE),
       
       uiOutput("divControls"),
+      
+      checkboxInput("showTeams", "Show all teams"),
       
       # this panel appears if a particular directorate is selected
       
