@@ -35,24 +35,38 @@ output$summaryOutputs = renderUI({
   
   tagList(
     htmlOutput("summary_text"),
-
+    
     fluidRow(
-
-      valueBoxOutput("sqBox"), # service quality
-
-      valueBoxOutput("fftBox"), # fft
       
-      valueBoxOutput("numberResponsesBox"), # number respones
+      valueBoxOutput("sqBox", width = 3), # service quality
       
-      valueBoxOutput("numberCommentsBox"), # number comments
+      valueBoxOutput("fftBox", width = 3), # fft
       
-      valueBoxOutput("criticalBox"), # criticality summary
+      valueBoxOutput("numberResponsesBox", width = 3), # number respones
       
-      valueBoxOutput("teamsRespondingBox"), # breakdown of teams responding (zero responding teams, <3 responding teams)
+      valueBox("???", "Something else here", icon = icon("question"), width = 3)
       
-      valueBoxOutput("bestScoreBox"), # best score
+    ),
+    
+    fluidRow(
       
-      valueBoxOutput("worstScoreBox") # worst score
+      valueBoxOutput("impCritOneBox", width = 3), # number comments
+      
+      valueBoxOutput("impCritTwoBox", width = 3), # number comments
+      
+      valueBoxOutput("impCritThreeBox", width = 3), # number comments
+      
+      valueBoxOutput("impCritPercentageBox", width = 3), # number comments
+      
+      valueBoxOutput("numberBestBox", width = 3), # number comments
+      
+      valueBoxOutput("criticalBox", width = 3), # criticality summary
+      
+      valueBoxOutput("teamsRespondingBox", width = 3), # breakdown of teams responding (zero responding teams, <3 responding teams)
+      
+      valueBoxOutput("bestScoreBox", width = 3), # best score
+      
+      valueBoxOutput("worstScoreBox", width = 3) # worst score
       
       # trend in scores
       
@@ -146,15 +160,15 @@ output$downloadDoc <- downloadHandler(filename = "CustomReport.docx",
                                       }
 )
 
-# text summary
+# reactive function to produce data summary to pass to value boxes and to report
 
-output$summary_text = renderText({
+dataSummary <- reactive({
   
   suceData = passData()[["suce"]]
   
   if(is.null(suceData)){
     
-    myString = "Within the selected time and area there were no responses"
+    return(NULL)
     
   } else {
     
@@ -191,25 +205,31 @@ output$summary_text = renderText({
     complaint_numbers <- map_int(c("D", "N", "Y"), function(x){
       
       suceData %>% 
-      filter(Complaint == x) %>% 
-      nrow()
+        filter(Complaint == x) %>% 
+        nrow()
+    })
+    
+    # criticality
+    
+    improve_numbers <- map_int(c(1, 2, 3), function(x){
+      
+      suceData %>% 
+        filter(ImpCrit == x) %>% 
+        nrow()
+    })
+    
+    # criticality
+    
+    best_numbers <- map_int(c(1, 2, 3), function(x){
+      
+      suceData %>% 
+        filter(BestCrit == x) %>% 
+        nrow()
     })
     
     # name of the area
     
-    if(is.null(input$Division)){
-      
-      theArea = "the selected area"
-      
-    } else if(is.null(input$selDirect)){
-      
-      theArea = "the selected area"
-      
-    } else if(is.null(input$selTeam)){
-      
-      theArea = "the selected area"
-      
-    } else if(input$selTeam == 99){
+    if(is.null(input$selTeam)){
       
       theArea = "the selected area"
       
@@ -217,49 +237,134 @@ output$summary_text = renderText({
       
       ### look up team names
       
-      teams = input$selTeam
+      teams <- as.tibble(input$selTeam) %>%  
+        inner_join(
+          counts %>% 
+            group_by(TeamC) %>%
+            slice(which.max(as.Date(date_from)))
+        )
       
-      nameteams = lapply(teams, function(x) tail(trustData$TeamN[which(trustData$TeamC == x)], 1))
+      team_names <- teams %>% pull(TeamN)
       
-      theArea = paste(nameteams, collapse = ", ")
+      # teams = input$selTeam
+      # 
+      # nameteams = lapply(teams, function(x) tail(trustData$TeamN[which(trustData$TeamC == x)], 1))
+      
+      theArea = paste(team_names, collapse = ", ")
     }
     
-    myString = paste0("<p>Within ", theArea, " in the selected time there were ", NR,
+    return(
+      list("theArea" = theArea, "NR" = NR, "IC" = IC, "BC" = BC, "NFFT" = NFFT,
+           "FFT" = FFT, "NSQ" = NSQ, "SQ" = SQ, "complaint_numbers" = complaint_numbers,
+           "improve_numbers" = improve_numbers, "best_numbers" = best_numbers)
+    )
+  }
+})
+
+# text summary----
+
+output$summary_text = renderText({
+  
+  if(is.null(dataSummary())){
+    
+    myString = "Within the selected time and area there were no responses"
+  } else {
+    
+    myString = paste0("<p>Within ", dataSummary()[["theArea"]], " in the selected time there were ", dataSummary()[["NR"]],
                       " responses.</p><br>",
-                      "<p>There were ", IC, " 'What could we do better' responses and ", BC,
+                      "<p>There were ", dataSummary()[["IC"]], " 'What could we do better' responses and ", dataSummary()[["BC"]],
                       " 'What did we do well' responses</p><br>",
-                      ifelse(NFFT > 9,
+                      ifelse(dataSummary()[["NFFT"]] > 9,
                              paste0("<p>The Friends and Family Test Score is the proportion of patients
         who are extremely likely or likely to recommend a service. In the selected period of time it was ",
-                                    FFT, "% (based on ", NFFT, " responses.)", "</p><br>"), ""),
-                      ifelse(NSQ > 9,
-                             paste0("<p>Service quality rating was ", SQ, "% (based on ", NSQ,
+                                    dataSummary()[["FFT"]], "% (based on ", dataSummary()[["NFFT"]], " responses.)", "</p><br>"), ""),
+                      ifelse(dataSummary()[["NSQ"]] > 9,
+                             paste0("<p>Service quality rating was ", dataSummary()[["SQ"]], "% (based on ", dataSummary()[["NSQ"]],
                                     " responses.)</p>"), ""),
-                      ifelse(sum(complaint_numbers) > 3,
-                             paste0("<p>", complaint_numbers[3], " individuals reported that they knew how to make a complaint, ",
-                                    complaint_numbers[2], " reported that they did not know how to make a complaint, and ", 
-                                    complaint_numbers[1], " reported that they were unsure if they knew.</p>"), "")
+                      ifelse(sum(dataSummary()[["complaint_numbers"]]) > 3,
+                             paste0("<p>", dataSummary()[["complaint_numbers"]][3], " individuals reported that they knew how to make a complaint, ",
+                                    dataSummary()[["complaint_numbers"]][2], " reported that they did not know how to make a complaint, and ", 
+                                    dataSummary()[["complaint_numbers"]][1], " reported that they were unsure if they knew.</p>"), "")
     )
-    
-    HTML(myString)
   }
+  
+  HTML(myString)
+  
 })
 
 # value boxes rendered here----
 
 output$sqBox <- renderValueBox({
   
-  
+  valueBox(value = paste0(dataSummary()[["SQ"]], "%"), 
+           subtitle = HTML(paste0("Service quality<br>(", dataSummary()[["NSQ"]], " responses)")),
+           icon = icon("thumbs-up")
+  )
 })
 
-# valueBoxOutput("sqBox"), # service quality
+output$fftBox <- renderValueBox({
+  
+  valueBox(value = paste0(dataSummary()[["FFT"]], "%"), 
+           subtitle = HTML(paste0("Would you recommend?<br>(", dataSummary()[["NFFT"]], " responses)")),
+           icon = icon("smile")
+  )
+})
+
+output$numberResponsesBox <- renderValueBox({
+  
+  valueBox(value = dataSummary()[["NR"]], 
+           subtitle = HTML("Number of<br>responses"),
+           icon = icon("book-open")
+  )
+})
+
+output$impCritOneBox <- renderValueBox({
+  
+  valueBox(value = dataSummary()[["improve_numbers"]][1], 
+           subtitle = HTML("Minimally critical<br>comments"),
+           color = "green"
+  )
+})
+
+output$impCritTwoBox <- renderValueBox({
+  
+  valueBox(value = dataSummary()[["improve_numbers"]][2], 
+           subtitle = HTML("Moderately critical<br>comments"),
+           color = "orange"
+  )
+})
+
+output$impCritThreeBox <- renderValueBox({
+  
+  valueBox(value = dataSummary()[["improve_numbers"]][3], 
+           subtitle = HTML("Highly critical<br>comments"),
+           color = "red"
+  )
+})
+
+output$impCritPercentageBox <- renderValueBox({
+  
+  crit_numbers <- dataSummary()[["improve_numbers"]]
+  
+  percentages = round(
+    c(
+      crit_numbers[1] / sum(crit_numbers) * 100,
+      crit_numbers[2] / sum(crit_numbers) * 100,
+      crit_numbers[3] / sum(crit_numbers) * 100
+    ), 0)
+  
+  valueBox(value = paste0(percentages[1], "/", percentages[2], "/", percentages[3], "%"),
+  # valueBox(value = tags$p(paste0(percentages[1], "%/ ", percentages[2], "%/ ", percentages[3], "%"), style = "font-size: 0%;"),
+           subtitle = HTML("Percentages<br>min/ mod/ high")
+  )
+})
+
+# valueBoxOutput("impCritPercentageBox", width = 3), # number comments
 # 
-# valueBoxOutput("fftBox"), # fft
-# 
-# valueBoxOutput("numberResponsesBox"), # number respones
-# 
-# valueBoxOutput("numberCommentsBox"), # number comments
-# 
+# valueBoxOutput("numberImproveBox", width = 3), # number comments
+#
+# valueBoxOutput("numberBestBox", width = 3), # number comments
+#
 # valueBoxOutput("criticalBox"), # criticality summary
 # 
 # valueBoxOutput("teamsRespondingBox"), # breakdown of teams responding (zero responding teams, <3 responding teams)
