@@ -38,7 +38,7 @@ function(input, output, session){
   source("scoresTab.R", local = TRUE)
   source("commentsTab.R", local = TRUE)
   source("allCommentsTab.R", local = TRUE)
-
+  
   # handle reactive UI from division selection
   
   output$divControls <- renderUI({
@@ -77,12 +77,23 @@ function(input, output, session){
   
   output$dirControls <- renderUI({
     
-    if(is.null(input$selDirect)) return()
+    if(is.null(input$selDirect) & !input$showTeams) return()
     
-    teams <- trustData %>% 
-      filter(Directorate %in% input$selDirect) %>% 
-      filter(Date > input$dateRange[1], Date < input$dateRange[2]) %>% 
-      distinct(TeamC) %>% 
+    if(input$showTeams){
+      
+      team_join <- trustData %>% 
+        filter(Date > input$dateRange[1], Date < input$dateRange[2]) %>% 
+        distinct(TeamC)
+      
+    } else {
+      
+      team_join <- trustData %>% 
+        filter(Directorate %in% input$selDirect) %>% 
+        filter(Date > input$dateRange[1], Date < input$dateRange[2]) %>% 
+        distinct(TeamC)
+    }
+    
+    teams <- team_join %>% 
       inner_join(
         counts %>% 
           group_by(TeamC) %>%
@@ -215,11 +226,11 @@ function(input, output, session){
       
     }
     if(!is.null(input$selTeam)){
-        
-        finalData = finalData[!is.na(finalData$TeamC) &
-                                finalData$TeamC %in% as.numeric(input$selTeam) &
-                                finalData$Date %in% seq.Date(input$dateRange[1],
-                                                             input$dateRange[2], by = "days"), ]
+      
+      finalData = finalData[!is.na(finalData$TeamC) &
+                              finalData$TeamC %in% as.numeric(input$selTeam) &
+                              finalData$Date %in% seq.Date(input$dateRange[1],
+                                                           input$dateRange[2], by = "days"), ]
     }
     
     carerData = finalData %>%
@@ -536,5 +547,20 @@ function(input, output, session){
                       
                     }
     )
+  
+  # show modal with warning if they click "show all teams"
+  
+  observeEvent(input$showTeams, {
+    
+    showModal(
+      modalDialog(
+        title = "Warning!",
+        HTML("There are a lot of teams. Search by typing or deselect this control 
+              and narrow your search by directorate<br>
+             (click anywhere to dismiss this message)."),
+        easyClose = TRUE
+      )
+    )
+  }, ignoreInit = TRUE, once = TRUE)
   
 }
