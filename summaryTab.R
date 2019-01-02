@@ -18,9 +18,12 @@ output$summaryPage <- renderUI({
            # Exception based reporting
            # Show zero returning teams more easily (maybe outside the feedback tracker)
            
-           selectInput("reportTime", "Time frame", choices = c("Quarterly" = "quarterly", "Yearly" = "yearly", "Custom" = "custom")),
+           selectInput("reportTime", "Time frame", 
+                       choices = c("Quarterly" = "quarterly", 
+                                   "Yearly (not implemented)" = "yearly", 
+                                   "Custom" = "custom")),
            
-           selectInput("serviceArea", "Service area", choices = c("Trust", "Division", "Directorate", "Team", "Custom")),
+           selectInput("serviceArea", "Service area", choices = c("Current selection", "Custom (not yet implemented)")),
            
            uiOutput("reportCustomAreaSelector"),
            
@@ -259,37 +262,6 @@ dataSummary <- reactive({
            "improve_numbers" = improve_numbers, "best_numbers" = best_numbers)
     )
   }
-})
-
-# text summary----
-
-output$summary_text = renderText({
-  
-  if(is.null(dataSummary())){
-    
-    myString = "Within the selected time and area there were no responses"
-  } else {
-    
-    myString = paste0("<p>Within ", dataSummary()[["theArea"]], " in the selected time there were ", dataSummary()[["NR"]],
-                      " responses.</p><br>",
-                      "<p>There were ", dataSummary()[["IC"]], " 'What could we do better' responses and ", dataSummary()[["BC"]],
-                      " 'What did we do well' responses</p><br>",
-                      ifelse(dataSummary()[["NFFT"]] > 9,
-                             paste0("<p>The Friends and Family Test Score is the proportion of patients
-        who are extremely likely or likely to recommend a service. In the selected period of time it was ",
-                                    dataSummary()[["FFT"]], "% (based on ", dataSummary()[["NFFT"]], " responses.)", "</p><br>"), ""),
-                      ifelse(dataSummary()[["NSQ"]] > 9,
-                             paste0("<p>Service quality rating was ", dataSummary()[["SQ"]], "% (based on ", dataSummary()[["NSQ"]],
-                                    " responses.)</p>"), ""),
-                      ifelse(sum(dataSummary()[["complaint_numbers"]]) > 3,
-                             paste0("<p>", dataSummary()[["complaint_numbers"]][3], " individuals reported that they knew how to make a complaint, ",
-                                    dataSummary()[["complaint_numbers"]][2], " reported that they did not know how to make a complaint, and ", 
-                                    dataSummary()[["complaint_numbers"]][1], " reported that they were unsure if they knew.</p>"), "")
-    )
-  }
-  
-  HTML(myString)
-  
 })
 
 # value boxes rendered here----
