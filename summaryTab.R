@@ -18,7 +18,7 @@ output$summaryPage <- renderUI({
            # Exception based reporting
            # Show zero returning teams more easily (maybe outside the feedback tracker)
            
-           selectInput("reportTime", "Time frame", choices = c("Quarterly", "Yearly", "Custom")),
+           selectInput("reportTime", "Time frame", choices = c("Quarterly" = "quarterly", "Yearly" = "yearly", "Custom" = "custom")),
            
            selectInput("serviceArea", "Service area", choices = c("Trust", "Division", "Directorate", "Team", "Custom")),
            
@@ -27,6 +27,41 @@ output$summaryPage <- renderUI({
            downloadButton("downloadDoc", "Download report")
     )
   )
+})
+
+# main value box output interface defined here----
+
+output$summaryOutputs = renderUI({
+  
+  tagList(
+    htmlOutput("summary_text"),
+
+    fluidRow(
+
+      valueBoxOutput("sqBox"), # service quality
+
+      valueBoxOutput("fftBox"), # fft
+      
+      valueBoxOutput("numberResponsesBox"), # number respones
+      
+      valueBoxOutput("numberCommentsBox"), # number comments
+      
+      valueBoxOutput("criticalBox"), # criticality summary
+      
+      valueBoxOutput("teamsRespondingBox"), # breakdown of teams responding (zero responding teams, <3 responding teams)
+      
+      valueBoxOutput("bestScoreBox"), # best score
+      
+      valueBoxOutput("worstScoreBox") # worst score
+      
+      # trend in scores
+      
+      # trend in criticality
+      
+      # trend in categories
+    )
+  )
+  
 })
 
 # this is the reactive interface referred to in the first bit of the code
@@ -101,19 +136,13 @@ output$downloadDoc <- downloadHandler(filename = "CustomReport.docx",
                                         
                                         # determine which report we're rendering
                                         
-                                        report_name <- switch(input$serviceArea, 
-                                                              "Trust" = "trust_report", 
-                                                              "Division" = "division_report", 
-                                                              "Directorate" = "directorate_report",
-                                                              "Team" = "team_report", 
-                                                              "Custom" = "custom_report")
+                                        report_name = input$reportTime
                                         
                                         render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
                                                quiet = TRUE, envir = environment())
                                         
                                         # copy docx to 'file'
-                                        file.copy(paste0(report_name, ".docx"), file, overwrite = TRUE)
-                                        
+                                        file.copy(paste0("reports/", report_name, ".docx"), file, overwrite = TRUE)
                                       }
 )
 
@@ -216,8 +245,25 @@ output$summary_text = renderText({
   }
 })
 
+# value boxes rendered here----
 
-output$summaryOutputs = renderUI({
+output$sqBox <- renderValueBox({
   
-  htmlOutput("summary_text")
+  
 })
+
+# valueBoxOutput("sqBox"), # service quality
+# 
+# valueBoxOutput("fftBox"), # fft
+# 
+# valueBoxOutput("numberResponsesBox"), # number respones
+# 
+# valueBoxOutput("numberCommentsBox"), # number comments
+# 
+# valueBoxOutput("criticalBox"), # criticality summary
+# 
+# valueBoxOutput("teamsRespondingBox"), # breakdown of teams responding (zero responding teams, <3 responding teams)
+# 
+# valueBoxOutput("bestScoreBox"), # best score
+# 
+# valueBoxOutput("worstScoreBox") # worst score
