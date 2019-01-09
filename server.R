@@ -8,6 +8,10 @@ library(DT)
 library(lubridate)
 library(pander)
 library(magrittr)
+library(tidytext)
+library(igraph)
+library(ggraph)
+
 
 # lappend
 
@@ -38,6 +42,7 @@ function(input, output, session){
   source("scoresTab.R", local = TRUE)
   source("commentsTab.R", local = TRUE)
   source("allCommentsTab.R", local = TRUE)
+  source("textAnalysis.R", local = TRUE)
   
   # handle reactive UI from division selection
   

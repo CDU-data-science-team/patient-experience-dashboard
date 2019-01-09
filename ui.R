@@ -16,7 +16,8 @@ function(request) {
         menuItem("Scores", tabName = "scores", icon = icon("bar-chart")),
         menuItem("Comments", tabName = "comments", icon = icon("comment")),
         menuItem("All comments", tabName = "allComments", icon = icon("comment")),
-        menuItem("Staff/ patient experience", tabName = "staffSUCE", icon = icon("flask"))
+        menuItem("Staff/ patient experience", tabName = "staffSUCE", icon = icon("flask")),
+        menuItem("Text analysis", tabName = "textAnalysis", icon = icon("font"))
       ),
       
       bookmarkButton(),
@@ -253,15 +254,29 @@ function(request) {
         tabItem(tabName = "allComments",
                 fluidRow(
                   column(12, radioButtons("sortCategoryCriticality", 
-                                                            "Sort by category or Criticality?",
-                                                            choices = c("Category", "Criticality")))
+                                          "Sort by category or Criticality?",
+                                          choices = c("Category", "Criticality")))
                 ),
-        fluidRow(
-          column(6, h2("What could we do better?"), htmlOutput("allImproveComments")),
-          column(6, h2("What did we do well?"), htmlOutput("allBestComments"))
+                fluidRow(
+                  column(6, h2("What could we do better?"), htmlOutput("allImproveComments")),
+                  column(6, h2("What did we do well?"), htmlOutput("allBestComments"))
+                )
+        ),
+        tabItem(tabName = "textAnalysis",
+                fluidRow(
+                  column(7,
+                         box(width = 12, "Co-occuring words. Click a word to see example comments", 
+                             plotOutput("bigram_plot", click = "bigram_click"),
+                             sliderInput("bigramSlider", "Number of terms", 20, 160, 100, step = 10)),
+                         box(width = 12, "Plot of sentiment scores in comments over time", plotOutput("sentimentPlot")),
+                         box(width = 12, "Co-occuring tags", plotOutput("tagBigrams"), 
+                             sliderInput("tagBigramSlider", "Number of terms", 20, 160, 100, step = 10))
+                         ),
+                  column(5, h2("Example comments"), htmlOutput("plotClickInformation")
+                         )
+                )
         )
       )
     )
-  )
   )}
 
