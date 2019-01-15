@@ -7,7 +7,7 @@ if(Sys.info()["nodename"] == "otis"){
   
 } else {
   
-  load("shiny.Rdata")
+  load("~/shiny.Rdata")
 }
 
 enableBookmarking(store = "server")

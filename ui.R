@@ -80,10 +80,6 @@ function(request) {
       
       downloadButton("downloadData", "Download data"),
       
-      # download custom report
-      
-      downloadButton("downloadCustomReport", "Printer friendly"),
-      
       # toggle advanced controls
       
       checkboxInput("custom", "Advanced controls", value = FALSE),
@@ -97,44 +93,6 @@ function(request) {
         
         selectInput("commInp", "Community/ Inpatient",
                     list("All" = "all", "Community" = "community", "Inpatient" = "inpatient")),
-        
-        # question
-        
-        uiOutput("selectQuestions"),
-        
-        # comparison
-        
-        conditionalPanel(
-          condition = "input.theTabs == 'trendTab' && input.Division != 9 && input.carerSU != 'carer'",
-          checkboxInput("comparison", "Provide comparison?", value = FALSE)
-        ),
-        
-        # positive/ negative stories
-        
-        checkboxGroupInput("stories", "Story type",
-                           list("Survey- What could we do better?" = "Improve",
-                                "Survey- What did we do well?" = "Best",
-                                "Care Opinion" = "PO",
-                                "PALS" = "PALS"),
-                           selected = c("Improve", "Best", "PO", "PALS")
-        ),
-        
-        div( # pharmacy and access to services reports
-          
-          downloadButton("downloadPharmacy", "Download pharmacy report"),
-          downloadButton("downloadAccess", "Download access to services report"),
-          
-          style='padding:10px;'),
-        
-        # download feedback tracker- each division
-        wellPanel(
-          h4("Download feedback tracker"),
-          downloadButton("downloadFeedbackTrackerLocal",
-                         "LP- Mental Health"),
-          downloadButton("downloadFeedbackTrackerHealthPartnerships",
-                         "LP- Community Health"),
-          downloadButton("downloadFeedbackTrackerForensic", "Forensic")
-        ),
         
         # service user/ carer
         
