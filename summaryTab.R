@@ -47,35 +47,31 @@ output$summaryOutputs = renderUI({
       
       valueBoxOutput("numberResponsesBox", width = 3), # number respones
       
-      valueBox("???", "Something else here", icon = icon("question"), width = 3)
+      valueBox("", "Zero responding teams", width = 3) # breakdown of teams responding (zero responding teams, <3 responding teams)
       
     ),
     
     fluidRow(
       
-      valueBoxOutput("impCritOneBox", width = 3), # number comments
+      valueBoxOutput("impCritOneBox", width = 3), # minmally critical
       
-      valueBoxOutput("impCritTwoBox", width = 3), # number comments
+      valueBoxOutput("impCritTwoBox", width = 3), # mildy critical
       
-      valueBoxOutput("impCritThreeBox", width = 3), # number comments
+      valueBoxOutput("impCritThreeBox", width = 3), # highly critical
       
-      valueBoxOutput("impCritPercentageBox", width = 3), # number comments
+      valueBoxOutput("impCritPercentageBox", width = 3) # percentages
+    ),
+    
+    fluidRow(
       
-      valueBoxOutput("numberBestBox", width = 3), # number comments
+      valueBox("", "bestScoreBox", width = 3), # best score
       
-      valueBoxOutput("criticalBox", width = 3), # criticality summary
+      valueBox("", "worstScoreBox", width = 3), # worst score
       
-      valueBoxOutput("teamsRespondingBox", width = 3), # breakdown of teams responding (zero responding teams, <3 responding teams)
+      valueBox("", "Trend in scores", width = 3),
       
-      valueBoxOutput("bestScoreBox", width = 3), # best score
+      valueBox("", "Trend in criticality", width = 3)
       
-      valueBoxOutput("worstScoreBox", width = 3) # worst score
-      
-      # trend in scores
-      
-      # trend in criticality
-      
-      # trend in categories
     )
   )
   
@@ -326,7 +322,7 @@ output$impCritPercentageBox <- renderValueBox({
     ), 0)
   
   valueBox(value = paste0(percentages[1], "/", percentages[2], "/", percentages[3], "%"),
-  # valueBox(value = tags$p(paste0(percentages[1], "%/ ", percentages[2], "%/ ", percentages[3], "%"), style = "font-size: 0%;"),
+           # valueBox(value = tags$p(paste0(percentages[1], "%/ ", percentages[2], "%/ ", percentages[3], "%"), style = "font-size: 0%;"),
            subtitle = HTML("Percentages<br>min/ mod/ high")
   )
 })
@@ -344,3 +340,35 @@ output$impCritPercentageBox <- renderValueBox({
 # valueBoxOutput("bestScoreBox"), # best score
 # 
 # valueBoxOutput("worstScoreBox") # worst score
+
+# this is the function that draws the parameterized rmarkdown
+
+observe({
+  
+  searchString <- parseQueryString(session$clientData$url_search)
+  
+  cat(searchString[["division"]])
+  
+  # # update inputs according to query string
+  # if(length(searchString) > 0){ # if the searchString exists
+  #   # deal with first query which indicates the audience
+  #   if(searchString[[1]] == "nhs"){ # for NHS users do the following
+  #     updateCheckboxGroupInput(session, "domainShow",
+  #                              choices = list("NHS users" = "nhs.uk",
+  #                                             "Other" = "Other"), selected = c("nhs.uk"))
+  #   }
+  #   # do they want a smooth?
+  #   if(searchString[[2]] == "yes"){
+  #     updateTabsetPanel(session, "theTabs", selected = "trend")
+  #     updateCheckboxInput(session, inputId = "smooth",
+  #                         value = TRUE)
+  #   }
+  # }
+  # 
+  # input$Division
+  # 
+  # input$selDirect
+  # 
+  # input$selTeam
+  
+})

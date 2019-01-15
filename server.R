@@ -407,40 +407,6 @@ function(input, output, session){
       
     })
   
-  ###  pharmacy report
-  
-  output$downloadPharmacy <-
-    downloadHandler(filename = "pharmacy.csv",
-                    content = function(file){
-                      
-                      improveIndex = sapply(c("Medicine", "Medication", "Drug", "Pharmacy", "Pharmacist", "Chemist", "Prescribing",
-                                              "Dispensing", "Dispenser", "Prescriber", "Drug Information", "Medicines Information",
-                                              "Medicines Advice", "Dose", "Drug Error", "Incident", "Prescription", "Side-effect",
-                                              "Injection"), function(x) grep(x, passData()$Improve, ignore.case = TRUE))
-                      
-                      improveData = passData()[unique(unlist(improveIndex)), c("Date", "TeamN", "Directorate2", "Division2", "Improve")]
-                      
-                      bestIndex = sapply(c("Medicine", "Medication", "Drug", "Pharmacy", "Pharmacist", "Chemist", "Prescribing",
-                                           "Dispensing", "Dispenser", "Prescriber", "Drug Information", "Medicines Information",
-                                           "Medicines Advice", "Dose", "Drug Error", "Incident", "Prescription", "Side-effect",
-                                           "Injection"), function(x) grep(x, passData()$Best, ignore.case = TRUE))
-                      
-                      bestData = passData()[unique(unlist(bestIndex)),
-                                            c("Date", "TeamN", "Directorate2", "Division2", "Best")]
-                      
-                      write.table(improveData, file = "pharmacy.csv",
-                                  row.names = FALSE, col.names = TRUE, sep = ",")
-                      
-                      write.table(bestData, file="pharmacy.csv",
-                                  append = TRUE, row.names = FALSE, col.names = TRUE,  sep = ",")
-                      
-                      # copy csv to 'file'
-                      
-                      file.copy("pharmacy.csv", file, overwrite = TRUE)
-                      
-                    }
-    )
-  
   ###  download data
   
   output$downloadData <-
@@ -483,22 +449,6 @@ function(input, output, session){
                         
                       }
                       
-                      
-                    }
-    )
-  
-  ### access to services report
-  
-  output$downloadAccess <-
-    downloadHandler(filename = "accessToServices.docx",
-                    content = function(file){
-                      
-                      render("accessToServices.Rmd", output_format = "word_document",
-                             output_file = file,
-                             quiet = TRUE, envir = environment())
-                      
-                      # copy docx to 'file'
-                      file.copy("accessToServices.docx", file, overwrite = TRUE)
                       
                     }
     )

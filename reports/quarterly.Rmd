@@ -1,7 +1,32 @@
 
+<!-- So I need to declare the parameters here, and then pass them through from Shiny -->
+<!-- Then I can use an observe() function with the GET string so the report is generated if -->
+<!-- The parameters are set using a GET string -->
+
+---
+title: My Document
+output: html_document
+params:
+  division: NA
+  directorate: NA
+  team: NA
+  date_from: NA
+  date_to: NA
+---
+
 ```{r setup, include=FALSE}
 
 knitr::opts_chunk$set(echo = FALSE)
+
+```
+
+## Context
+
+```{r}
+
+# what I need more than anything here is a list of the other report areas so I can link 
+
+# fetch the state of the teams
 
 ```
 
