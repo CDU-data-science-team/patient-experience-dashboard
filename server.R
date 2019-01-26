@@ -11,7 +11,8 @@ library(magrittr)
 library(tidytext)
 library(igraph)
 library(ggraph)
-
+library(stringi)
+library(stringr)
 
 # lappend
 
@@ -43,6 +44,7 @@ function(input, output, session){
   source("commentsTab.R", local = TRUE)
   source("allCommentsTab.R", local = TRUE)
   source("textAnalysis.R", local = TRUE)
+  source("sentimentTab.R", local = TRUE)
   
   # handle reactive UI from division selection
   
@@ -239,10 +241,10 @@ function(input, output, session){
     }
     
     carerData = finalData %>%
-      filter(SUCEcarer == "carer")
+      filter(formtype == "carer")
     
     finalData = finalData %>%
-      filter(is.na(SUCEcarer) | SUCEcarer == "SUCE")
+      filter(is.na(formtype) | formtype == "SUCE")
     
     # does the carertype input exist?
     

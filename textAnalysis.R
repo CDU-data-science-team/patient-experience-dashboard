@@ -40,33 +40,6 @@ output$bigram_plot <- renderPlot({
   bigram_words_data()
 })
 
-output$sentimentPlot <- renderPlot({
-  
-  use_data = passData()[["suce"]] %>% 
-    filter(!is.na(Improve))
-  
-  tidy_words <- use_data %>%
-    unnest_tokens(word, Improve, token = "words") %>% 
-    filter(!is.na(word)) %>% 
-    filter(Date > as.Date("2013-01-01")) %>% 
-    mutate(yearmonth = as.numeric(paste0(year(Date), sprintf("%02d", month(Date))))) %>% 
-    select(word, yearmonth, Date)
-  
-  sentiment <- tidy_words %>%
-    inner_join(get_sentiments("bing")) %>%
-    mutate(Date = floor_date(Date, unit = "month")) %>% 
-    count(index = Date, sentiment) %>%
-    spread(sentiment, n, fill = 0) %>%
-    mutate(sentiment = positive - negative) %>% 
-    group_by(index) %>% 
-    summarise(sentiment = mean(sentiment))
-  
-  ggplot(sentiment, aes(index, sentiment)) +
-    geom_line(show.legend = FALSE) + geom_smooth()
-    # facet_wrap(~Division2, ncol = 2, scales = "free")
-
-})
-
 output$tagBigrams <- renderPlot({
   
   use_data <- passData()[["suce"]] %>% 
