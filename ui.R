@@ -17,7 +17,8 @@ function(request) {
         menuItem("Comments", tabName = "comments", icon = icon("comment")),
         menuItem("All comments", tabName = "allComments", icon = icon("comment")),
         menuItem("Staff/ patient experience", tabName = "staffSUCE", icon = icon("flask")),
-        menuItem("Text analysis", tabName = "textAnalysis", icon = icon("font"))
+        menuItem("Text analysis", tabName = "textAnalysis", icon = icon("font")),
+        menuItem("Sentiment analysis", tabName = "sentimentAnalysis", icon = icon("font"))
       ),
       
       bookmarkButton(),
@@ -226,15 +227,22 @@ function(request) {
                          box(width = 12, "Co-occuring words. Click a word to see example comments", 
                              plotOutput("bigram_plot", click = "bigram_click"),
                              sliderInput("bigramSlider", "Number of terms", 20, 160, 100, step = 10)),
-                         box(width = 12, "Plot of sentiment scores in comments over time", plotOutput("sentimentPlot")),
                          box(width = 12, "Co-occuring tags", plotOutput("tagBigrams"), 
                              sliderInput("tagBigramSlider", "Number of terms", 20, 160, 100, step = 10))
-                         ),
+                  ),
                   column(5, h2("Example comments"), htmlOutput("plotClickInformation")
-                         )
+                  )
+                )
+        ),
+        tabItem(tabName = "sentimentAnalysis",
+                fluidRow(
+                  column(2, selectInput("emotion", "Emotion", 
+                                        c("anger", "anticipation", "disgust", "fear", "joy", "negative", 
+                                          "positive", "sadness", "surprise", "trust"))),
+                  column(10, h2("Top comments"), htmlOutput("sentimentComments"))
                 )
         )
       )
     )
-  )}
-
+  )}    
+    

@@ -23,7 +23,9 @@ output$summaryPage <- renderUI({
                                    "Yearly (not implemented)" = "yearly", 
                                    "Custom" = "custom")),
            
-           selectInput("serviceArea", "Service area", choices = c("Current selection", "Custom (not yet implemented)")),
+           selectInput("serviceArea", "Service area", 
+                       choices = c("Division", "Directorate", "Team",
+                                   "Current selection", "Custom (not yet implemented)")),
            
            uiOutput("reportCustomAreaSelector"),
            
@@ -144,19 +146,36 @@ output$reportCustomAreaSelector <- renderUI({
 
 # report page outputs defined here----
 
-output$downloadDoc <- downloadHandler(filename = "CustomReport.docx",
-                                      content = function(file){
-                                        
-                                        # determine which report we're rendering
-                                        
-                                        report_name = input$reportTime
-                                        
-                                        render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
-                                               quiet = TRUE, envir = environment())
-                                        
-                                        # copy docx to 'file'
-                                        file.copy(paste0("reports/", report_name, ".docx"), file, overwrite = TRUE)
-                                      }
+output$downloadDoc <- downloadHandler(
+  filename = "CustomReport.docx",
+  content = function(file){
+    
+    # determine which report we're rendering
+    
+    report_name = input$reportTime
+    
+    # Set up parameters to pass to Rmd document
+    
+    # we're going to need to know WHICH UI has been rendered
+    # and pick values from there- it could be 
+    # report_division, report_directorate, report_team
+    # let's just pretend it's report_division for now
+    
+    params <- list(division = input$report_division)
+    
+    # params <- list(division = "Hello")
+    
+    # render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
+    #        quiet = TRUE, envir = environment())
+    
+    render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
+           quiet = TRUE, params = params,
+           envir = new.env(parent = globalenv())
+    )
+    
+    # copy docx to 'file'
+    file.copy(paste0("reports/", report_name, ".docx"), file, overwrite = TRUE)
+  }
 )
 
 # reactive function to produce data summary to pass to value boxes and to report
@@ -245,11 +264,6 @@ dataSummary <- reactive({
       
       team_names <- teams %>% pull(TeamN)
       
-      # teams = input$selTeam
-      # 
-      # nameteams = lapply(teams, function(x) tail(trustData$TeamN[which(trustData$TeamC == x)], 1))
-      
-      theArea = paste(team_names, collapse = ", ")
     }
     
     return(
