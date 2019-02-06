@@ -51,7 +51,7 @@ commentData = reactive({
 
 output$impCritTable = renderDT({
   
-  impVariable = passData()[["suce"]]$ImpCrit
+  impVariable = passData()$ImpCrit
   
   impVariable = factor(impVariable, levels = 1:3)
   
@@ -69,7 +69,7 @@ output$impCritTable = renderDT({
 
 output$bestCritTable = renderDT({
   
-  bestVariable = passData()[["suce"]]$BestCrit
+  bestVariable = passData()$BestCrit
   
   bestVariable = factor(bestVariable, levels = 1:3)
   
@@ -99,7 +99,7 @@ subCategories = function(y){ # this is a function that calculates
     variableName = c("Best1", "Best2")
   }
   
-  tableData = passData()[["suce"]] %>%
+  tableData = passData() %>%
     filter(UQ(sym(variableName[1])) %in% categoriesTable$Number) %>%
     filter(UQ(sym(variableName[2])) %in% categoriesTable$Number)
   
@@ -160,7 +160,7 @@ superCategories = function(){
   
   # remove invalid categories
   
-  tableData = passData()[["suce"]] %>%
+  tableData = passData() %>%
     filter(Imp1 %in% staffCategories$Number) %>%
     filter(Imp2 %in% staffCategories$Number)
   
@@ -308,7 +308,7 @@ output$filterText = renderText({ # this is for the category tables
     longName = "Best"
   }
   
-  theComments = filter(passData()[["suce"]],
+  theComments = filter(passData(),
                        UQ(sym(variableName[1])) %in% theNumbers |
                          UQ(sym(variableName[2])) %in% theNumbers) %>%
     filter(!is.na(UQ(sym(longName)))) %>% 
@@ -354,7 +354,7 @@ output$filterTextCrit = renderText({ # this is for the criticality tables
   
   # here
   
-  theComments = filter(passData()[["suce"]],
+  theComments = filter(passData(),
                        UQ(sym(variableName)) %in% theClick |
                          UQ(sym(variableName)) %in% theClick) %>%
     pull(UQ(sym(longName)))
@@ -437,7 +437,7 @@ myComments = reactive({
         
         # filter by criticality here
         
-        toaddFrame = passData()[["suce"]][, c("Location", "Improve", "Imp1", "ImpCrit")]
+        toaddFrame = passData()[, c("Location", "Improve", "Imp1", "ImpCrit")]
         
         if(length(impCriticality) > 0){
           
@@ -453,7 +453,7 @@ myComments = reactive({
         
         # filter by criticality here
         
-        toaddFrame = passData()[["suce"]][, c("Location", "Best", "Best1", "BestCrit")]
+        toaddFrame = passData()[, c("Location", "Best", "Best1", "BestCrit")]
         
         if(length(bestCriticality) > 0){
           

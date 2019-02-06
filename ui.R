@@ -29,6 +29,13 @@ function(request) {
                      start = Sys.Date() - 365,
                      end = Sys.Date(), startview = "year"),
       
+      # select between service user/ carer data
+      
+      selectInput("carerSU", "Survey type",
+                  list("Service user survey" = "SU",
+                       "Carer survey" = "carer",
+                       "Data from both surveys" = "bothCarerSU")),
+      
       # first set up All/ Division results
       
       selectInput("Division", HTML("Select division<br/> (defaults to whole Trust)"),
@@ -77,10 +84,10 @@ function(request) {
         
         selectInput("noWords", "Number of words", list(10, 20, 30, 40, 50, 60), selected = 60)
       ),
-      # download data
-      
-      downloadButton("downloadData", "Download data"),
-      
+      # # download data
+      # 
+      # downloadButton("downloadData", "Download data"),
+      # 
       # toggle advanced controls
       
       checkboxInput("custom", "Advanced controls", value = FALSE),
@@ -166,7 +173,7 @@ function(request) {
         tabItem(tabName = "scores",
                 fluidRow(
                   box(width = 6, plotOutput("StackPlot", click = "stacked_suce_click")),
-                  box(width = 6, "Trend")
+                  box(width = 6, "Trend", plotOutput("trendPlot"))
                 )
         ),
         tabItem(tabName = "comments",
