@@ -162,15 +162,6 @@ function(input, output, session){
     return(questions)
   })
   
-  # handle reactive UI from question selection
-  
-  output$selectQuestions <- renderUI({
-    
-    checkboxGroupInput("selQuestions", "Choose questions", myQuestions(),
-                       selected = myQuestions()[1:7])
-    
-  })
-  
   # handle reactive UI from taxonomy selector
   
   output$serverTaxonomy = renderUI({
@@ -240,26 +231,22 @@ function(input, output, session){
                                                            input$dateRange[2], by = "days"), ]
     }
     
-    carerData = finalData %>%
-      filter(formtype == "carer")
-    
-    finalData = finalData %>%
-      filter(is.na(formtype) | formtype == "SUCE")
-    
-    # does the carertype input exist?
-    
-    if(!is.null(input$carertype)){
+    if(input$carerSU == "SU"){
       
-      # check whether each individual string in the carertype variable is in the carertype data row
-      # combine with apply so if there are any matches the data is included
+      finalData = finalData %>%
+        filter(is.na(formtype) | formtype != "SUCE")
       
-      carerData = carerData[apply(
-        sapply(unlist(input$carertype), function(x) grepl(x, carerData$carertype)), 1,
-        function(y) sum(y) > 0), ]
+    } else if(input$carerSU == "carer"){
       
+      finalData = finalData %>%
+        filter(formtype == "carer")
+      
+    } else if(input$carerSU == "bothCarerSU"){
+      
+      # nothing!
     }
-    
-    return(list("carer" = carerData, "suce" = finalData))
+
+    return(finalData)
   })
   
   

@@ -49,7 +49,7 @@ output$summaryOutputs = renderUI({
       
       valueBoxOutput("numberResponsesBox", width = 3), # number respones
       
-      valueBox("", "Zero responding teams", width = 3) # breakdown of teams responding (zero responding teams, <3 responding teams)
+      valueBox("5", "Zero responding teams", width = 3) # breakdown of teams responding (zero responding teams, <3 responding teams)
       
     ),
     
@@ -61,22 +61,44 @@ output$summaryOutputs = renderUI({
       
       valueBoxOutput("impCritThreeBox", width = 3), # highly critical
       
-      valueBoxOutput("impCritPercentageBox", width = 3) # percentages
+      valueBox("+15%", "Change in criticality", width = 3) # trend in criticality
+      
+      # valueBoxOutput("impCritPercentageBox", width = 3) # percentages removed
     ),
     
     fluidRow(
       
-      valueBox("", "bestScoreBox", width = 3), # best score
+      valueBox("16.7%", "Communication- staff/ patient", width = 3, icon = icon("smile")), 
       
-      valueBox("", "worstScoreBox", width = 3), # worst score
+      valueBox("11%", "Staff/ staff attitude- Availability", width = 3, icon = icon("smile")), 
       
-      valueBox("", "Trend in scores", width = 3),
+      valueBox("8.5%", "Care/ treatment- therapies", width = 3, icon = icon("smile")),
       
-      valueBox("", "Trend in criticality", width = 3)
+      valueBox("+7%", "Food- general", width = 3, icon = icon("smile"))
+    ),
+    
+    fluidRow(
       
+      valueBox("23%", "Access to services- waiting time", width = 3, icon = icon("frown")), 
+      
+      valueBox("19%", "Service quality/ outcomes- general", width = 3, icon = icon("frown")), 
+      
+      valueBox("7.2%", "Care/ treatment- medication", width = 3, icon = icon("frown")),
+      
+      valueBox("-11%", "Involvement- general", width = 3, icon = icon("frown"))
+    ),
+    
+    fluidRow(
+      
+      valueBox("96%", "Listening", width = 3, color = "green"), # best score
+      
+      valueBox("84%", "Would you recommend?", width = 3, color = "red"), # worst score
+      
+      valueBox("+7%", "Communication", width = 3, color = "green"),
+      
+      valueBox("-11%", "Service quality", width = 3, color = "red")
     )
   )
-  
 })
 
 # this is the reactive interface referred to in the first bit of the code
@@ -161,7 +183,8 @@ output$downloadDoc <- downloadHandler(
     # report_division, report_directorate, report_team
     # let's just pretend it's report_division for now
     
-    params <- list(division = input$report_division)
+    params <- list(division = input$report_division,
+                   carerSU = input$carerSU)
     
     # params <- list(division = "Hello")
     
@@ -182,7 +205,7 @@ output$downloadDoc <- downloadHandler(
 
 dataSummary <- reactive({
   
-  suceData = passData()[["suce"]]
+  suceData = passData()
   
   if(is.null(suceData)){
     
@@ -386,3 +409,5 @@ observe({
   # input$selTeam
   
 })
+
+

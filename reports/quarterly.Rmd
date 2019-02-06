@@ -1,5 +1,5 @@
 ---
-title: My Document
+title: Quarterly report
 output: html_document
 params:
   division: NA
@@ -7,6 +7,7 @@ params:
   team: NA
   date_from: NA
   date_to: NA
+  carerSU: NA
 ---
 
 <!-- So I need to declare the parameters here, and then pass them through from Shiny -->
@@ -18,8 +19,61 @@ params:
 
 knitr::opts_chunk$set(echo = FALSE)
 
-suceData = trustData %>%
-  filter(Division %in% params$division)
+# calculate the date range first
+
+today = Sys.Date()
+
+previous_quarter <- (quarter(today)) - 1 %% 4
+previous_year <- year(today)
+
+if(previous_quarter == 0){
+  
+  previous_quarter <- 4
+  previous_year <- previous_year - 1
+}
+
+first_date <- yq(paste0(previous_year, ": Q", previous_quarter))
+
+end_date <- yq(paste0(year(today), ": Q", quarter(today))) - 1
+
+# filter by area
+
+if(is.na(params$division)){
+  
+  suceData = trustData
+  
+} else {
+  
+  suceData = trustData %>%
+    filter(Division %in% params$division)
+}
+
+# now filter by SU/ carer
+
+if(params$carerSU == "SU"){
+  
+  suceData = suceData %>%
+    filter(is.na(formtype) | formtype != "SUCE")
+  
+} else if(params$carerSU == "carer"){
+  
+  suceData = suceData %>%
+    filter(formtype == "carer")
+  
+} else if(params$carerSU == "bothCarerSU"){
+  
+  # nothing!
+}
+
+# filter by time last and produce another dataset with 2 years in
+
+two_year_data <- suceData %>% 
+  filter(Date > end_date - 365 * 2)
+
+suceData <- suceData %>% 
+  filter(Date >= first_date, Date <= end_date)
+
+# generate report information
 
 if(is.null(suceData)){
   
@@ -113,7 +167,6 @@ if(is.null(suceData)){
          "improve_numbers" = improve_numbers, "best_numbers" = best_numbers)
 }
 
-
 ```
 
 ## Context
@@ -131,10 +184,10 @@ if(is.null(suceData)){
 ```{r, results = "asis"}
 
 if(is.null(report_information)){
-
+  
   myString = "Within the selected time and area there were no responses"
 } else {
-
+  
   myString = paste0("<p>Within ", report_information[["theArea"]], " in the selected time there were ", report_information[["NR"]],
                     " responses.</p><br>",
                     "<p>There were ", report_information[["IC"]], " 'What could we do better' responses and ", report_information[["BC"]],
@@ -142,17 +195,62 @@ if(is.null(report_information)){
                     ifelse(report_information[["NFFT"]] > 9,
                            paste0("<p>The Friends and Family Test Score is the proportion of patients
       who are extremely likely or likely to recommend a service. In the selected period of time it was ",
-                                  report_information[["FFT"]], "% (based on ", report_information[["NFFT"]], " responses.)", "</p><br>"), ""),
-                    ifelse(report_information[["NSQ"]] > 9,
-                           paste0("<p>Service quality rating was ", report_information[["SQ"]], "% (based on ", report_information[["NSQ"]],
-                                  " responses.)</p>"), ""),
-                    ifelse(sum(report_information[["complaint_numbers"]]) > 3,
-                           paste0("<p>", report_information[["complaint_numbers"]][3], " individuals reported that they knew how to make a complaint, ",
-                                  report_information[["complaint_numbers"]][2], " reported that they did not know how to make a complaint, and ",
-                                  report_information[["complaint_numbers"]][1], " reported that they were unsure if they knew.</p>"), "")
+      report_information[["FFT"]], "% (based on ", report_information[["NFFT"]], " responses.)", "</p><br>"), ""),
+      ifelse(report_information[["NSQ"]] > 9,
+             paste0("<p>Service quality rating was ", report_information[["SQ"]], 
+                    "% (based on ", report_information[["NSQ"]],
+                    " responses.)</p>"), ""),
+      ifelse(sum(report_information[["complaint_numbers"]]) > 3,
+             paste0("<p>", report_information[["complaint_numbers"]][3], 
+                    " individuals reported that they knew how to make a complaint, ",
+                    report_information[["complaint_numbers"]][2], 
+                    " reported that they did not know how to make a complaint, and ",
+                    report_information[["complaint_numbers"]][1], 
+                    " reported that they were unsure if they knew.</p>"), "")
   )
 }
 
 cat(myString)
 
 ```
+
+## Summary of responses
+
+## Trend
+
+```{r}
+
+theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
+
+sample_data <- two_year_data
+
+sample_data$Quarter = yq(paste0(year(sample_data$Date), ": Q", quarter(sample_data$Date)))
+
+mean_score <- sample_data %>% 
+  select(c("Quarter", "Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+  group_by(Quarter) %>% 
+  summarise_if(is.numeric, function(x) mean(x, na.rm = TRUE) * 20)
+
+minimum_value = mean_score %>% 
+  select(c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+  min(na.rm = TRUE) %>% 
+  `-`(20)
+
+number_scores <- sample_data %>% 
+  select(c("Quarter", "Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+  group_by(Quarter) %>% 
+  summarise_all(function(x) length(x[!is.na(x)]))
+
+mean_score[number_scores < 3] = NA
+
+mean_score %>% 
+  gather(Question, value, -Quarter) %>% 
+  ggplot(aes(x = Quarter, y = value, group = Question, colour = Question)) +
+  geom_line() + 
+  geom_point() +
+  ylim(minimum_value, 100) 
+
+```
+
+## What could we do better?
+

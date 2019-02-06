@@ -5,16 +5,21 @@ myStack <- reactive({
   
   req(passData())
   
-  theQuestions = input$selQuestions
+  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
   
   # remove decimals from historic data
   
-  fixedData = data.frame(apply(passData()[["suce"]][, input$selQuestions], 1:2,
+  fixedData = data.frame(apply(passData()[, theQuestions], 1:2,
                                function(x) round(x + .01)))
   
   # count the missing responses
   
   missnum = apply(fixedData, 2, function(x) sum(!is.na(x)))
+  
+  if(length(names(missnum[missnum > 2])) < 3){
+    
+    return(NULL)
+  }
   
   fixedData[, missnum > 2] %>%
     gather(L1, value) %>% 
@@ -37,14 +42,11 @@ myStack <- reactive({
 
 output$StackPlot <- renderPlot({
   
-  missnum = apply(passData()[["suce"]][, input$selQuestions], 2, function(x) sum(!is.na(x)))
-  
   validate(
-    need(length(names(missnum[missnum > 2])) > 2, "Not enough data")
+    need(myStack(), "Not enough data")
   )
   
   print(myStack())
-  
 })
 
 # produce click interaction to bring up table
@@ -61,11 +63,11 @@ observeEvent(input$stacked_suce_click, {
 
 output$stackedTableSuceModal <- renderDT({
   
-  theQuestions = input$selQuestions
+  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
   
   # remove decimals from historic data
   
-  fixedData = data.frame(apply(passData()[["suce"]][, unlist(theQuestions)], 1:2,
+  fixedData = data.frame(apply(passData()[, unlist(theQuestions)], 1:2,
                                function(x) round(x + .01)))
   
   missnum = apply(fixedData, 2, function(x) sum(!is.na(x)))
@@ -92,7 +94,7 @@ output$stackedTableSuceModal <- renderDT({
 
 output$fftScore = renderText({
   
-  promoterScores = passData()[["suce"]][, "Promoter2"]
+  promoterScores = passData()[, "Promoter2"]
   
   req(length(promoterScores[!is.na(promoterScores)]) > 0)
   
@@ -109,204 +111,43 @@ output$fftScore = renderText({
 
 myTrend = reactive({
   
-  if(min(passData()$Time, na.rm = TRUE) == Inf){
-    
-    df <- data.frame()
-    
-    p = ggplot(df) + geom_point() + xlim(0, 5) + ylim(0, 3)
-    
-    p = p + annotate("text", label = "Not enough data in the specified time and",
-                     x = 2, y = 2, size = 7, colour = "red") +
-      annotate("text", label = "location, please broaden your search terms",
-               x = 2, y = 1, size = 7, colour = "red")
-    
-    p = p + options(theme = new_theme_empty)
-    
-    return(p)
-  }
+  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
   
-  mytime = min(passData()$Time, na.rm=TRUE) : max(passData()$Time, na.rm=TRUE)
+  sample_data <- passData()
   
-  # different questions needed for carers' survey when Advanced controls not selected
+  sample_data$Quarter = yq(paste0(year(sample_data$Date), ": Q", quarter(sample_data$Date)))
   
-  if(input$carerSU == "carer" & !input$custom){
-    
-    theQuestions = as.list(questionFrame[questionFrame$carers == 1, "code"])
-    
-    names(theQuestions) = questionFrame[questionFrame$carers == 1, "value"]
-    
-  } else {
-    
-    theQuestions = input$selQuestions
-  }
+  mean_score <- sample_data %>% 
+    select(c("Quarter", "Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+    group_by(Quarter) %>% 
+    summarise_if(is.numeric, function(x) mean(x, na.rm = TRUE) * 20)
   
-  # if there's enough data
+  minimum_value = mean_score %>% 
+    select(c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+    min(na.rm = TRUE) %>% 
+    `-`(20)
   
-  if(nrow(passData()) > 10 & length(unlist(theQuestions) > 0) & max(mytime) - min(mytime) > 1){
-    
-    ### main data first
-    
-    helpTrend = function(x) { # x is a dataframe
-      
-      # prepare
-      
-      md = melt(x, measure.vars = unlist(theQuestions),
-                id.vars = c("Time"))
-      
-      md$variable = factor(md$variable,
-                           labels = names(myQuestions()[which(unlist(myQuestions()) %in%
-                                                                unlist(theQuestions))]))
-      
-      # generate sums and lengths of variables
-      
-      mycast = data.frame(cast(md, variable + Time ~., sum, na.rm=TRUE),
-                          cast(md, variable + Time ~., function(x) sum(!is.na(x)))[,3])
-      
-      # remove missing Time rows
-      
-      names(mycast) = c("variable", "Time", "sum", "length")
-      
-      mycast2 = data.frame(cast(md, variable + Time ~., mean, na.rm=TRUE))
-      
-      names(mycast2) = c("variable", "Time", "value")
-      
-      # merge with an empty frame to fill in the blanks
-      
-      mymerge = data.frame("variable" = as.vector(sapply(unlist(theQuestions),
-                                                         function(x) rep(x, length(mytime)))),
-                           "Time" = rep(mytime, length(unlist(theQuestions))),
-                           "sum" = NA,
-                           "length" = NA)
-      
-      theMerge = merge(mycast, mymerge, all=TRUE, by=c("variable", "Time"))[,1:4]
-      
-      theMerge = theMerge[!is.na(theMerge$Time),]
-      
-      # find all the cells that are below 5 responses and merge with the next cell along
-      
-      while(sum(theMerge$length.x < 5, na.rm=TRUE) > 0){
-        
-        myloc = which(theMerge$length.x == min(theMerge$length.x, na.rm = TRUE))[1]
-        
-        if(theMerge$Time[myloc] != max(theMerge$Time, na.rm = TRUE)){ # merge up if it's not the end of the time series
-          
-          theMerge[(myloc + 1), 3] = sum(theMerge[myloc, 3], theMerge[(myloc + 1), 3])
-          
-          theMerge[(myloc + 1), 4] = sum(theMerge[myloc, 4], theMerge[(myloc + 1), 4])
-          
-          theMerge[myloc, 3:4] = NA
-          
-        } else {
-          
-          theMerge[myloc, 3] = sum(theMerge[myloc, 3], theMerge[(myloc - 1), 3])
-          
-          theMerge[myloc, 4] = sum(theMerge[myloc, 4], theMerge[(myloc - 1), 4])
-          
-          theMerge[(myloc - 1), 3:4] = NA
-          
-        }
-        
-      } # end of while
-      
-      # calculate the mean response and fix the table ready for plotting
-      
-      theMerge$value = theMerge$sum.x / theMerge$length.x
-      
-      theMerge = theMerge[order(as.numeric(theMerge$Time)), ]
-      
-      theMerge$Time = factor(theMerge$Time, levels = unique(as.numeric(theMerge$Time)),
-                             labels = names(timelabels[unique(as.numeric(theMerge$Time))]))
-      
-      return(theMerge)
-      
-    }
-    
-    myfinal = helpTrend(passData())
-    
-    ### now comparison data
-    
-    if(input$comparison == TRUE & input$Division != 9 &
-       length(unique(myfinal$Time[!is.na(myfinal$value)])) > 1 &
-       !(as.numeric(input$Division) == 2 &
-         sum(unlist(theQuestions) %in%
-             c("Service", "Listening", "Communication", "Respect", "InvCare")) == 0)){
-      
-      mycomp = helpTrend(compData())
-      
-      changeloc = cumsum(!is.na(myfinal$value)) != 0
-      
-      myfinal = myfinal[changeloc,]
-      
-      mycomp = subset(mycomp, Time %in% myfinal$Time)
-      
-      p = ggplot(myfinal, aes(x = Time, y = value * 20)) + geom_blank() +
-        geom_line(aes(group = variable, colour = variable),
-                  linetype = 1, data = na.omit(myfinal)) +
-        geom_point(aes(group = variable, colour = variable), data = na.omit(myfinal)) +
-        annotate("text", x = myfinal$Time[!duplicated(myfinal$Time)],
-                 y = floor(min(myfinal$value * 20, na.rm=TRUE)*.8),
-                 label = myfinal$length[!duplicated(myfinal$Time)], angle = 90) +
-        geom_line(aes(group = variable, colour = variable), linetype = 2,
-                  data = na.omit(mycomp)) +
-        geom_point(aes(group = variable, colour = variable), data = na.omit(mycomp)) +
-        theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ylab("% score") +
-        labs(colour = "Question")
-      
-    } else {
-      
-      if(length(unique(myfinal$Time[!is.na(myfinal$value)])) > 1){
-        
-        changeloc = cumsum(!is.na(myfinal$value)) != 0
-        
-        myfinal = myfinal[changeloc, ]
-        
-        p = ggplot(myfinal, aes(x = Time, y = value * 20)) + geom_blank() +
-          geom_line(aes(group = variable, colour = variable), linetype = 1,
-                    data = na.omit(myfinal)) +
-          geom_point(aes(group = variable, colour = variable), data = na.omit(myfinal)) +
-          annotate("text", x = myfinal$Time[!duplicated(myfinal$Time)],
-                   y = floor(min(myfinal$value * 20, na.rm=TRUE)*.8),
-                   label = myfinal$length[!duplicated(myfinal$Time)], angle = 90) +
-          theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ylab("% score") +
-          labs(colour = "Question")
-        
-      } else {
-        
-        df <- data.frame()
-        
-        p = ggplot(df) + geom_point() + xlim(0, 5) + ylim(0, 3)
-        
-        p = p + annotate("text", label = "Not enough data in the specified time and",
-                         x = 3, y = 2, size = 7, colour = "red") +
-          annotate("text", label = "location, please broaden your search terms",
-                   x = 3, y = 1, size = 7, colour = "red")
-        
-        p = p + options(theme = new_theme_empty)
-        
-      }
-      
-      
-    }
-    
-  } else { # end of if(nrow(passData()) > 10)
-    
-    df <- data.frame()
-    
-    p = ggplot(df) + geom_point() + xlim(0, 5) + ylim(0, 3)
-    
-    p = p + annotate("text", label = "Not enough data in the specified time and",
-                     x = 2, y = 2, size = 7, colour = "red") +
-      annotate("text", label = "location, please broaden your search terms",
-               x = 2, y = 1, size = 7, colour = "red")
-    
-    p = p + options(theme = new_theme_empty)
-    
-  }
+  number_scores <- sample_data %>% 
+    select(c("Quarter", "Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+    group_by(Quarter) %>% 
+    summarise_all(function(x) length(x[!is.na(x)]))
   
+  mean_score[number_scores < 3] = NA
+  
+  mean_score %>% 
+    gather(Question, value, -Quarter) %>% 
+    ggplot(aes(x = Quarter, y = value, group = Question, colour = Question)) +
+    geom_line() + 
+    geom_point() +
+    ylim(minimum_value, 100) 
 })
 
-output$TrendPlot <- renderPlot({
+output$trendPlot <- renderPlot({
   
+  validate(
+    need(myTrend(), "Not enough data")
+  )
+
   print(myTrend())
   
 })
