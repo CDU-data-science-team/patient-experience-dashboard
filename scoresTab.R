@@ -86,7 +86,7 @@ output$stackedTableSuceModal <- renderDT({
     setNames(c("Question", rev(c("Excellent", "Good", "Fair", "Poor", "Very poor")))) %>% 
     mutate_if(is.numeric, funs(replace(., is.na(.), 0))) %>%
     mutate(Score = (Excellent * 5 + Good * 4 + Fair * 3 + Poor * 2 + `Very poor` * 1) / 5) %>%
-    datatable() %>%
+    datatable(rownames = FALSE) %>%
     formatRound(TRUE, 1)
 })
 
@@ -147,7 +147,7 @@ output$trendPlot <- renderPlot({
   validate(
     need(myTrend(), "Not enough data")
   )
-
+  
   print(myTrend())
   
 })
