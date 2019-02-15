@@ -1,5 +1,5 @@
 
-### criticality tables
+# criticality tables----
 
 output$impCritTable = renderDT({
   
@@ -36,7 +36,7 @@ output$bestCritTable = renderDT({
   options = list(dom = 'Blfrtip',
                  buttons = c('copy', 'csv', 'excel', 'pdf', 'print')))
 
-### subcategory tables
+# generate sub tables----
 
 subCategories = function(y){ # this is a function that calculates
   # subcategories given a supercategory string
@@ -91,7 +91,7 @@ subCategories = function(y){ # this is a function that calculates
     arrange(desc(Percent))
 }
 
-# generate table - improve one thing
+# generate super tables----
 
 superCategories = function(){
   
@@ -141,6 +141,8 @@ superCategories = function(){
   ) %>%
     arrange(desc(Percentage))
 }
+
+# draw super/ sub improve/ best tables----
 
 output$SuperTableImprove = renderDT({
   
@@ -208,6 +210,76 @@ options = list(pageLength = 5, lengthMenu = c(5, 10, 15, 20),
                dom = 'Blfrtip',
                buttons = c('copy', 'csv', 'excel', 'pdf', 'print')))
 
+
+# draw tables sorted on subcategory
+
+output$subCategoryTableImprove <- renderDT({
+  
+  subCategoryTableFunction()
+  
+}, selection = 'single', rownames = FALSE, extensions = 'Buttons', 
+options = list(pageLength = 10, lengthMenu = c(5, 10, 15, 20),
+               dom = 'Blfrtip',
+               buttons = c('copy', 'csv', 'excel', 'pdf', 'print')))
+
+output$subCategoryTableBest <- renderDT({
+  
+  subCategoryTableFunction()
+  
+}, selection = 'single', rownames = FALSE, extensions = 'Buttons', 
+options = list(pageLength = 10, lengthMenu = c(5, 10, 15, 20),
+               dom = 'Blfrtip',
+               buttons = c('copy', 'csv', 'excel', 'pdf', 'print')))
+
+subCategoryTableFunction <- reactive({
+  
+  if(input$commentsTab == "What could be improved?"){
+    
+    check1 <- passData() %>% 
+      filter(!is.na(Imp1)) %>% 
+      left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
+      select(Category, Super, Imp1)
+    
+    check2 <- passData() %>% 
+      filter(!is.na(Imp2)) %>% 
+      left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
+      select(Category, Super, Imp1)
+  }
+  
+  if(input$commentsTab == "Best thing"){
+    
+    check1 <- passData() %>% 
+      filter(!is.na(Best1)) %>% 
+      left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
+      select(Category, Super, Imp1)
+    
+    check2 <- passData() %>% 
+      filter(!is.na(Best2)) %>% 
+      left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
+      select(Category, Super, Imp1)
+  }
+
+  check_final <- rbind(check1, check2)
+  
+  check_final <- check_final %>% 
+    mutate(Category = paste0(Super, ": ", Category))
+  
+  count_table <- check_final %>% 
+    filter(!is.na(Super), !is.na(Category)) %>% 
+    group_by(Category) %>% 
+    count()
+  
+  count_sum <- sum(count_table$n)
+  
+  return(
+    count_table %>% 
+      mutate(percent = round(n / count_sum * 100, 1)) %>% 
+      arrange(-percent)
+  )
+})
+
+# generate text----
+
 output$filterText = renderText({ # this is for the category tables
   
   if(input$commentsTab == "What could be improved?"){
@@ -274,6 +346,57 @@ output$filterText = renderText({ # this is for the category tables
   )
 })
 
+output$filterTextSubcategory <- renderText({
+  
+  if(input$commentsTab == "What could be improved?"){
+    
+    req(!is.null(input$subCategoryTableImprove_rows_selected))
+    
+    variableName = c("Imp1", "Imp2")
+    
+    longName = "Improve"
+  }
+  
+  if(input$commentsTab == "Best thing"){
+    
+    req(!is.null(input$subCategoryTableBest_rows_selected))
+    
+    variableName = c("Best1", "Best2")
+    
+    longName = "Best"
+  }
+  
+  wholeTable = subCategoryTableFunction()
+  
+  # now find the one they clicked
+  
+  subRow <- ifelse(input$commentsTab == "What could be improved?",
+                  input$subCategoryTableImprove_rows_selected,
+                  input$subCategoryTableBest_rows_selected)
+  
+  theClick  <- as.character(wholeTable$Category[subRow])
+  
+  theClick <- strsplit(theClick, ": ")[[1]]
+  
+  relevant_comment_codes <- categoriesTable %>% 
+    filter(Super == theClick[1]) %>% 
+    filter(Category == theClick[2]) %>% 
+    pull(Number)
+  
+  theComments = filter(passData(),
+                       UQ(sym(variableName[1])) %in% relevant_comment_codes |
+                         UQ(sym(variableName[2])) %in% relevant_comment_codes) %>%
+    filter(!is.na(UQ(sym(longName)))) %>% 
+    pull(UQ(sym(longName)))
+  
+  HTML(
+    paste(
+      map_chr(theComments,
+              function(x) paste0("<p>", x, "</p>")
+      ), collapse = "")
+  )
+})
+
 output$filterTextCrit = renderText({ # this is for the criticality tables
   
   if(input$commentsTab == "What could be improved?"){
@@ -316,3 +439,4 @@ output$filterTextCrit = renderText({ # this is for the criticality tables
       ), collapse = "")
   )
 })
+
