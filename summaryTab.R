@@ -327,18 +327,18 @@ output$numberResponsesBox <- renderValueBox({
 
 output$zeroRespondingTeams <- renderValueBox({
   
-  max_time = max(passData()$Time)
-  
   # need to filter counts according to division/ directorate/ team
   
-  counts_final <- counts # if the whole Trust is selected do this
-  
+  all_teams = counts %>% # if the whole Trust is selected do this
+    filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
+    pull(TeamC) %>% 
+    unique()
+
   if(!is.null(input$Division)){ 
     
     all_teams = counts %>% 
       filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
       filter(Division %in% input$Division) %>% 
-      filter(Time > max_time - 6) %>% 
       pull(TeamC) %>% 
       unique()
   } 
@@ -347,8 +347,7 @@ output$zeroRespondingTeams <- renderValueBox({
     
     all_teams = counts %>% 
       filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
-      filter(Directorate %in% input$Directorate) %>% 
-      filter(Time > max_time - 6) %>% 
+      filter(Directorate %in% input$selDirect) %>% 
       pull(TeamC) %>% 
       unique()
   }
@@ -358,14 +357,11 @@ output$zeroRespondingTeams <- renderValueBox({
     all_teams = counts %>% 
       filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
       filter(TeamC %in% input$TeamC) %>% 
-      filter(Time > max_time - 6) %>% 
       pull(TeamC) %>% 
       unique()
   }
   
-  df <- df %>% 
-    # filter(Directorate %in% input$directorate) %>% # add in filter for directorate
-    filter(!is.na(TeamC), Time > max_time - 6) %>% 
+  df <- passData() %>% 
     mutate(quarter_date = floor_date(Date, "quarter")) %>% 
     mutate(TeamC = factor(TeamC, levels = all_teams)) %>% 
     group_by(TeamC, quarter_date) %>% 
