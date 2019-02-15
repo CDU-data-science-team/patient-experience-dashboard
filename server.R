@@ -45,6 +45,7 @@ function(input, output, session){
   source("allCommentsTab.R", local = TRUE)
   source("textAnalysis.R", local = TRUE)
   source("sentimentTab.R", local = TRUE)
+  source("topicExplorer.R" = TRUE)
   
   # handle reactive UI from division selection
   
@@ -200,14 +201,14 @@ function(input, output, session){
     
     if(input$age != "All") finalData = finalData[finalData$Age %in% input$age, ]
     
-    # deal with the date
+    # # if the whole Trust is selected do this
     
-    finalData = finalData[finalData$Date %in% seq.Date(input$dateRange[1],
+    finalData = finalData[finalData$Date %in% seq.Date(input$dateRange[1], 
                                                        input$dateRange[2], by = "days"), ]
     
     # now filter for every available filter
     
-    if(!is.null(input$Division)){ # if the whole Trust is selected do this
+    if(!is.null(input$Division)){ 
       
       finalData = finalData[!is.na(finalData$Division) &
                               finalData$Division %in% input$Division &
@@ -248,89 +249,7 @@ function(input, output, session){
 
     return(finalData)
   })
-  
-  
-  # download the numbers from the stacked barchart
-  # note this function returns a list- the output of prop.table and table
-  
-  myStackTable = reactive({
-    
-    if(is.null(passData())){
-      
-      mygraph = data.frame("Not", "Enough", "Data", "!")
-      
-    } else {
-      
-      if(input$carerSU == "carer" & !input$custom){
-        
-        theQuestions = as.list(questionFrame[questionFrame$carers == 1, "code"])
-        
-        names(theQuestions) = questionFrame[questionFrame$carers == 1, "value"]
-        
-      } else {
-        
-        theQuestions = input$selQuestions
-      }
-      
-      # remove decimals from historic data
-      
-      fixedData = data.frame(apply(passData()[, unlist(theQuestions)], 1:2,
-                                   function(x) round(x + .01)))
-      
-      # count the missing responses
-      
-      missnum = apply(fixedData, 2, function(x) sum(!is.na(x)))
-      
-      # this is the table() bit
-      
-      mytable = data.frame(
-        lapply(names(missnum[missnum > 2]), function(x)
-          table(factor(fixedData[, x], levels = 1:5)))
-      )[, seq(2, length(missnum[missnum > 2]) * 2, 2)]
-      
-      names(mytable) = names(myQuestions()[which(unlist(myQuestions()) %in%
-                                                   names(missnum[missnum > 2]))])
-      
-      rownames(mytable) = rev(c("Excellent", "Good", "Fair", "Poor", "Very poor"))
-      
-      # this is the prop.table() bit
-      
-      mygraph = data.frame(
-        lapply(names(missnum[missnum > 2]), function(x)
-          round(prop.table(table(factor(fixedData[, x], levels = 1:5)))*100, 1))
-      )[, seq(2, length(missnum[missnum > 2]) * 2, 2)]
-      
-      names(mygraph) = names(myQuestions()[which(unlist(myQuestions()) %in%
-                                                   names(missnum[missnum > 2]))])
-      
-      rownames(mygraph) = rev(c("Excellent", "Good", "Fair", "Poor", "Very poor"))
-      
-      # put them in a list
-      
-      theOutput = list("rawNumbers" = mytable, "proportions" = mygraph)
-      
-    }
-    
-    theOutput
-  })
-  
-  # download table from stacked chart
-  
-  output$downloadData.stackTable = downloadHandler(
-    filename <- function(){
-      paste('StackTable', Sys.Date(), '.doc', sep='')},
-    
-    content <- function(file){
-      cat("Raw numbers\n", file = file)
-      print(xtable(myStackTable()[["rawNumbers"]]),
-            type="html", file = file, include.rownames = TRUE, append = TRUE)
-      cat("Proportions\n", file = file, append = TRUE)
-      print(xtable(myStackTable()[["proportions"]]),
-            type="html", file = file, include.rownames = TRUE, append = TRUE)
-      
-    }
-  )
-  
+
   # download graphs buttons
   
   output$downloadData.stack <- downloadHandler(
