@@ -178,8 +178,8 @@ function(request) {
         ),
         tabItem(tabName = "comments",
                 radioButtons("categoryCriticality", 
-                             "Show criticality?",
-                             choices = c("Category", "Criticality")),
+                             "Query by:",
+                             choices = c("Category", "Sub category", "Criticality")),
                 
                 fluidRow(
                   tabBox(
@@ -196,9 +196,13 @@ function(request) {
                       conditionalPanel(
                         condition = "input.categoryCriticality == 'Criticality'",
                         DTOutput("impCritTable")
+                      ),
+                      conditionalPanel(
+                        condition = "input.categoryCriticality == 'Sub category'",
+                        DTOutput("subCategoryTableImprove")
                       )
-                      
                     ),
+                    
                     tabPanel(
                       "Best thing",
                       conditionalPanel(
@@ -209,10 +213,14 @@ function(request) {
                       conditionalPanel(
                         condition = "input.categoryCriticality == 'Criticality'",
                         DTOutput("bestCritTable")
+                      ),
+                      conditionalPanel(
+                        condition = "input.categoryCriticality == 'Sub category'",
+                        DTOutput("subCategoryTableBest")
                       )
                     )
                   ),
-                  column(6, htmlOutput("filterText"), htmlOutput("filterTextCrit"))
+                  column(6, htmlOutput("filterText"), htmlOutput("filterTextSubcategory"), htmlOutput("filterTextCrit"))
                   
                   # htmlOutput("TextResponses")
                 )
