@@ -49,7 +49,7 @@ output$summaryOutputs = renderUI({
       
       valueBoxOutput("numberResponsesBox", width = 3), # number respones
       
-      valueBox("5", "Zero responding teams", width = 3) # breakdown of teams responding (zero responding teams, <3 responding teams)
+      valueBoxOutput("zeroRespondingTeams", width = 3) # breakdown of teams responding (zero responding teams, <3 responding teams)
       
     ),
     
@@ -299,6 +299,8 @@ dataSummary <- reactive({
 
 # value boxes rendered here----
 
+# 1st row
+
 output$sqBox <- renderValueBox({
   
   valueBox(value = paste0(dataSummary()[["SQ"]], "%"), 
@@ -322,6 +324,68 @@ output$numberResponsesBox <- renderValueBox({
            icon = icon("book-open")
   )
 })
+
+output$zeroRespondingTeams <- renderValueBox({
+  
+  max_time = max(passData()$Time)
+  
+  # need to filter counts according to division/ directorate/ team
+  
+  counts_final <- counts # if the whole Trust is selected do this
+  
+  if(!is.null(input$Division)){ 
+    
+    all_teams = counts %>% 
+      filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
+      filter(Division %in% input$Division) %>% 
+      filter(Time > max_time - 6) %>% 
+      pull(TeamC) %>% 
+      unique()
+  } 
+  
+  if(!is.null(input$selDirect)){ # otherwise look at the directorate code
+    
+    all_teams = counts %>% 
+      filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
+      filter(Directorate %in% input$Directorate) %>% 
+      filter(Time > max_time - 6) %>% 
+      pull(TeamC) %>% 
+      unique()
+  }
+  
+  if(!is.null(input$selTeam)){
+    
+    all_teams = counts %>% 
+      filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
+      filter(TeamC %in% input$TeamC) %>% 
+      filter(Time > max_time - 6) %>% 
+      pull(TeamC) %>% 
+      unique()
+  }
+  
+  df <- df %>% 
+    # filter(Directorate %in% input$directorate) %>% # add in filter for directorate
+    filter(!is.na(TeamC), Time > max_time - 6) %>% 
+    mutate(quarter_date = floor_date(Date, "quarter")) %>% 
+    mutate(TeamC = factor(TeamC, levels = all_teams)) %>% 
+    group_by(TeamC, quarter_date) %>% 
+    summarise(n = n()) %>%
+    ungroup() %>% 
+    complete(TeamC, quarter_date) %>%
+    arrange(TeamC, quarter_date)
+  
+  zero_teams <- df %>% filter(!is.na(TeamC)) %>% 
+    fill(TeamC) %>% 
+    spread(quarter_date, n, fill = 0) %>%
+    mutate(row_total = rowSums(select(., -1))) %>% 
+    filter(row_total == 0) %>% 
+    nrow()
+  
+  valueBox(value = zero_teams,
+           subtitle = "Zero responding teams")
+})
+
+# second row
 
 output$impCritOneBox <- renderValueBox({
   

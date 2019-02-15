@@ -5,7 +5,7 @@
 
 bigram_words_data <- reactive({
   
-  use_data = passData()[["suce"]] %>% 
+  use_data = passData() %>% 
     filter(!is.na(Improve))
   
   bigrams <- use_data %>% 
@@ -42,7 +42,7 @@ output$bigram_plot <- renderPlot({
 
 output$tagBigrams <- renderPlot({
   
-  use_data <- passData()[["suce"]] %>% 
+  use_data <- passData() %>% 
     filter(!is.na(Improve))
   
   use_data2 <- use_data %>% 
@@ -89,7 +89,7 @@ output$plotClickInformation <- renderText({
   
   label <- nearPoints(check, input$bigram_click, threshold = 10, maxpoints = 1)$label
   
-  passData()[["suce"]] %>% 
+  passData() %>% 
     filter(grepl(label, Improve, ignore.case = TRUE)) %>% 
     sample_n(ifelse(nrow(.) > 50, 50, nrow(.))) %>% # if more than 50 rows, sample 50. Else, sample number of rows
     mutate(improve_paste = paste("<p>", Improve, "</p>")) %>% 
