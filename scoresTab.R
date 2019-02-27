@@ -3,13 +3,13 @@
 
 myStack <- reactive({
   
-  req(passData())
+  req(passData()[["currentData"]])
   
   theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
   
   # remove decimals from historic data
   
-  fixedData = data.frame(apply(passData()[, theQuestions], 1:2,
+  fixedData = data.frame(apply(passData()[["currentData"]][, theQuestions], 1:2,
                                function(x) round(x + .01)))
   
   # count the missing responses
@@ -67,7 +67,7 @@ output$stackedTableSuceModal <- renderDT({
   
   # remove decimals from historic data
   
-  fixedData = data.frame(apply(passData()[, unlist(theQuestions)], 1:2,
+  fixedData = data.frame(apply(passData()[["currentData"]][, unlist(theQuestions)], 1:2,
                                function(x) round(x + .01)))
   
   missnum = apply(fixedData, 2, function(x) sum(!is.na(x)))
@@ -94,7 +94,7 @@ output$stackedTableSuceModal <- renderDT({
 
 output$fftScore = renderText({
   
-  promoterScores = passData()[, "Promoter2"]
+  promoterScores = passData()[["currentData"]][, "Promoter2"]
   
   req(length(promoterScores[!is.na(promoterScores)]) > 0)
   
@@ -113,7 +113,7 @@ myTrend = reactive({
   
   theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
   
-  sample_data <- passData()
+  sample_data <- passData()[["currentData"]]
   
   sample_data$Quarter = yq(paste0(year(sample_data$Date), ": Q", quarter(sample_data$Date)))
   
