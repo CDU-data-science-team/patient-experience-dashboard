@@ -61,29 +61,27 @@ output$summaryOutputs = renderUI({
       
       valueBoxOutput("impCritThreeBox", width = 3), # highly critical
       
-      valueBox("+15%", "Change in criticality", width = 3) # trend in criticality
-      
-      # valueBoxOutput("impCritPercentageBox", width = 3) # percentages removed
+      valueBoxOutput("changeInCriticality", width = 3) # trend in criticality
     ),
     
     fluidRow(
       
-      valueBox("16.7%", "Communication- staff/ patient", width = 3, icon = icon("smile")), 
+      valueBoxOutput("topCompliment1", width = 3),
       
-      valueBox("11%", "Staff/ staff attitude- Availability", width = 3, icon = icon("smile")), 
+      valueBoxOutput("topCompliment2", width = 3),
       
-      valueBox("8.5%", "Care/ treatment- therapies", width = 3, icon = icon("smile")),
+      valueBoxOutput("topCompliment3", width = 3),
       
       valueBox("+7%", "Food- general", width = 3, icon = icon("smile"))
     ),
     
     fluidRow(
       
-      valueBox("23%", "Access to services- waiting time", width = 3, icon = icon("frown")), 
+      valueBoxOutput("topCriticism1", width = 3),
       
-      valueBox("19%", "Service quality/ outcomes- general", width = 3, icon = icon("frown")), 
+      valueBoxOutput("topCriticism2", width = 3),
       
-      valueBox("7.2%", "Care/ treatment- medication", width = 3, icon = icon("frown")),
+      valueBoxOutput("topCriticism3", width = 3),
       
       valueBox("-11%", "Involvement- general", width = 3, icon = icon("frown"))
     ),
@@ -205,7 +203,7 @@ output$downloadDoc <- downloadHandler(
 
 dataSummary <- reactive({
   
-  suceData = passData()
+  suceData = passData()[["currentData"]]
   
   if(is.null(suceData)){
     
@@ -270,24 +268,24 @@ dataSummary <- reactive({
     
     # name of the area
     
-    if(is.null(input$selTeam)){
-      
-      theArea = "the selected area"
-      
-    } else {
-      
-      ### look up team names
-      
-      teams <- as.tibble(input$selTeam) %>%  
-        inner_join(
-          counts %>% 
-            group_by(TeamC) %>%
-            slice(which.max(as.Date(date_from)))
-        )
-      
-      team_names <- teams %>% pull(TeamN)
-      
-    }
+    # if(is.null(input$selTeam)){
+    #   
+    theArea = "the selected area"
+    #   
+    # } else {
+    #   
+    #   ### look up team names
+    #   
+    #   teams <- as.tibble(input$selTeam) %>%  
+    #     inner_join(
+    #       counts %>% 
+    #         group_by(TeamC) %>%
+    #         slice(which.max(as.Date(date_from)))
+    #     )
+    #   
+    #   team_names <- teams %>% pull(TeamN)
+    #   
+    # }
     
     return(
       list("theArea" = theArea, "NR" = NR, "IC" = IC, "BC" = BC, "NFFT" = NFFT,
@@ -333,7 +331,7 @@ output$zeroRespondingTeams <- renderValueBox({
     filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
     pull(TeamC) %>% 
     unique()
-
+  
   if(!is.null(input$Division)){ 
     
     all_teams = counts %>% 
@@ -361,7 +359,7 @@ output$zeroRespondingTeams <- renderValueBox({
       unique()
   }
   
-  df <- passData() %>% 
+  df <- passData()[["currentData"]] %>% 
     mutate(quarter_date = floor_date(Date, "quarter")) %>% 
     mutate(TeamC = factor(TeamC, levels = all_teams)) %>% 
     group_by(TeamC, quarter_date) %>% 
@@ -378,7 +376,8 @@ output$zeroRespondingTeams <- renderValueBox({
     nrow()
   
   valueBox(value = zero_teams,
-           subtitle = "Zero responding teams")
+           subtitle = HTML("Zero responding<br>teams")
+  )
 })
 
 # second row
@@ -407,21 +406,148 @@ output$impCritThreeBox <- renderValueBox({
   )
 })
 
-output$impCritPercentageBox <- renderValueBox({
+output$changeInCriticality <- renderValueBox({
   
-  crit_numbers <- dataSummary()[["improve_numbers"]]
+  req(passData()[["comparisonData"]])
   
-  percentages = round(
-    c(
-      crit_numbers[1] / sum(crit_numbers) * 100,
-      crit_numbers[2] / sum(crit_numbers) * 100,
-      crit_numbers[3] / sum(crit_numbers) * 100
-    ), 0)
+  # take the current period and compare with three months previously
   
-  valueBox(value = paste0(percentages[1], "/", percentages[2], "/", percentages[3], "%"),
-           # valueBox(value = tags$p(paste0(percentages[1], "%/ ", percentages[2], "%/ ", percentages[3], "%"), style = "font-size: 0%;"),
-           subtitle = HTML("Percentages<br>min/ mod/ high")
+  current_criticality <- passData()[["currentData"]] %>% 
+    filter(ImpCrit %in% 1:3) %>% 
+    pull(ImpCrit) %>% 
+    mean()
+  
+  previous_criticality <- passData()[["comparisonData"]] %>% 
+    filter(ImpCrit %in% 1:3) %>% 
+    pull(ImpCrit) %>% 
+    mean()
+  
+  change <- round((current_criticality - previous_criticality) / current_criticality * 100, 1)
+  
+  req(change)
+  
+  valueBox(value = paste0(change, "%"), 
+           subtitle = HTML("Change in<br>criticality"),
+           color = ifelse(change >= 0, "green", "red")
   )
+})
+
+# third row
+
+# write a function to return the nth element of improve/ best thing table
+
+returnTopComments <- function(nth_row, type){
+  
+  if(type == "Improve"){
+    
+    check1 <- passData()[["currentData"]] %>% 
+      filter(!is.na(Imp1)) %>% 
+      left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
+      select(Category, Super)
+    
+    check2 <- passData()[["currentData"]] %>% 
+      filter(!is.na(Imp2)) %>% 
+      left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
+      select(Category, Super)
+  }
+  
+  if(type == "Best"){
+    
+    check1 <- passData()[["currentData"]] %>% 
+      filter(!is.na(Best1)) %>% 
+      left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
+      select(Category, Super)
+    
+    check2 <- passData()[["currentData"]] %>% 
+      filter(!is.na(Best2)) %>% 
+      left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
+      select(Category, Super)
+  }
+  
+  check_final <- rbind(check1, check2)
+  
+  count_table <- check_final %>% 
+    filter(!is.na(Super), !is.na(Category)) %>% 
+    group_by(Category, Super) %>% 
+    count() %>% 
+    ungroup()
+  
+  count_sum <- sum(count_table$n)
+  
+  count_table %>% 
+    mutate(percent = round(n / count_sum * 100, 1)) %>% 
+    arrange(-percent) %>% 
+    slice(nth_row)
+}
+
+output$topCompliment1 <- renderValueBox({
+  
+  # fetch from function
+  
+  count_table = returnTopComments(1, "Best")
+  
+  valueBox(value = paste0(count_table$percent, "%"), 
+           subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+           icon = icon("smile"))
+})
+
+output$topCompliment2 <- renderValueBox({
+  
+  # fetch from function
+  
+  count_table = returnTopComments(2, "Best")
+  
+  valueBox(value = paste0(count_table$percent, "%"), 
+           subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+           icon = icon("smile"))
+})
+
+output$topCompliment3 <- renderValueBox({
+  
+  # fetch from function
+  
+  count_table = returnTopComments(3, "Best")
+  
+  valueBox(value = paste0(count_table$percent, "%"), 
+           subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+           icon = icon("smile"))
+})
+
+# change in compliments
+
+# fourth row
+
+output$topCriticism1 <- renderValueBox({
+  
+  # fetch from function
+  
+  count_table = returnTopComments(1, "Improve")
+  
+  valueBox(value = paste0(count_table$percent, "%"), 
+           subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+           icon = icon("frown"))
+})
+
+output$topCriticism2 <- renderValueBox({
+  
+  # fetch from function
+  
+  count_table = returnTopComments(2, "Improve")
+  
+  valueBox(value = paste0(count_table$percent, "%"), 
+           subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+           icon = icon("frown"))
+})
+
+output$topCriticism3 <- renderValueBox({
+  
+  # fetch from function
+  
+  count_table = returnTopComments(3, "Improve")
+  
+  valueBox(value = paste0(count_table$percent, "%"), 
+           subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+           icon = icon("frown"))
 })
 
 # valueBoxOutput("impCritPercentageBox", width = 3), # number comments
