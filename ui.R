@@ -220,9 +220,20 @@ function(request) {
                       )
                     )
                   ),
-                  column(6, htmlOutput("filterText"), htmlOutput("filterTextSubcategory"), htmlOutput("filterTextCrit"))
-                  
-                  # htmlOutput("TextResponses")
+                  column(6, # each of these is shown only when the relevant control is selected
+                         conditionalPanel(
+                           condition = "input.categoryCriticality == 'Category'",
+                           htmlOutput("filterText")
+                         ),
+                         conditionalPanel(
+                           condition = "input.categoryCriticality == 'Criticality'",
+                           htmlOutput("filterTextCrit")
+                         ),
+                         conditionalPanel(
+                           condition = "input.categoryCriticality == 'Sub category'",
+                           htmlOutput("filterTextSubcategory")
+                         )
+                )
                 )
         ),
         tabItem(tabName = "allComments",

@@ -274,7 +274,8 @@ subCategoryTableFunction <- reactive({
   return(
     count_table %>% 
       mutate(percent = round(n / count_sum * 100, 1)) %>% 
-      arrange(-percent)
+      arrange(-percent) %>% 
+      select(-n)
   )
 })
 

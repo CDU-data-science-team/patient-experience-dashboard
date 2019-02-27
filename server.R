@@ -45,7 +45,7 @@ function(input, output, session){
   source("allCommentsTab.R", local = TRUE)
   source("textAnalysis.R", local = TRUE)
   source("sentimentTab.R", local = TRUE)
-  source("topicExplorer.R", local = TRUE)
+  # source("topicExplorer.R", local = TRUE)
   
   # handle reactive UI from division selection
   
