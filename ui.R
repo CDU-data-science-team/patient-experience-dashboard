@@ -45,8 +45,6 @@ function(request) {
       
       uiOutput("divControls"),
       
-      checkboxInput("showTeams", "Show all teams"),
-      
       # this panel appears if a particular directorate is selected
       
       conditionalPanel(
@@ -54,40 +52,8 @@ function(request) {
         uiOutput("dirControls")
       ),
       
-      # text search
-      
-      conditionalPanel(
-        condition = "input.theTabs == 'commentsTab'",
-        
-        # search term
-        
-        textInput("keyword", "Keyword search: (e.g. food, staff)"),
-        
-        # criticality
-        
-        selectInput("criticality", "Criticality",
-                    c("Very critical" = 3, "Fairly critical" = 2, "Slightly critical" = 1,
-                      "Slightly complimentary" = 4, "Fairly complimentary" = 5, "Very complimentary" = 6),
-                    multiple = TRUE),
-        
-        # taxonomy
-        
-        uiOutput("serverTaxonomy")
-      ),
-      
-      # text search
-      
-      conditionalPanel(
-        condition = "input.theTabs == 'wordCloud'",
-        
-        # search term
-        
-        selectInput("noWords", "Number of words", list(10, 20, 30, 40, 50, 60), selected = 60)
-      ),
-      # # download data
-      # 
-      # downloadButton("downloadData", "Download data"),
-      # 
+      checkboxInput("showTeams", "Show all teams"),
+
       # toggle advanced controls
       
       checkboxInput("custom", "Advanced controls", value = FALSE),

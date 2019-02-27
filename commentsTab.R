@@ -3,7 +3,7 @@
 
 output$impCritTable = renderDT({
   
-  impVariable = passData()$ImpCrit
+  impVariable = passData()[["currentData"]]$ImpCrit
   
   impVariable = factor(impVariable, levels = 1:3)
   
@@ -21,7 +21,7 @@ output$impCritTable = renderDT({
 
 output$bestCritTable = renderDT({
   
-  bestVariable = passData()$BestCrit
+  bestVariable = passData()[["currentData"]]$BestCrit
   
   bestVariable = factor(bestVariable, levels = 1:3)
   
@@ -51,7 +51,7 @@ subCategories = function(y){ # this is a function that calculates
     variableName = c("Best1", "Best2")
   }
   
-  tableData = passData() %>%
+  tableData = passData()[["currentData"]] %>%
     filter(UQ(sym(variableName[1])) %in% categoriesTable$Number) %>%
     filter(UQ(sym(variableName[2])) %in% categoriesTable$Number)
   
@@ -112,7 +112,7 @@ superCategories = function(){
   
   # remove invalid categories
   
-  tableData = passData() %>%
+  tableData = passData()[["currentData"]] %>%
     filter(Imp1 %in% staffCategories$Number) %>%
     filter(Imp2 %in% staffCategories$Number)
   
@@ -235,28 +235,28 @@ subCategoryTableFunction <- reactive({
   
   if(input$commentsTab == "What could be improved?"){
     
-    check1 <- passData() %>% 
+    check1 <- passData()[["currentData"]] %>% 
       filter(!is.na(Imp1)) %>% 
       left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
-      select(Category, Super, Imp1)
+      select(Category, Super)
     
-    check2 <- passData() %>% 
+    check2 <- passData()[["currentData"]] %>% 
       filter(!is.na(Imp2)) %>% 
       left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
-      select(Category, Super, Imp1)
+      select(Category, Super)
   }
   
   if(input$commentsTab == "Best thing"){
     
-    check1 <- passData() %>% 
+    check1 <- passData()[["currentData"]] %>% 
       filter(!is.na(Best1)) %>% 
       left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
-      select(Category, Super, Imp1)
+      select(Category, Super)
     
-    check2 <- passData() %>% 
+    check2 <- passData()[["currentData"]] %>% 
       filter(!is.na(Best2)) %>% 
       left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
-      select(Category, Super, Imp1)
+      select(Category, Super)
   }
 
   check_final <- rbind(check1, check2)
@@ -333,7 +333,7 @@ output$filterText = renderText({ # this is for the category tables
     longName = "Best"
   }
   
-  theComments = filter(passData(),
+  theComments = filter(passData()[["currentData"]],
                        UQ(sym(variableName[1])) %in% theNumbers |
                          UQ(sym(variableName[2])) %in% theNumbers) %>%
     filter(!is.na(UQ(sym(longName)))) %>% 
@@ -384,10 +384,10 @@ output$filterTextSubcategory <- renderText({
     filter(Category == theClick[2]) %>% 
     pull(Number)
   
-  theComments = filter(passData(),
-                       UQ(sym(variableName[1])) %in% relevant_comment_codes |
-                         UQ(sym(variableName[2])) %in% relevant_comment_codes) %>%
+  theComments = passData()[["currentData"]] %>% 
     filter(!is.na(UQ(sym(longName)))) %>% 
+    filter(UQ(sym(variableName[1])) %in% relevant_comment_codes |
+                         UQ(sym(variableName[2])) %in% relevant_comment_codes) %>%
     pull(UQ(sym(longName)))
   
   HTML(
@@ -428,9 +428,10 @@ output$filterTextCrit = renderText({ # this is for the criticality tables
     longName = "Best"
   }
   
-  theComments = filter(passData(),
+  theComments = filter(passData()[["currentData"]],
                        UQ(sym(variableName)) %in% theClick |
                          UQ(sym(variableName)) %in% theClick) %>%
+    filter(!is.na(UQ(sym(longName)))) %>% 
     pull(UQ(sym(longName)))
   
   HTML(

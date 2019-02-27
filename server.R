@@ -201,35 +201,24 @@ function(input, output, session){
     
     if(input$age != "All") finalData = finalData[finalData$Age %in% input$age, ]
     
-    # # if the whole Trust is selected do this
-    
-    finalData = finalData[finalData$Date %in% seq.Date(input$dateRange[1], 
-                                                       input$dateRange[2], by = "days"), ]
-    
     # now filter for every available filter
     
     if(!is.null(input$Division)){ 
       
-      finalData = finalData[!is.na(finalData$Division) &
-                              finalData$Division %in% input$Division &
-                              finalData$Date %in% seq.Date(input$dateRange[1],
-                                                           input$dateRange[2], by = "days"), ]
+      finalData = finalData %>% 
+        filter(!is.na(Division), Division %in% input$Division)
     }
     
     if(!is.null(input$selDirect)){ # otherwise look at the directorate code
       
-      finalData = finalData[!is.na(finalData$Directorate) &
-                              finalData$Directorate %in% as.numeric(input$selDirect) &
-                              finalData$Date %in% seq.Date(input$dateRange[1],
-                                                           input$dateRange[2], by = "days"), ]
-      
+      finalData = finalData %>% 
+        filter(!is.na(Directorate), Directorate %in% input$selDirect)
+
     }
     if(!is.null(input$selTeam)){
       
-      finalData = finalData[!is.na(finalData$TeamC) &
-                              finalData$TeamC %in% as.numeric(input$selTeam) &
-                              finalData$Date %in% seq.Date(input$dateRange[1],
-                                                           input$dateRange[2], by = "days"), ]
+      finalData = finalData %>% 
+        filter(!is.na(TeamC), TeamC %in% as.numeric(input$selTeam))
     }
     
     if(input$carerSU == "SU"){
@@ -246,8 +235,33 @@ function(input, output, session){
       
       # nothing!
     }
+    
+    # filter by date
+    
+    currentData <- finalData %>% 
+      filter(Date >= input$dateRange[1], Date <= input$dateRange[2])
+    
+    comparisonData <- finalData %>% 
+      filter(Date < input$dateRange[1], Date > input$dateRange[1] - 90)
+    
+    if(nrow(comparisonData) < 100){
+      
+      comparisonData <- finalData %>% 
+        filter(Date < input$dateRange[1], Date > input$dateRange[1] - 180)
+    }
+    
+    if(nrow(comparisonData) < 100){
+      
+      comparisonData <- finalData %>% 
+        filter(Date < input$dateRange[1], Date > input$dateRange[1] - 365)
+    }
+    
+    if(nrow(comparisonData) < 25){
+      
+      comparisonData <- NULL
+    }
 
-    return(finalData)
+    return(list("currentData" = currentData, "comparisonData" = comparisonData))
   })
 
   # download graphs buttons

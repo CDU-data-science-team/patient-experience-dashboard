@@ -1,7 +1,7 @@
 
 output$sentimentComments <- renderText({
   
-  use_data = passData() %>% 
+  use_data = passData()[["currentData"]] %>% 
     filter(!is.na(Improve))
   
   use_data <- use_data %>% 

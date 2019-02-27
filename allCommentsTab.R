@@ -8,7 +8,7 @@ output$allImproveComments = renderText({
     # going to left join the improve codes to the category table to produce
     # a fully labelled dataframe with all comments, sub and super categories
     
-    df = passData() %>% 
+    df = passData()[["currentData"]] %>% 
       filter(!is.na(Imp1), !is.na(Improve)) %>% 
       left_join(categoriesTable, by = c("Imp1" = "Number")) %>%  
       select(key : Time, Improve: CommentCoderBest, 
@@ -38,7 +38,7 @@ output$allImproveComments = renderText({
     # going to left join the improve codes to the category table to produce
     # a fully labelled dataframe with all comments, sub and super categories
     
-    df = passData() %>% 
+    df = passData()[["currentData"]] %>% 
       filter(!is.na(ImpCrit), !is.na(Improve)) %>% 
       select(key : Time, Improve: CommentCoderBest, 
              Location, Division, Directorate, Division2) %>% 
@@ -74,7 +74,7 @@ output$allBestComments = renderText({
     # going to left join the best codes to the category table to produce
     # a fully labelled dataframe with all comments, sub and super categories
     
-    df = passData() %>% 
+    df = passData()[["currentData"]] %>% 
       filter(!is.na(Best1), !is.na(Best)) %>% 
       left_join(categoriesTable, by = c("Best1" = "Number")) %>%  
       select(key : Time, Improve: CommentCoderBest, 
@@ -104,7 +104,7 @@ output$allBestComments = renderText({
     # going to left join the best codes to the category table to produce
     # a fully labelled dataframe with all comments, sub and super categories
     
-    df = passData() %>% 
+    df = passData()[["currentData"]] %>% 
       filter(!is.na(BestCrit), !is.na(Best)) %>% 
       select(key : Time, Improve: CommentCoderBest, 
              Location, Division, Directorate, Division2) %>% 
