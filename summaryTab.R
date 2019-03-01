@@ -72,7 +72,7 @@ output$summaryOutputs = renderUI({
       
       valueBoxOutput("topCompliment3", width = 3),
       
-      valueBox("+7%", "Food- general", width = 3, icon = icon("smile"))
+      valueBoxOutput("changeCompliment", width = 3)
     ),
     
     fluidRow(
@@ -83,12 +83,12 @@ output$summaryOutputs = renderUI({
       
       valueBoxOutput("topCriticism3", width = 3),
       
-      valueBox("-11%", "Involvement- general", width = 3, icon = icon("frown"))
+      valueBoxOutput("changeCriticism", width = 3)
     ),
     
     fluidRow(
       
-      valueBox("96%", "Listening", width = 3, color = "green"), # best score
+      valueBoxOutput("topScore", width = 3), # best score
       
       valueBox("84%", "Would you recommend?", width = 3, color = "red"), # worst score
       
@@ -193,7 +193,7 @@ output$downloadDoc <- downloadHandler(
            quiet = TRUE, params = params,
            envir = new.env(parent = globalenv())
     )
-    
+           
     # copy docx to 'file'
     file.copy(paste0("reports/", report_name, ".docx"), file, overwrite = TRUE)
   }
@@ -295,9 +295,7 @@ dataSummary <- reactive({
   }
 })
 
-# value boxes rendered here----
-
-# 1st row
+# 1st row----
 
 output$sqBox <- renderValueBox({
   
@@ -380,7 +378,7 @@ output$zeroRespondingTeams <- renderValueBox({
   )
 })
 
-# second row
+# second row----
 
 output$impCritOneBox <- renderValueBox({
   
@@ -432,7 +430,7 @@ output$changeInCriticality <- renderValueBox({
   )
 })
 
-# third row
+# third row----
 
 # write a function to return the nth element of improve/ best thing table
 
@@ -513,9 +511,65 @@ output$topCompliment3 <- renderValueBox({
            icon = icon("smile"))
 })
 
-# change in compliments
+output$changeCompliment <- renderValueBox({
+  
+  current1 <- passData()[["currentData"]] %>% 
+    filter(!is.na(Best1)) %>% 
+    left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
+    select(Category, Super)
+  
+  current2 <- passData()[["currentData"]] %>% 
+    filter(!is.na(Best2)) %>% 
+    left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
+    select(Category, Super)
+  
+  previous1 <- passData()[["comparisonData"]] %>% 
+    filter(!is.na(Best1)) %>% 
+    left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
+    select(Category, Super)
+  
+  previous2 <- passData()[["comparisonData"]] %>% 
+    filter(!is.na(Best2)) %>% 
+    left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
+    select(Category, Super)
+  
+  current_final <- rbind(current1, current2)
+  
+  previous_final <- rbind(previous1, previous2)
+  
+  current_table <- current_final %>% 
+    filter(!is.na(Super), !is.na(Category)) %>% 
+    group_by(Category, Super) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent = round(n / sum(n) * 100, 1)) %>% 
+    arrange(percent) %>% 
+    select(-n)
+  
+  previous_table <- previous_final %>% 
+    filter(!is.na(Super), !is.na(Category)) %>% 
+    group_by(Category, Super) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent = round(n / sum(n) * 100, 1)) %>% 
+    arrange(percent) %>% 
+    select(-n)
+  
+  difference_table <- merge(current_table, previous_table, 
+                            by = c("Category", "Super"), 
+                            all = TRUE) %>% 
+    mutate(difference = percent.x - percent.y) %>% 
+    arrange(-abs(difference)) %>% 
+    slice(1)
+  
+  valueBox(value = paste0(difference_table$difference, "%"), 
+           subtitle = HTML(paste0(difference_table$Super, ":<br>", difference_table$Category)),
+           color = ifelse(difference_table$difference >= 0, "green", "red"),
+           icon = icon("frown"))
+})
 
-# fourth row
+
+# fourth row----
 
 output$topCriticism1 <- renderValueBox({
   
@@ -548,6 +602,149 @@ output$topCriticism3 <- renderValueBox({
   valueBox(value = paste0(count_table$percent, "%"), 
            subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
            icon = icon("frown"))
+})
+
+# change in criticism
+
+output$changeCriticism <- renderValueBox({
+  
+  current1 <- passData()[["currentData"]] %>% 
+    filter(!is.na(Imp1)) %>% 
+    left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
+    select(Category, Super)
+  
+  current2 <- passData()[["currentData"]] %>% 
+    filter(!is.na(Imp2)) %>% 
+    left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
+    select(Category, Super)
+  
+  previous1 <- passData()[["comparisonData"]] %>% 
+    filter(!is.na(Imp1)) %>% 
+    left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
+    select(Category, Super)
+  
+  previous2 <- passData()[["comparisonData"]] %>% 
+    filter(!is.na(Imp2)) %>% 
+    left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
+    select(Category, Super)
+  
+  current_final <- rbind(current1, current2)
+  
+  previous_final <- rbind(previous1, previous2)
+  
+  current_table <- current_final %>% 
+    filter(!is.na(Super), !is.na(Category)) %>% 
+    group_by(Category, Super) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent = round(n / sum(n) * 100, 1)) %>% 
+    arrange(percent) %>% 
+    select(-n)
+  
+  previous_table <- previous_final %>% 
+    filter(!is.na(Super), !is.na(Category)) %>% 
+    group_by(Category, Super) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent = round(n / sum(n) * 100, 1)) %>% 
+    arrange(percent) %>% 
+    select(-n)
+  
+  difference_table <- merge(current_table, previous_table, 
+                            by = c("Category", "Super"), 
+                            all = TRUE) %>% 
+    mutate(difference = percent.x - percent.y) %>% 
+    arrange(-abs(difference)) %>% 
+    slice(1)
+  
+  valueBox(value = paste0(difference_table$difference, "%"), 
+           subtitle = HTML(paste0(difference_table$Super, ":<br>", difference_table$Category)),
+           color = ifelse(difference_table$difference >= 0, "green", "red"),
+           icon = icon("frown"))
+})
+
+# fifth row----
+
+# this is a reactive which returns the top and bottom score, and the biggest change score
+
+highLowScoreChange <- reactive({
+  
+  all_data <- rbind(
+    current_data <- passData()[["currentData"]] %>% 
+      select(c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+      mutate(time = "current"),
+    
+    previous_data <- passData()[["comparisonData"]] %>% 
+      select(c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+      mutate(time = "previous")
+  )
+  
+  summary_data <- all_data %>% 
+    group_by(time) %>% 
+    summarise_all(function(x) mean(x, na.rm = TRUE) * 20) %>%
+    ungroup() %>%  
+    select(-time)
+  
+  summary_data <- rbind(summary_data, summary_data[1, ] - summary_data[2, ])
+  
+  low_score_index <- summary_data %>% 
+    slice(1) %>% 
+    apply(2, min) %>% 
+    which.min()
+  
+  high_score_index <- summary_data %>% 
+    slice(1) %>% 
+    apply(2, max) %>% 
+    which.max()
+  
+  increase_index <- summary_data %>% 
+    slice(3) %>% 
+    apply(2, max) %>% 
+    which.max()
+  
+  decrease_index <- summary_data %>% 
+    slice(3) %>% 
+    apply(2, min) %>% 
+    which.min()
+  
+  summary_data %>% 
+    select(largest_decrease) %>% 
+    slice(3)
+  
+  low_score <- summary_data %>% 
+    select(low_score_index) %>% 
+    slice(1)
+  
+  high_score <- summary_data %>% 
+    select(high_score_index) %>% 
+    slice(1)
+  
+  biggest_increase <- summary_data %>% 
+    select(increase_index) %>% 
+    slice(3)
+  
+  biggest_decrease <- summary_data %>% 
+    select(decrease_index) %>% 
+    slice(3)
+  
+  return(
+    list("low_score" = low_score, "high_score" = high_score,
+         "biggest_increase" = biggest_increase,
+         "biggest_decrease" = biggest_decrease)
+  )
+  
+})
+
+output$topScore <- renderValueBox({
+  
+  top_score = round(as.numeric(highLowScoreChange()[["high_score"]]), 1)
+  
+  top_score_name = names(highLowScoreChange()[["high_score"]])
+  
+  valueBox(value = paste0(top_score, "%"),
+           subtitle = top_score_name,
+           color = "green"
+  )
 })
 
 # valueBoxOutput("impCritPercentageBox", width = 3), # number comments
