@@ -181,6 +181,8 @@ if(is.null(suceData)){
 
 ## Summary
 
+This report summarises data from `r first_date` to `r end_date`
+
 ```{r, results = "asis"}
 
 if(is.null(report_information)){
@@ -216,7 +218,44 @@ cat(myString)
 
 ## Summary of responses
 
-## Trend
+```{r}
+
+  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
+  
+  # remove decimals from historic data
+  
+  fixedData = data.frame(apply(suceData[, theQuestions], 1:2,
+                               function(x) round(x + .01)))
+  
+  # count the missing responses
+  
+  missnum = apply(fixedData, 2, function(x) sum(!is.na(x)))
+  
+  if(length(names(missnum[missnum > 2])) < 3){
+    
+    return(NULL)
+  }
+  
+  fixedData[, missnum > 2] %>%
+    gather(L1, value) %>% 
+    filter(!is.na(value)) %>%
+    left_join(select(questionFrame, code, value), by = c("L1" = "code")) %>%
+    select(-L1) %>%
+    group_by(value.y) %>%
+    count(value.x) %>%
+    mutate(prop = prop.table(n) * 100) %>%
+    filter(!is.na(prop)) %>% 
+    ungroup() %>%
+    ggplot(aes(x = value.y, y = prop, fill = factor(value.x))) +
+    geom_bar(position = "fill", stat = "identity") + ylab("Proportion responding") + 
+    scale_fill_manual(values = rainbow(5), "Response", limits = c(1:5), breaks = c(5:1),
+                      labels = c("Excellent", "Good", "Fair", "Poor", "Very poor")) +
+    scale_y_continuous(labels = percent_format()) +
+    guides(fill = guide_legend(reverse = TRUE)) + 
+    scale_x_discrete() + coord_flip() + xlab("Question")
+
+
+```
 
 ```{r}
 
@@ -253,4 +292,18 @@ mean_score %>%
 ```
 
 ## What could we do better?
+
+```{r, results = "asis"}
+
+
+
+```
+
+## What did we do well?
+
+```{r, results = "asis"}
+
+
+
+```
 
