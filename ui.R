@@ -16,7 +16,6 @@ function(request) {
         menuItem("Scores", tabName = "scores", icon = icon("bar-chart")),
         menuItem("Comments", tabName = "comments", icon = icon("comment")),
         menuItem("All comments", tabName = "allComments", icon = icon("comment")),
-        menuItem("Staff/ patient experience", tabName = "staffSUCE", icon = icon("flask")),
         menuItem("Text analysis", tabName = "textAnalysis", icon = icon("font")),
         menuItem("Sentiment analysis", tabName = "sentimentAnalysis", icon = icon("font"))
       ),

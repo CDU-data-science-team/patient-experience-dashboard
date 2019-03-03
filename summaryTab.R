@@ -90,11 +90,11 @@ output$summaryOutputs = renderUI({
       
       valueBoxOutput("topScore", width = 3), # best score
       
-      valueBox("84%", "Would you recommend?", width = 3, color = "red"), # worst score
+      valueBoxOutput("lowestScore", width = 3), # lowest score
       
-      valueBox("+7%", "Communication", width = 3, color = "green"),
+      valueBoxOutput("biggestIncrease", width = 3), # lowest score
       
-      valueBox("-11%", "Service quality", width = 3, color = "red")
+      valueBoxOutput("biggestDecrease", width = 3) # lowest score
     )
   )
 })
@@ -108,7 +108,7 @@ output$reportCustomAreaSelector <- renderUI({
     return()
   } else if(input$serviceArea == "Division"){
     
-    selectInput("report_division", "Division", 
+    selectInput("report_division", "Division (defaults to whole Trust)", 
                 list("Local Partnerships- Mental Healthcare" = 0,
                      "Local Partnerships- Community Healthcare" = 2, "Forensic" = 1),
                 multiple = TRUE)
@@ -181,14 +181,18 @@ output$downloadDoc <- downloadHandler(
     # report_division, report_directorate, report_team
     # let's just pretend it's report_division for now
     
-    params <- list(division = input$report_division,
-                   carerSU = input$carerSU)
+    if(isTruthy(input$report_division)){
+      
+      params <- list(division = input$report_division,
+                     carerSU = input$carerSU)
+    } else {
+      
+      params <- list(division = NA,
+                     carerSU = input$carerSU)
+    }
     
-    # params <- list(division = "Hello")
-    
-    # render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
-    #        quiet = TRUE, envir = environment())
-    
+
+
     render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
            quiet = TRUE, params = params,
            envir = new.env(parent = globalenv())
@@ -687,6 +691,8 @@ highLowScoreChange <- reactive({
   
   summary_data <- rbind(summary_data, summary_data[1, ] - summary_data[2, ])
   
+  names(summary_data) <- c("Service", "Likely to recommend", "Listening", "Communication", "Respect", "Positive difference")
+  
   low_score_index <- summary_data %>% 
     slice(1) %>% 
     apply(2, min) %>% 
@@ -706,10 +712,6 @@ highLowScoreChange <- reactive({
     slice(3) %>% 
     apply(2, min) %>% 
     which.min()
-  
-  summary_data %>% 
-    select(largest_decrease) %>% 
-    slice(3)
   
   low_score <- summary_data %>% 
     select(low_score_index) %>% 
@@ -744,6 +746,52 @@ output$topScore <- renderValueBox({
   valueBox(value = paste0(top_score, "%"),
            subtitle = top_score_name,
            color = "green"
+  )
+})
+
+output$lowestScore <- renderValueBox({
+  
+  low_score = round(as.numeric(highLowScoreChange()[["low_score"]]), 1)
+  
+  low_score_name = names(highLowScoreChange()[["low_score"]])
+  
+  valueBox(value = paste0(low_score, "%"),
+           subtitle = low_score_name,
+           color = "red"
+  )
+})
+
+output$biggestIncrease <- renderValueBox({
+  
+  biggest_increase = round(as.numeric(highLowScoreChange()[["biggest_increase"]]), 1)
+  
+  if(biggest_increase > 0){
+    
+    biggest_increase <- paste0("+", biggest_increase)
+  }
+  
+  biggest_increase_name = names(highLowScoreChange()[["biggest_increase"]])
+  
+  valueBox(value = paste0(biggest_increase, "%"),
+           subtitle = biggest_increase_name,
+           color = "green"
+  )
+})
+
+output$biggestDecrease <- renderValueBox({
+  
+  biggest_decrease = round(as.numeric(highLowScoreChange()[["biggest_decrease"]]), 1)
+  
+  if(biggest_decrease > 0){
+    
+    biggest_decrease <- paste0("+", biggest_decrease)
+  }
+  
+  biggest_decrease_name = names(highLowScoreChange()[["biggest_decrease"]])
+  
+  valueBox(value = paste0(biggest_decrease, "%"),
+           subtitle = biggest_decrease_name,
+           color = "red"
   )
 })
 
