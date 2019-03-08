@@ -18,14 +18,12 @@ output$summaryPage <- renderUI({
            # Exception based reporting
            # Show zero returning teams more easily (maybe outside the feedback tracker)
            
-           selectInput("reportTime", "Time frame", 
-                       choices = c("Quarterly" = "quarterly", 
-                                   "Yearly (not implemented)" = "yearly", 
-                                   "Custom" = "custom")),
+           selectInput("reportTime", "Report type (more reports TBA)", 
+                       choices = c("Quarterly" = "quarterly"),
+                       selected = "quarterly"),
            
            selectInput("serviceArea", "Service area", 
-                       choices = c("Division", "Directorate", "Team",
-                                   "Current selection", "Custom (not yet implemented)")),
+                       choices = c("Division", "Directorate")),
            
            uiOutput("reportCustomAreaSelector"),
            
@@ -185,13 +183,15 @@ output$downloadDoc <- downloadHandler(
       
       params <- list(division = input$report_division,
                      carerSU = input$carerSU)
+    } else if(isTruthy(input$report_directorate)) {
+      
+      params <- list(directorate = input$report_directorate,
+                     carerSU = input$carerSU)
     } else {
       
       params <- list(division = NA,
                      carerSU = input$carerSU)
     }
-    
-
 
     render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
            quiet = TRUE, params = params,
