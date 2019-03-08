@@ -8,6 +8,7 @@ params:
   date_from: NA
   date_to: NA
   carerSU: NA
+  area_name: NA
 ---
 
 <!-- So I need to declare the parameters here, and then pass them through from Shiny -->
@@ -35,7 +36,7 @@ first_date <- yq(paste0(previous_year, ": Q", previous_quarter))
 
 end_date <- yq(paste0(year(today), ": Q", quarter(today))) - 1
 
-# filter by area
+# filter by area and name the areas
 
 if(params$division != "NA"){
   
@@ -140,33 +141,8 @@ if(is.null(suceData)){
       nrow()
   })
   
-  # name of the area
-  
-  # this bit doesn't work
-  
-  # if(is.null(input$selTeam)){
-  #   
-  #   theArea = "the selected area"
-  #   
-  # } else {
-  #   
-  #   ### look up team names
-  #   
-  #   teams <- as.tibble(input$selTeam) %>%
-  #     inner_join(
-  #       counts %>%
-  #         group_by(TeamC) %>%
-  #         slice(which.max(as.Date(date_from)))
-  #     )
-  #   
-  #   team_names <- teams %>% pull(TeamN)
-  #   
-  # }
-  
-  theArea = "the selected area"
-  
   report_information <- 
-    list("theArea" = theArea, "NR" = NR, "IC" = IC, "BC" = BC, "NFFT" = NFFT,
+    list("theArea" = params$area_name, "NR" = NR, "IC" = IC, "BC" = BC, "NFFT" = NFFT,
          "FFT" = FFT, "NSQ" = NSQ, "SQ" = SQ, "complaint_numbers" = complaint_numbers,
          "improve_numbers" = improve_numbers, "best_numbers" = best_numbers)
 }
