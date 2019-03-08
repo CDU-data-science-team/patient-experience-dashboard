@@ -137,7 +137,8 @@ function(request) {
         ),
         tabItem(tabName = "scores",
                 fluidRow(
-                  box(width = 6, plotOutput("StackPlot", click = "stacked_suce_click")),
+                  box(width = 6, "Click plot to see figures", 
+                      plotOutput("StackPlot", click = "stacked_suce_click")),
                   box(width = 6, "Trend", plotOutput("trendPlot"))
                 )
         ),

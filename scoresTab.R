@@ -113,7 +113,7 @@ myTrend = reactive({
   
   theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
   
-  sample_data <- passData()[["currentData"]]
+  sample_data <- passData()[["trendData"]]
   
   sample_data$Quarter = yq(paste0(year(sample_data$Date), ": Q", quarter(sample_data$Date)))
   
@@ -136,9 +136,10 @@ myTrend = reactive({
   
   mean_score %>% 
     gather(Question, value, -Quarter) %>% 
-    ggplot(aes(x = Quarter, y = value, group = Question, colour = Question)) +
-    geom_line() + 
-    geom_point() +
+    left_join(select(questionFrame, code, value), by = c("Question" = "code")) %>% 
+    ggplot(aes(x = Quarter, y = value.x, group = value.y, colour = value.y)) +
+    geom_line() +  geom_point() +
+    ylab("%") +
     ylim(minimum_value, 100) 
 })
 

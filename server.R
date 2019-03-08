@@ -174,8 +174,6 @@ function(input, output, session){
   
   passData = reactive({
     
-    # select carer, service user, or both
-    
     finalData = trustData
     
     # deal with demographics
@@ -241,6 +239,15 @@ function(input, output, session){
     currentData <- finalData %>% 
       filter(Date >= input$dateRange[1], Date <= input$dateRange[2])
     
+    if(input$dateRange[2] - input$dateRange[1] > 200){
+      
+      trendData <- currentData
+    } else {
+      
+      trendData <- finalData %>% 
+        filter(Date > input$dateRange[1] - 200)
+    }
+    
     comparisonData <- finalData %>% 
       filter(Date < input$dateRange[1], Date > input$dateRange[1] - 90)
     
@@ -261,7 +268,9 @@ function(input, output, session){
       comparisonData <- NULL
     }
 
-    return(list("currentData" = currentData, "comparisonData" = comparisonData))
+    return(list("currentData" = currentData, 
+                "comparisonData" = comparisonData,
+                "trendData" = trendData))
   })
 
   # download graphs buttons
