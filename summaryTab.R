@@ -174,30 +174,60 @@ output$downloadDoc <- downloadHandler(
     
     # Set up parameters to pass to Rmd document
     
-    # we're going to need to know WHICH UI has been rendered
-    # and pick values from there- it could be 
-    # report_division, report_directorate, report_team
-    # let's just pretend it's report_division for now
+    # if they're on the division selector
     
-    if(isTruthy(input$report_division)){
+    if(input$serviceArea == "Division"){
       
-      params <- list(division = input$report_division,
-                     carerSU = input$carerSU)
-    } else if(isTruthy(input$report_directorate)) {
+      if(isTruthy(input$report_division)){
+        
+        area_name <- c("Local Partnerships- Mental Healthcare", 
+                       "Forensic Services", 
+                       "Local Partnerships- Community Healthcare")[as.numeric(input$report_division) + 1]
+        
+        params <- list(division = input$report_division,
+                       carerSU = input$carerSU,
+                       area_name = area_name)
+      } else {
+        
+        area_name <- "the whole Trust"
+        
+        params <- list(division = NA,
+                       carerSU = input$carerSU,
+                       area_name = area_name)
+      }
+    }
+    
+    if(input$serviceArea == "Directorate"){
       
-      params <- list(directorate = input$report_directorate,
-                     carerSU = input$carerSU)
-    } else {
+      if(isTruthy(input$report_directorate)){
+        
+        area_name <- dirTable %>% 
+          filter(DirC %in% input$report_directorate) %>% 
+          pull(DirT) %>% 
+          paste(collapse = ", ")
+        
+        params <- list(directorate = input$report_directorate,
+                       carerSU = input$carerSU,
+                       area_name = area_name)
+      } else {
       
-      params <- list(division = NA,
-                     carerSU = input$carerSU)
+        showModal(
+          modalDialog(
+            title = "Error!",
+            HTML("Please select a directorate"),
+            easyClose = TRUE
+          )
+        )
+        
+        return()
+      }
     }
 
     render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
            quiet = TRUE, params = params,
            envir = new.env(parent = globalenv())
     )
-           
+    
     # copy docx to 'file'
     file.copy(paste0("reports/", report_name, ".docx"), file, overwrite = TRUE)
   }
@@ -569,7 +599,7 @@ output$changeCompliment <- renderValueBox({
   valueBox(value = paste0(difference_table$difference, "%"), 
            subtitle = HTML(paste0(difference_table$Super, ":<br>", difference_table$Category)),
            color = ifelse(difference_table$difference >= 0, "green", "red"),
-           icon = icon("frown"))
+           icon = icon("smile"))
 })
 
 
