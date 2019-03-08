@@ -15,9 +15,9 @@ function(request) {
         menuItem("Summary", tabName = "summary", icon = icon("dashboard")),
         menuItem("Scores", tabName = "scores", icon = icon("bar-chart")),
         menuItem("Comments", tabName = "comments", icon = icon("comment")),
-        menuItem("All comments", tabName = "allComments", icon = icon("comment")),
-        menuItem("Text analysis", tabName = "textAnalysis", icon = icon("font")),
-        menuItem("Sentiment analysis", tabName = "sentimentAnalysis", icon = icon("font"))
+        menuItem("All comments", tabName = "allComments", icon = icon("comment"))
+        # menuItem("Text analysis", tabName = "textAnalysis", icon = icon("font")),
+        # menuItem("Sentiment analysis", tabName = "sentimentAnalysis", icon = icon("font"))
       ),
       
       bookmarkButton(),
@@ -55,7 +55,7 @@ function(request) {
 
       # toggle advanced controls
       
-      checkboxInput("custom", "Advanced controls", value = FALSE),
+      # checkboxInput("custom", "Advanced controls", value = FALSE),
       
       # advanced controls follow
       
