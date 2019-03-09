@@ -1,0 +1,302 @@
+---
+title: Quarterly report
+output: html_document
+params:
+  division: NA
+  directorate: NA
+  team: NA
+  date_from: NA
+  date_to: NA
+  carerSU: NA
+  area_name: NA
+---
+
+<!-- So I need to declare the parameters here, and then pass them through from Shiny -->
+<!-- Then I can use an observe() function with the GET string so the report is generated if -->
+<!-- The parameters are set using a GET string -->
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE)
+
+# calculate the date range first
+
+today = Sys.Date()
+
+previous_quarter <- (quarter(today)) - 1 %% 4
+previous_year <- year(today)
+
+if(previous_quarter == 0){
+  
+  previous_quarter <- 4
+  previous_year <- previous_year - 1
+}
+
+first_date <- yq(paste0(previous_year, ": Q", previous_quarter))
+
+end_date <- yq(paste0(year(today), ": Q", quarter(today))) - 1
+
+# filter by area and name the areas
+
+if(params$division != "NA"){
+  
+  suceData = trustData %>%
+    filter(Division %in% params$division)
+  
+} else if(params$directorate != "NA"){
+  
+  suceData = trustData %>%
+    filter(Directorate %in% params$directorate)
+  
+} else if(params$team != "NA"){
+  
+  suceData = trustData %>%
+    filter(TeamC %in% params$team)
+} else {
+  
+  suceData = trustData
+}
+
+# now filter by SU/ carer
+
+if(params$carerSU == "SU"){
+  
+  suceData = suceData %>%
+    filter(is.na(formtype) | formtype != "SUCE")
+  
+} else if(params$carerSU == "carer"){
+  
+  suceData = suceData %>%
+    filter(formtype == "carer")
+  
+} else if(params$carerSU == "bothCarerSU"){
+  
+  # nothing!
+}
+
+# filter by time last and produce another dataset with 2 years in
+
+two_year_data <- suceData %>% 
+  filter(Date > end_date - 365 * 2)
+
+suceData <- suceData %>% 
+  filter(Date >= first_date, Date <= end_date)
+
+# generate report information
+
+if(is.null(suceData)){
+  
+  report_information = NULL
+  
+} else {
+  
+  # FFT score
+  
+  promoterScores = suceData[, "Promoter2"]
+  
+  if(length(promoterScores[!is.na(promoterScores)]) > 0) {
+    
+    FFT = round(sum(promoterScores %in% 4:5, na.rm = TRUE) /
+                  sum(promoterScores %in% 0:5, na.rm = TRUE) * 100, 0)
+    
+  }
+  
+  # Quality score
+  
+  SQ = round(mean(suceData[, "Service"], na.rm = TRUE) * 20, 0)
+  
+  # Number of responses
+  
+  NR = nrow(suceData)
+  
+  NSQ = length(suceData$Service[!is.na(suceData$Service)])
+  
+  NFFT = length(suceData$Promoter2[!is.na(suceData$Promoter2)])
+  
+  # number of comments
+  
+  IC = length(suceData[, "Improve"][!is.na(suceData[, "Improve"])])
+  BC = length(suceData[, "Best"][!is.na(suceData[, "Best"])])
+  
+  # were you aware of how to raise a concern yes/ no/ maybe
+  
+  complaint_numbers <- map_int(c("D", "N", "Y"), function(x){
+    
+    suceData %>%
+      filter(Complaint == x) %>%
+      nrow()
+  })
+  
+  # criticality
+  
+  improve_numbers <- map_int(c(1, 2, 3), function(x){
+    
+    suceData %>%
+      filter(ImpCrit == x) %>%
+      nrow()
+  })
+  
+  # criticality
+  
+  best_numbers <- map_int(c(1, 2, 3), function(x){
+    
+    suceData %>%
+      filter(BestCrit == x) %>%
+      nrow()
+  })
+  
+  report_information <- 
+    list("theArea" = params$area_name, "NR" = NR, "IC" = IC, "BC" = BC, "NFFT" = NFFT,
+         "FFT" = FFT, "NSQ" = NSQ, "SQ" = SQ, "complaint_numbers" = complaint_numbers,
+         "improve_numbers" = improve_numbers, "best_numbers" = best_numbers)
+}
+
+```
+
+<!-- ## Context -->
+
+```{r}
+
+# what I need more than anything here is a list of the other report areas so I can link 
+
+# fetch the state of the teams
+
+```
+
+## Summary
+
+This report summarises data from `r first_date` to `r end_date`
+
+```{r, results = "asis"}
+
+if(is.null(report_information)){
+  
+  myString = "Within the selected time and area there were no responses"
+} else {
+  
+  myString = paste0("<p>Within ", report_information[["theArea"]], " in the selected time there were ", report_information[["NR"]],
+                    " responses.</p><br>",
+                    "<p>There were ", report_information[["IC"]], " 'What could we do better' responses and ", report_information[["BC"]],
+                    " 'What did we do well' responses</p><br>",
+                    ifelse(report_information[["NFFT"]] > 9,
+                           paste0("<p>The Friends and Family Test Score is the proportion of patients
+      who are extremely likely or likely to recommend a service. In the selected period of time it was ",
+      report_information[["FFT"]], "% (based on ", report_information[["NFFT"]], " responses.)", "</p><br>"), ""),
+      ifelse(report_information[["NSQ"]] > 9,
+             paste0("<p>Service quality rating was ", report_information[["SQ"]], 
+                    "% (based on ", report_information[["NSQ"]],
+                    " responses.)</p>"), ""),
+      ifelse(sum(report_information[["complaint_numbers"]]) > 3,
+             paste0("<p>", report_information[["complaint_numbers"]][3], 
+                    " individuals reported that they knew how to make a complaint, ",
+                    report_information[["complaint_numbers"]][2], 
+                    " reported that they did not know how to make a complaint, and ",
+                    report_information[["complaint_numbers"]][1], 
+                    " reported that they were unsure if they knew.</p>"), "")
+  )
+}
+
+cat(myString)
+
+```
+
+## Summary of responses
+
+```{r}
+
+theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
+
+# remove decimals from historic data
+
+fixedData = data.frame(apply(suceData[, theQuestions], 1:2,
+                             function(x) round(x + .01)))
+
+# count the missing responses
+
+missnum = apply(fixedData, 2, function(x) sum(!is.na(x)))
+
+if(length(names(missnum[missnum > 2])) < 3){
+  
+  return(NULL)
+}
+
+fixedData[, missnum > 2] %>%
+  gather(L1, value) %>% 
+  filter(!is.na(value)) %>%
+  left_join(select(questionFrame, code, value), by = c("L1" = "code")) %>%
+  select(-L1) %>%
+  group_by(value.y) %>%
+  count(value.x) %>%
+  mutate(prop = prop.table(n) * 100) %>%
+  filter(!is.na(prop)) %>% 
+  ungroup() %>%
+  ggplot(aes(x = value.y, y = prop, fill = factor(value.x))) +
+  geom_bar(position = "fill", stat = "identity") + ylab("Proportion responding") + 
+  scale_fill_manual(values = rainbow(5), "Response", limits = c(1:5), breaks = c(5:1),
+                    labels = c("Excellent", "Good", "Fair", "Poor", "Very poor")) +
+  scale_y_continuous(labels = percent_format()) +
+  guides(fill = guide_legend(reverse = TRUE)) + 
+  scale_x_discrete() + coord_flip() + xlab("Question")
+
+
+```
+
+```{r}
+
+theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
+
+sample_data <- two_year_data
+
+sample_data$Quarter = yq(paste0(year(sample_data$Date), ": Q", quarter(sample_data$Date)))
+
+mean_score <- sample_data %>% 
+  select(c("Quarter", "Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+  group_by(Quarter) %>% 
+  summarise_if(is.numeric, function(x) mean(x, na.rm = TRUE) * 20)
+
+minimum_value = mean_score %>% 
+  select(c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+  min(na.rm = TRUE) %>% 
+  `-`(20)
+
+number_scores <- sample_data %>% 
+  select(c("Quarter", "Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+  group_by(Quarter) %>% 
+  summarise_all(function(x) length(x[!is.na(x)]))
+
+mean_score[number_scores < 3] = NA
+
+mean_score %>% 
+  gather(Question, value, -Quarter) %>% 
+  ggplot(aes(x = Quarter, y = value, group = Question, colour = Question)) +
+  geom_line() + 
+  geom_point() +
+  ylim(minimum_value, 100) 
+
+```
+
+## What could we do better?
+
+```{r, results = "asis"}
+
+cat(
+  suceData %>% 
+    filter(!is.na(Improve)) %>% 
+    pull(Improve) %>% 
+    paste0("<p>", ., "</p>", collapse = "")
+)
+
+```
+
+## What did we do well?
+
+```{r, results = "asis"}
+
+cat(
+  suceData %>% 
+    filter(!is.na(Best)) %>% 
+    pull(Best) %>% 
+    paste0("<p>", ., "</p>", collapse = "")
+)
+
+```
