@@ -279,119 +279,24 @@ mean_score %>%
 
 ```{r, results = "asis"}
 
-# produce all the variables and then place them inline below the chunk
-
-returnTopComments <- function(nth_row, type){
-  
-  if(type == "Improve"){
-    
-    check1 <- suceData %>% 
-      filter(!is.na(Imp1)) %>% 
-      left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
-      select(Category, Super)
-    
-    check2 <- suceData %>% 
-      filter(!is.na(Imp2)) %>% 
-      left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
-      select(Category, Super)
-  }
-  
-  if(type == "Best"){
-    
-    check1 <- suceData %>% 
-      filter(!is.na(Best1)) %>% 
-      left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
-      select(Category, Super)
-    
-    check2 <- suceData %>% 
-      filter(!is.na(Best2)) %>% 
-      left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
-      select(Category, Super)
-  }
-  
-  check_final <- rbind(check1, check2)
-  
-  count_table <- check_final %>% 
-    filter(!is.na(Super), !is.na(Category)) %>% 
-    group_by(Category, Super) %>% 
-    count() %>% 
-    ungroup()
-  
-  # this is the bit that returns the nth top comment
-  
-  return_table <- count_table %>% 
-    mutate(percent = round(n / sum(n) * 100, 1)) %>% 
-    arrange(-percent) %>% 
-    slice(nth_row)
-  
-  # return three comments that are exemplars of that comment
-  
-  comment_numbers <- return_table %>% 
-    left_join(categoriesTable, by = c("Category", "Super")) %>% 
-    pull(Number)
-  
-  if(type == "Improve"){
-    
-    return_comments <- suceData %>% 
-      filter(Imp1 %in% comment_numbers |
-               Imp2 %in% comment_numbers) %>% 
-      filter(!is.na(Improve)) %>% 
-      sample_n(3) %>% 
-      pull(Improve) %>% 
-      paste0("<p>", 1 : 3, ": ", ., "</p>", collapse = "")
-  }
-  
-  if(type == "Best"){
-    
-    return_comments <- suceData %>% 
-      filter(Best1 %in% comment_numbers |
-               Best2 %in% comment_numbers) %>% 
-      filter(!is.na(Best)) %>% 
-      sample_n(3) %>% 
-      pull(Best) %>% 
-      paste0("<p>", 1 : 3, ": ", ., "</p>", collapse = "")
-  }
-  
-  return(list("return_table" = return_table, 
-              "return_comments" = return_comments))
-}
-
-improve_1 <- returnTopComments(1, "Improve")[["return_table"]]
-improve_2 <- returnTopComments(2, "Improve")[["return_table"]]
-improve_3 <- returnTopComments(3, "Improve")[["return_table"]]
+cat(
+  suceData %>% 
+    filter(!is.na(Improve)) %>% 
+    pull(Improve) %>% 
+    paste0("<p>", ., "</p>", collapse = "")
+)
 
 ```
-
-The most common comment category was `r paste0(improve_1$Super, ": ", improve_1$Category)` (`r paste0(improve_1$percent, "%")`). Example comments include:
-
-`r returnTopComments(1, "Improve")[["return_comments"]]`
-
-The second most common comment category was `r paste0(improve_2$Super, ": ", improve_2$Category)` (`r paste0(improve_2$percent, "%")`). Example comments include:
-
-`r returnTopComments(2, "Improve")[["return_comments"]]`
-
-The third most common comment category was `r paste0(improve_3$Super, ": ", improve_3$Category)` (`r paste0(improve_3$percent, "%")`). Example comments include:
-
-`r returnTopComments(3, "Improve")[["return_comments"]]`
 
 ## What did we do well?
 
 ```{r, results = "asis"}
 
-best_1 <- returnTopComments(1, "Best")[["return_table"]]
-best_2 <- returnTopComments(2, "Best")[["return_table"]]
-best_3 <- returnTopComments(3, "Best")[["return_table"]]
+cat(
+  suceData %>% 
+    filter(!is.na(Best)) %>% 
+    pull(Best) %>% 
+    paste0("<p>", ., "</p>", collapse = "")
+)
 
 ```
-
-The most common comment category was `r paste0(best_1$Super, ": ", best_1$Category)` (`r paste0(best_1$percent, "%")`). Example comments include:
-
-`r returnTopComments(1, "Best")[["return_comments"]]`
-
-The second most common comment category was `r paste0(best_2$Super, ": ", best_2$Category)` (`r paste0(best_2$percent, "%")`). Example comments include:
-
-`r returnTopComments(2, "Best")[["return_comments"]]`
-
-The second most common comment category was `r paste0(best_3$Super, ": ", best_3$Category)` (`r paste0(best_3$percent, "%")`). Example comments include:
-
-`r returnTopComments(3, "Best")[["return_comments"]]`
