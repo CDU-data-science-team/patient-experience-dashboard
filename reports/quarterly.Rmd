@@ -48,6 +48,10 @@ if(params$division != "NA"){
   suceData = trustData %>%
     filter(Directorate %in% params$directorate)
   
+} else if(params$team != "NA"){
+  
+  suceData = trustData %>%
+    filter(TeamC %in% params$team)
 } else {
   
   suceData = trustData
