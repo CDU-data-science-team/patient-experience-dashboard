@@ -23,7 +23,7 @@ output$summaryPage <- renderUI({
                        selected = "quarterly"),
            
            selectInput("serviceArea", "Service area", 
-                       choices = c("Division", "Directorate")),
+                       choices = c("Division", "Directorate", "Team")),
            
            uiOutput("reportCustomAreaSelector"),
            
@@ -101,10 +101,7 @@ output$summaryOutputs = renderUI({
 
 output$reportCustomAreaSelector <- renderUI({
   
-  if(input$serviceArea == "Trust"){
-    
-    return()
-  } else if(input$serviceArea == "Division"){
+  if(input$serviceArea == "Division"){
     
     selectInput("report_division", "Division (defaults to whole Trust)", 
                 list("Local Partnerships- Mental Healthcare" = 0,
@@ -130,31 +127,33 @@ output$reportCustomAreaSelector <- renderUI({
   } else if(input$serviceArea == "Team"){
     
     teams <- trustData %>% 
-      filter(Date > input$dateRange[1], Date < input$dateRange[2]) %>% 
+      filter(Date > Sys.Date() - 180) %>% 
       distinct(TeamC) %>% 
       inner_join(
         counts %>% 
           group_by(TeamC) %>%
           slice(which.max(as.Date(date_from)))
-      )
+      ) %>% 
+      left_join(dirTable, c("Directorate" = "DirC")) %>% 
+      filter(!is.na(TeamN))
     
-    if(nrow(teams) < 1) return()
+    team_names <- map(unique(teams$DirT), function(x) {
+      
+      team_name <- teams %>% 
+        filter(DirT == x)
+      
+      numbers <- team_name$TeamC
+      
+      set_names(numbers, team_name$TeamN)
+    })
     
-    ### removing all missing names and sort
-    
-    teams = teams %>% 
-      filter(!is.na(TeamN)) %>% 
-      arrange(TeamN)
-    
-    team_numbers <- teams %>% pull(TeamC)
-    
-    names(team_numbers) <- teams %>% pull(TeamN)
+    names(team_names) <- unique(teams$DirT)
     
     tagList(p("Please note that there are many teams listed within 
               this control. You can type to search or you may prefer to use 
               the custom selector"),
             selectInput("report_team", "Choose team(s)",
-                        team_numbers, multiple = TRUE, selected = "All")
+                        team_names, multiple = TRUE, selected = "All")
     )
   } else if(input$serviceArea == "Custom"){
     
@@ -210,7 +209,7 @@ output$downloadDoc <- downloadHandler(
                        carerSU = input$carerSU,
                        area_name = area_name)
       } else {
-      
+        
         showModal(
           modalDialog(
             title = "Error!",
@@ -222,14 +221,52 @@ output$downloadDoc <- downloadHandler(
         return()
       }
     }
-
-    render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
-           quiet = TRUE, params = params,
-           envir = new.env(parent = globalenv())
-    )
+      
+      if(input$serviceArea == "Team"){
+        
+        if(isTruthy(input$report_team)){
+        
+        area_name_team <- counts %>% 
+          filter(TeamC %in% input$report_team) %>% 
+          pull(TeamN) %>% 
+          unique() %>% 
+          paste(collapse = ", ")
+        
+        params <- list(team = input$report_team,
+                       carerSU = input$carerSU,
+                       area_name = area_name_team)
+        } else {
+        
+          showModal(
+            modalDialog(
+              title = "Error!",
+              HTML("Please select a team"),
+              easyClose = TRUE
+            )
+          )
+          
+          return()
+        }
+      }
     
-    # copy docx to 'file'
-    file.copy(paste0("reports/", report_name, ".docx"), file, overwrite = TRUE)
+    if(input$serviceArea == "Team"){
+      
+      render(paste0("reports/team_quarterly.Rmd"), output_format = "word_document",
+             quiet = TRUE, params = params,
+             envir = new.env(parent = globalenv()))
+      
+      # copy docx to 'file'
+      file.copy(paste0("reports/team_quarterly.docx"), file, overwrite = TRUE)
+
+    } else {
+      
+      render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
+             quiet = TRUE, params = params,
+             envir = new.env(parent = globalenv()))
+      
+      # copy docx to 'file'
+      file.copy(paste0("reports/", report_name, ".docx"), file, overwrite = TRUE)
+    }
   }
 )
 
