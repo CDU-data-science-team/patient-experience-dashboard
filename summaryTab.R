@@ -190,7 +190,7 @@ output$downloadDoc <- downloadHandler(
         
         area_name <- "the whole Trust"
         
-        params <- list(division = NA,
+        params <- list(division = "NA",
                        carerSU = input$carerSU,
                        area_name = area_name)
       }
