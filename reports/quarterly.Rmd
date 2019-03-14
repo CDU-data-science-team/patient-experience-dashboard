@@ -336,9 +336,9 @@ returnTopComments <- function(nth_row, type){
       filter(Imp1 %in% comment_numbers |
                Imp2 %in% comment_numbers) %>% 
       filter(!is.na(Improve)) %>% 
-      sample_n(3) %>% 
+      sample_n(ifelse(nrow(.) >= 3, 3, nrow(.))) %>%  
       pull(Improve) %>% 
-      paste0("<p>", 1 : 3, ": ", ., "</p>", collapse = "")
+      paste0("<p>", 1 : length(.), ": ", ., "</p>", collapse = "")
   }
   
   if(type == "Best"){
@@ -347,9 +347,9 @@ returnTopComments <- function(nth_row, type){
       filter(Best1 %in% comment_numbers |
                Best2 %in% comment_numbers) %>% 
       filter(!is.na(Best)) %>% 
-      sample_n(3) %>% 
+      sample_n(ifelse(nrow(.) >= 3, 3, nrow(.))) %>%  
       pull(Best) %>% 
-      paste0("<p>", 1 : 3, ": ", ., "</p>", collapse = "")
+      paste0("<p>", 1 : length(.), ": ", ., "</p>", collapse = "")
   }
   
   return(list("return_table" = return_table, 
