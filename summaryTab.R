@@ -633,10 +633,35 @@ output$changeCompliment <- renderValueBox({
     arrange(-abs(difference)) %>% 
     slice(1)
   
-  valueBox(value = paste0(difference_table$difference, "%"), 
-           subtitle = HTML(paste0(difference_table$Super, ":<br>", difference_table$Category)),
-           color = ifelse(difference_table$difference >= 0, "green", "red"),
-           icon = icon("smile"))
+  biggest_difference <- difference_table$difference
+  
+  if(biggest_difference > 0){
+    
+    biggest_difference <- paste0("+", biggest_difference)
+  }
+  
+    box1 <- valueBox(value = paste0(biggest_difference, "%"), 
+             subtitle = HTML(paste0("<p title = 'largest change in category (green increase, red decrease)'>", 
+                                    difference_table$Super, ":<br>", difference_table$Category, "</p>")),
+             color = ifelse(difference_table$difference >= 0, "green", "red"),
+             icon = icon("smile"),
+             # href = actionLink("button", label = ""))
+             href = '<a class="action-button">An action link</a>')
+    
+    box1$children[[1]]$attribs$class<-"action-button"
+    box1$children[[1]]$attribs$id<-"button_box_01"
+    return(box1)
+})
+
+observeEvent(input$button_box_01, {
+  
+  showModal(
+    modalDialog(
+      title = "Hello!",
+      HTML("Hello!"),
+      easyClose = TRUE
+    )
+  )
 })
 
 
@@ -728,7 +753,14 @@ output$changeCriticism <- renderValueBox({
     arrange(-abs(difference)) %>% 
     slice(1)
   
-  valueBox(value = paste0(difference_table$difference, "%"), 
+  biggest_difference <- difference_table$difference
+  
+  if(biggest_difference > 0){
+    
+    biggest_difference <- paste0("+", biggest_difference)
+  }
+  
+  valueBox(value = paste0(biggest_difference, "%"), 
            subtitle = HTML(paste0(difference_table$Super, ":<br>", difference_table$Category)),
            color = ifelse(difference_table$difference >= 0, "green", "red"),
            icon = icon("frown"))
