@@ -5,7 +5,7 @@ myStack <- reactive({
   
   req(passData()[["currentData"]])
   
-  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
+  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "InvCare", "Positive")
   
   # remove decimals from historic data
   
@@ -63,7 +63,7 @@ observeEvent(input$stacked_suce_click, {
 
 output$stackedTableSuceModal <- renderDT({
   
-  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
+  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "InvCare", "Positive")
   
   # remove decimals from historic data
   
@@ -111,24 +111,24 @@ output$fftScore = renderText({
 
 myTrend = reactive({
   
-  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
+  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "InvCare", "Positive")
   
   sample_data <- passData()[["trendData"]]
   
   sample_data$Quarter = yq(paste0(year(sample_data$Date), ": Q", quarter(sample_data$Date)))
   
   mean_score <- sample_data %>% 
-    select(c("Quarter", "Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+    select(c("Quarter", theQuestions)) %>% 
     group_by(Quarter) %>% 
     summarise_if(is.numeric, function(x) mean(x, na.rm = TRUE) * 20)
   
   minimum_value = mean_score %>% 
-    select(c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+    select(theQuestions) %>% 
     min(na.rm = TRUE) %>% 
     `-`(20)
   
   number_scores <- sample_data %>% 
-    select(c("Quarter", "Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+    select(c("Quarter", theQuestions)) %>% 
     group_by(Quarter) %>% 
     summarise_all(function(x) length(x[!is.na(x)]))
   
@@ -139,7 +139,7 @@ myTrend = reactive({
     left_join(select(questionFrame, code, value), by = c("Question" = "code")) %>% 
     ggplot(aes(x = Quarter, y = value.x, group = value.y, colour = value.y)) +
     geom_line() +  geom_point() +
-    ylab("%") +
+    ylab("%") + theme(legend.title=element_blank()) +
     ylim(minimum_value, 100) 
 })
 

@@ -202,9 +202,9 @@ cat(myString)
 
 ## Summary of responses
 
-```{r}
+```{r fig.width=7, fig.height=6, echo=FALSE, warning=FALSE, fig.cap="Percentage of responses", dpi=400}
 
-theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
+theQuestions = c("Service", "Promoter", "Listening", "Communication", "InvCare", "Respect", "Positive")
 
 # remove decimals from historic data
 
@@ -241,26 +241,26 @@ fixedData[, missnum > 2] %>%
 
 ```
 
-```{r}
+```{r fig.width=7, fig.height=6, echo=FALSE, warning=FALSE, fig.cap="Trend over time", dpi=400}
 
-theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")
+theQuestions = c("Service", "Promoter", "Listening", "Communication", "InvCare", "Respect", "Positive")
 
 sample_data <- two_year_data
 
 sample_data$Quarter = yq(paste0(year(sample_data$Date), ": Q", quarter(sample_data$Date)))
 
 mean_score <- sample_data %>% 
-  select(c("Quarter", "Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+  select(c("Quarter", theQuestions)) %>% 
   group_by(Quarter) %>% 
   summarise_if(is.numeric, function(x) mean(x, na.rm = TRUE) * 20)
 
 minimum_value = mean_score %>% 
-  select(c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+  select(theQuestions) %>% 
   min(na.rm = TRUE) %>% 
   `-`(20)
 
 number_scores <- sample_data %>% 
-  select(c("Quarter", "Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+  select(c("Quarter", theQuestions)) %>% 
   group_by(Quarter) %>% 
   summarise_all(function(x) length(x[!is.na(x)]))
 
@@ -268,10 +268,10 @@ mean_score[number_scores < 3] = NA
 
 mean_score %>% 
   gather(Question, value, -Quarter) %>% 
-  ggplot(aes(x = Quarter, y = value, group = Question, colour = Question)) +
-  geom_line() + 
-  geom_point() +
-  ylim(minimum_value, 100) 
+  left_join(select(questionFrame, code, value), by = c("Question" = "code")) %>% 
+  ggplot(aes(x = Quarter, y = value.x, group = value.y, colour = value.y)) +
+  geom_line() + geom_point() +
+  ylab("%") + ylim(minimum_value, 100) + theme(legend.title=element_blank())
 
 ```
 
