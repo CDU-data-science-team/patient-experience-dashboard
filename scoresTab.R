@@ -1,52 +1,13 @@
 
 # Generate stacked plot of the requested variable
 
-myStack <- reactive({
-  
-  req(passData()[["currentData"]])
-  
-  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "InvCare", "Positive")
-  
-  # remove decimals from historic data
-  
-  fixedData = data.frame(apply(passData()[["currentData"]][, theQuestions], 1:2,
-                               function(x) round(x + .01)))
-  
-  # count the missing responses
-  
-  missnum = apply(fixedData, 2, function(x) sum(!is.na(x)))
-  
-  if(length(names(missnum[missnum > 2])) < 3){
-    
-    return(NULL)
-  }
-  
-  fixedData[, missnum > 2] %>%
-    gather(L1, value) %>% 
-    filter(!is.na(value)) %>%
-    left_join(select(questionFrame, code, value), by = c("L1" = "code")) %>%
-    select(-L1) %>%
-    group_by(value.y) %>%
-    count(value.x) %>%
-    mutate(prop = prop.table(n) * 100) %>%
-    filter(!is.na(prop)) %>% 
-    ungroup() %>%
-    ggplot(aes(x = value.y, y = prop, fill = factor(value.x))) +
-    geom_bar(position = "fill", stat = "identity") + ylab("Proportion responding") + 
-    scale_fill_manual(values = rainbow(5), "Response", limits = c(1:5), breaks = c(5:1),
-                      labels = c("Excellent", "Good", "Fair", "Poor", "Very poor")) +
-    scale_y_continuous(labels = percent_format()) +
-    guides(fill = guide_legend(reverse = TRUE)) + 
-    scale_x_discrete() + coord_flip() + xlab("Question")
-})
-
 output$StackPlot <- renderPlot({
   
   validate(
-    need(myStack(), "Not enough data")
+    need(passData()[["currentData"]], "Not enough data")
   )
   
-  print(myStack())
+  stack_function(passData()[["currentData"]])
 })
 
 # produce click interaction to bring up table
@@ -109,46 +70,12 @@ output$fftScore = renderText({
 
 # Generate line plot for trend
 
-myTrend = reactive({
-  
-  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "InvCare", "Positive")
-  
-  sample_data <- passData()[["trendData"]]
-  
-  sample_data$Quarter = yq(paste0(year(sample_data$Date), ": Q", quarter(sample_data$Date)))
-  
-  mean_score <- sample_data %>% 
-    select(c("Quarter", theQuestions)) %>% 
-    group_by(Quarter) %>% 
-    summarise_if(is.numeric, function(x) mean(x, na.rm = TRUE) * 20)
-  
-  minimum_value = mean_score %>% 
-    select(theQuestions) %>% 
-    min(na.rm = TRUE) %>% 
-    `-`(20)
-  
-  number_scores <- sample_data %>% 
-    select(c("Quarter", theQuestions)) %>% 
-    group_by(Quarter) %>% 
-    summarise_all(function(x) length(x[!is.na(x)]))
-  
-  mean_score[number_scores < 3] = NA
-  
-  mean_score %>% 
-    gather(Question, value, -Quarter) %>% 
-    left_join(select(questionFrame, code, value), by = c("Question" = "code")) %>% 
-    ggplot(aes(x = Quarter, y = value.x, group = value.y, colour = value.y)) +
-    geom_line() +  geom_point() +
-    ylab("%") + theme(legend.title=element_blank()) +
-    ylim(minimum_value, 100) 
-})
-
 output$trendPlot <- renderPlot({
   
   validate(
-    need(myTrend(), "Not enough data")
+    need(passData()[["trendData"]], "Not enough data")
   )
   
-  print(myTrend())
+  trend_function(passData()[["trendData"]])
   
 })
