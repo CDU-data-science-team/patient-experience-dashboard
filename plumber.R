@@ -1,6 +1,13 @@
 
+# okay, what's the plan here?
+# let's set up two /URLS
+# one for a team quarterly report at /team
+# another one at /team-html for HTML response
+# one at /custom which accepts other parameters
+
+# this returns a word document with a team report in
 #* @serializer contentType list(type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-#* @get /word
+#* @get /team
 function(team){
   tmp <- tempfile()
   
@@ -10,8 +17,9 @@ function(team){
   readBin(tmp, "raw", n=file.info(tmp)$size)
 }
 
+# this returns an html report with a team report in
 #* @serializer contentType list(type="text/html; charset=utf-8")
-#* @get /html
+#* @get /team-html
 function(team){
   tmp <- tempfile()
   
@@ -21,8 +29,9 @@ function(team){
   readBin(tmp, "raw", n=file.info(tmp)$size)
 }
 
+# this returns a custom report just for kicks
 #* @serializer contentType list(type="application/html")
-#* @get /test
+#* @get /custom
 function(res){
   
   include_rmd("test.Rmd", res)
