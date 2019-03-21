@@ -200,14 +200,49 @@ output$downloadDoc <- downloadHandler(
       
       if(isTruthy(input$report_directorate)){
         
-        area_name <- dirTable %>% 
-          filter(DirC %in% input$report_directorate) %>% 
-          pull(DirT) %>% 
-          paste(collapse = ", ")
+        today = Sys.Date()
         
-        params <- list(directorate = input$report_directorate,
-                       carerSU = input$carerSU,
-                       area_name = area_name)
+        previous_quarter <- (quarter(today)) - 1 %% 4
+        previous_year <- year(today)
+        
+        if(previous_quarter == 0){
+          
+          previous_quarter <- 4
+          previous_year <- previous_year - 1
+        }
+        
+        first_date <- yq(paste0(previous_year, ": Q", previous_quarter))
+        
+        end_date <- yq(paste0(year(today), ": Q", quarter(today))) - 1
+        
+        number_rows = trustData %>%
+          filter(Directorate %in% input$report_directorate) %>% 
+          filter(Date >= first_date, Date <= end_date) %>% 
+            nrow()
+        
+        if(number_rows >= 10){
+          
+          area_name <- dirTable %>% 
+            filter(DirC %in% input$report_directorate) %>% 
+            pull(DirT) %>% 
+            paste(collapse = ", ")
+          
+          params <- list(directorate = input$report_directorate,
+                         carerSU = input$carerSU,
+                         area_name = area_name)
+        } else {
+          
+          showModal(
+            modalDialog(
+              title = "Error!",
+              HTML("Too few responses in the last quarter"),
+              easyClose = TRUE
+            )
+          )
+          
+          return()
+        }
+        
       } else {
         
         showModal(
@@ -254,7 +289,7 @@ output$downloadDoc <- downloadHandler(
       render(paste0("reports/team_quarterly.Rmd"), output_format = "word_document",
              quiet = TRUE, params = params,
              envir = new.env(parent = globalenv()))
-      
+
       # copy docx to 'file'
       file.copy(paste0("reports/team_quarterly.docx"), file, overwrite = TRUE)
 
@@ -274,96 +309,7 @@ output$downloadDoc <- downloadHandler(
 
 dataSummary <- reactive({
   
-  suceData = passData()[["currentData"]]
-  
-  if(is.null(suceData)){
-    
-    return(NULL)
-    
-  } else {
-    
-    # FFT score
-    
-    promoterScores = suceData[, "Promoter2"]
-    
-    if(length(promoterScores[!is.na(promoterScores)]) > 0) {
-      
-      FFT = round(sum(promoterScores %in% 4:5, na.rm = TRUE) /
-                    sum(promoterScores %in% 0:5, na.rm = TRUE) * 100, 0)
-      
-    }
-    
-    # Quality score
-    
-    SQ = round(mean(suceData[, "Service"], na.rm = TRUE) * 20, 0)
-    
-    # Number of responses
-    
-    NR = nrow(suceData)
-    
-    NSQ = length(suceData$Service[!is.na(suceData$Service)])
-    
-    NFFT = length(suceData$Promoter2[!is.na(suceData$Promoter2)])
-    
-    # number of comments
-    
-    IC = length(suceData[, "Improve"][!is.na(suceData[, "Improve"])])
-    BC = length(suceData[, "Best"][!is.na(suceData[, "Best"])])
-    
-    # were you aware of how to raise a concern yes/ no/ maybe
-    
-    complaint_numbers <- map_int(c("D", "N", "Y"), function(x){
-      
-      suceData %>% 
-        filter(Complaint == x) %>% 
-        nrow()
-    })
-    
-    # criticality
-    
-    improve_numbers <- map_int(c(1, 2, 3), function(x){
-      
-      suceData %>% 
-        filter(ImpCrit == x) %>% 
-        nrow()
-    })
-    
-    # criticality
-    
-    best_numbers <- map_int(c(1, 2, 3), function(x){
-      
-      suceData %>% 
-        filter(BestCrit == x) %>% 
-        nrow()
-    })
-    
-    # name of the area
-    
-    # if(is.null(input$selTeam)){
-    #   
-    theArea = "the selected area"
-    #   
-    # } else {
-    #   
-    #   ### look up team names
-    #   
-    #   teams <- as.tibble(input$selTeam) %>%  
-    #     inner_join(
-    #       counts %>% 
-    #         group_by(TeamC) %>%
-    #         slice(which.max(as.Date(date_from)))
-    #     )
-    #   
-    #   team_names <- teams %>% pull(TeamN)
-    #   
-    # }
-    
-    return(
-      list("theArea" = theArea, "NR" = NR, "IC" = IC, "BC" = BC, "NFFT" = NFFT,
-           "FFT" = FFT, "NSQ" = NSQ, "SQ" = SQ, "complaint_numbers" = complaint_numbers,
-           "improve_numbers" = improve_numbers, "best_numbers" = best_numbers)
-    )
-  }
+  reportFunction(passData()[["currentData"]])
 })
 
 # 1st row----
