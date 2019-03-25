@@ -90,16 +90,6 @@ report_information <- reportFunction(suceData)
 
 ```
 
-<!-- ## Context -->
-
-```{r}
-
-# what I need more than anything here is a list of the other report areas so I can link 
-
-# fetch the state of the teams
-
-```
-
 ## Summary
 
 This report summarises data from `r first_date` to `r end_date`
@@ -271,3 +261,35 @@ The second most common comment category was `r paste0(best_2$Super, ": ", best_2
 The second most common comment category was `r paste0(best_3$Super, ": ", best_3$Category)` (`r paste0(best_3$percent, "%")`). Example comments include:
 
 `r returnTopComments(3, "Best")[["return_comments"]]`
+
+## Team reports
+
+```{r, results = "asis", message = FALSE}
+
+# this is where if it's a directorate report I'm going to produce
+# a set of links that go to all the team reports that exist
+
+# suceData <- trustData %>% filter(Date > as.Date("2018-04-01"), Directorate == 2)
+
+if(params$directorate != "NA"){
+  
+  team_numbers <- suceData %>% 
+    group_by(TeamC) %>% 
+    count() %>% 
+    filter(n > 2) %>% 
+    inner_join(counts) %>% 
+    filter(!duplicated(TeamC)) %>% 
+    ungroup()
+  
+  team_numbers %>% 
+    mutate(print = paste0("[", TeamN, "](http://localhost:9727/team-html?team=", TeamC, ")  \n  \n")) %>% 
+    pull(print) %>% 
+    cat()
+
+  # cat(paste0("<a href = http://localhost:9727/team-html?team=", team_numbers, ">team link</a>\n"))
+  
+  # cat(paste0("[team link](http://localhost:9727/team-html?team=", team_numbers, ")  \n  \n"))
+  
+}
+
+```
