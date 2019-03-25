@@ -12,6 +12,7 @@ function(request) {
     dashboardSidebar(
       
       sidebarMenu(
+        id = "tabs",
         menuItem("Summary", tabName = "summary", icon = icon("dashboard")),
         menuItem("Scores", tabName = "scores", icon = icon("bar-chart")),
         menuItem("Comments", tabName = "comments", icon = icon("comment")),

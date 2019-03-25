@@ -37,6 +37,9 @@ output$summaryPage <- renderUI({
 output$summaryOutputs = renderUI({
   
   tagList(
+    
+    div("Some boxes will give more information if you hover pointer over the text."),
+    hr(),
     htmlOutput("summary_text"),
     
     fluidRow(
@@ -454,8 +457,8 @@ output$changeInCriticality <- renderValueBox({
   req(change)
   
   valueBox(value = paste0(change, "%"), 
-           subtitle = HTML("Change in<br>criticality"),
-           color = ifelse(change >= 0, "green", "red")
+           subtitle = HTML("<p title = 'Green less critical, red more critical'>Change in<br>criticality</p>"),
+           color = ifelse(change < 0, "green", "red")
   )
 })
 
@@ -618,11 +621,30 @@ output$changeCompliment <- renderValueBox({
              subtitle = HTML("Not enough<br>data"))
   } else {
     
-    valueBox(value = paste0(difference_table$difference, "%"), 
-             subtitle = HTML(paste0(difference_table$Super, ":<br>", difference_table$Category)),
-             color = ifelse(difference_table$difference >= 0, "green", "red"),
-             icon = icon("smile"))
+  biggest_difference <- difference_table$difference
+  
+  if(biggest_difference > 0){
+    
+    biggest_difference <- paste0("+", biggest_difference)
   }
+  
+  box1 <- valueBox(value = paste0(biggest_difference, "%"), 
+                   subtitle = HTML(paste0("<p title = 'Largest change in category (green increase, red decrease)'>", 
+                                          difference_table$Super, ":<br>", difference_table$Category, "</p>")),
+                   color = ifelse(difference_table$difference >= 0, "green", "red"),
+                   icon = icon("smile"),
+                   # href = actionLink("button", label = ""))
+                   href = '<a class="action-button">An action link</a>')
+  
+  box1$children[[1]]$attribs$class<-"action-button"
+  box1$children[[1]]$attribs$id<-"button_box_01"
+  return(box1)
+  }
+})
+
+observeEvent(input$button_box_01, {
+  
+  updateTabItems(session, "tabs", "comments")
 })
 
 
@@ -741,10 +763,18 @@ output$changeCriticism <- renderValueBox({
              subtitle = HTML("Not enough<br>data"))
   } else {
     
-    valueBox(value = paste0(difference_table$difference, "%"), 
-             subtitle = HTML(paste0(difference_table$Super, ":<br>", difference_table$Category)),
-             color = ifelse(difference_table$difference >= 0, "green", "red"),
-             icon = icon("frown"))
+  biggest_difference <- difference_table$difference
+  
+  if(biggest_difference > 0){
+    
+    biggest_difference <- paste0("+", biggest_difference)
+  }
+  
+  valueBox(value = paste0(biggest_difference, "%"), 
+           subtitle = HTML(paste0("<p title = 'Largest change in category (green increase, red decrease)'>", 
+                                  difference_table$Super, ":<br>", difference_table$Category, "</p>")),
+           color = ifelse(difference_table$difference >= 0, "green", "red"),
+           icon = icon("frown"))
   }
 })
 
@@ -825,7 +855,8 @@ output$topScore <- renderValueBox({
   top_score_name = names(highLowScoreChange()[["high_score"]])
   
   valueBox(value = paste0(top_score, "%"),
-           subtitle = top_score_name,
+           subtitle = HTML(paste0("<p title = 'Highest score'>", 
+                                    top_score_name, "</p>")),
            color = "green")
 })
 
@@ -836,7 +867,8 @@ output$lowestScore <- renderValueBox({
   low_score_name = names(highLowScoreChange()[["low_score"]])
   
   valueBox(value = paste0(low_score, "%"),
-           subtitle = low_score_name,
+           subtitle = HTML(paste0("<p title = 'Lowest score'>", 
+                                  low_score_name, "</p>")),
            color = "red")
 })
 
@@ -857,9 +889,10 @@ output$biggestIncrease <- renderValueBox({
     
     biggest_increase_name = names(highLowScoreChange()[["biggest_increase"]])
     
-    valueBox(value = paste0(biggest_increase, "%"),
-             subtitle = biggest_increase_name,
-             color = "green")
+  valueBox(value = paste0(biggest_increase, "%"),
+           subtitle = HTML(paste0("<p title = 'Largest increase (or smallest decrease)'>", 
+                                  biggest_increase_name, "</p>")),
+           color = "green")
   }
 })
 
@@ -880,9 +913,10 @@ output$biggestDecrease <- renderValueBox({
     
     biggest_decrease_name = names(highLowScoreChange()[["biggest_decrease"]])
     
-    valueBox(value = paste0(biggest_decrease, "%"),
-             subtitle = biggest_decrease_name,
-             color = "red")
+  valueBox(value = paste0(biggest_decrease, "%"),
+           subtitle = HTML(paste0("<p title = 'Largest decrease (or smallest increase)'>", 
+                                  biggest_decrease_name, "</p>")),
+           color = "red")
   }
 })
 
