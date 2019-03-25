@@ -37,6 +37,9 @@ output$summaryPage <- renderUI({
 output$summaryOutputs = renderUI({
   
   tagList(
+    
+    div("Some boxes will give more information if you hover pointer over text."),
+    hr(),
     htmlOutput("summary_text"),
     
     fluidRow(
@@ -221,10 +224,10 @@ output$downloadDoc <- downloadHandler(
         return()
       }
     }
+    
+    if(input$serviceArea == "Team"){
       
-      if(input$serviceArea == "Team"){
-        
-        if(isTruthy(input$report_team)){
+      if(isTruthy(input$report_team)){
         
         area_name_team <- counts %>% 
           filter(TeamC %in% input$report_team) %>% 
@@ -235,19 +238,19 @@ output$downloadDoc <- downloadHandler(
         params <- list(team = input$report_team,
                        carerSU = input$carerSU,
                        area_name = area_name_team)
-        } else {
+      } else {
         
-          showModal(
-            modalDialog(
-              title = "Error!",
-              HTML("Please select a team"),
-              easyClose = TRUE
-            )
+        showModal(
+          modalDialog(
+            title = "Error!",
+            HTML("Please select a team"),
+            easyClose = TRUE
           )
-          
-          return()
-        }
+        )
+        
+        return()
       }
+    }
     
     if(input$serviceArea == "Team"){
       
@@ -257,7 +260,7 @@ output$downloadDoc <- downloadHandler(
       
       # copy docx to 'file'
       file.copy(paste0("reports/team_quarterly.docx"), file, overwrite = TRUE)
-
+      
     } else {
       
       render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
@@ -496,8 +499,8 @@ output$changeInCriticality <- renderValueBox({
   req(change)
   
   valueBox(value = paste0(change, "%"), 
-           subtitle = HTML("Change in<br>criticality"),
-           color = ifelse(change >= 0, "green", "red")
+           subtitle = HTML("<p title = 'Green less critical, red more critical'>Change in<br>criticality</p>"),
+           color = ifelse(change < 0, "green", "red")
   )
 })
 
@@ -640,28 +643,22 @@ output$changeCompliment <- renderValueBox({
     biggest_difference <- paste0("+", biggest_difference)
   }
   
-    box1 <- valueBox(value = paste0(biggest_difference, "%"), 
-             subtitle = HTML(paste0("<p title = 'largest change in category (green increase, red decrease)'>", 
-                                    difference_table$Super, ":<br>", difference_table$Category, "</p>")),
-             color = ifelse(difference_table$difference >= 0, "green", "red"),
-             icon = icon("smile"),
-             # href = actionLink("button", label = ""))
-             href = '<a class="action-button">An action link</a>')
-    
-    box1$children[[1]]$attribs$class<-"action-button"
-    box1$children[[1]]$attribs$id<-"button_box_01"
-    return(box1)
+  box1 <- valueBox(value = paste0(biggest_difference, "%"), 
+                   subtitle = HTML(paste0("<p title = 'Largest change in category (green increase, red decrease)'>", 
+                                          difference_table$Super, ":<br>", difference_table$Category, "</p>")),
+                   color = ifelse(difference_table$difference >= 0, "green", "red"),
+                   icon = icon("smile"),
+                   # href = actionLink("button", label = ""))
+                   href = '<a class="action-button">An action link</a>')
+  
+  box1$children[[1]]$attribs$class<-"action-button"
+  box1$children[[1]]$attribs$id<-"button_box_01"
+  return(box1)
 })
 
 observeEvent(input$button_box_01, {
   
-  showModal(
-    modalDialog(
-      title = "Hello!",
-      HTML("Hello!"),
-      easyClose = TRUE
-    )
-  )
+  updateTabItems(session, "tabs", "comments")
 })
 
 
@@ -761,7 +758,8 @@ output$changeCriticism <- renderValueBox({
   }
   
   valueBox(value = paste0(biggest_difference, "%"), 
-           subtitle = HTML(paste0(difference_table$Super, ":<br>", difference_table$Category)),
+           subtitle = HTML(paste0("<p title = 'Largest change in category (green increase, red decrease)'>", 
+                                  difference_table$Super, ":<br>", difference_table$Category, "</p>")),
            color = ifelse(difference_table$difference >= 0, "green", "red"),
            icon = icon("frown"))
 })
@@ -843,7 +841,8 @@ output$topScore <- renderValueBox({
   top_score_name = names(highLowScoreChange()[["high_score"]])
   
   valueBox(value = paste0(top_score, "%"),
-           subtitle = top_score_name,
+           subtitle = HTML(paste0("<p title = 'Highest score'>", 
+                                    top_score_name, "</p>")),
            color = "green"
   )
 })
@@ -855,7 +854,8 @@ output$lowestScore <- renderValueBox({
   low_score_name = names(highLowScoreChange()[["low_score"]])
   
   valueBox(value = paste0(low_score, "%"),
-           subtitle = low_score_name,
+           subtitle = HTML(paste0("<p title = 'Lowest score'>", 
+                                  low_score_name, "</p>")),
            color = "red"
   )
 })
@@ -872,7 +872,8 @@ output$biggestIncrease <- renderValueBox({
   biggest_increase_name = names(highLowScoreChange()[["biggest_increase"]])
   
   valueBox(value = paste0(biggest_increase, "%"),
-           subtitle = biggest_increase_name,
+           subtitle = HTML(paste0("<p title = 'Largest increase (or smallest decrease)'>", 
+                                  biggest_increase_name, "</p>")),
            color = "green"
   )
 })
@@ -889,7 +890,8 @@ output$biggestDecrease <- renderValueBox({
   biggest_decrease_name = names(highLowScoreChange()[["biggest_decrease"]])
   
   valueBox(value = paste0(biggest_decrease, "%"),
-           subtitle = biggest_decrease_name,
+           subtitle = HTML(paste0("<p title = 'Largest decrease (or smallest increase)'>", 
+                                  biggest_decrease_name, "</p>")),
            color = "red"
   )
 })
