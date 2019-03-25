@@ -17,16 +17,27 @@ reportFunction <- function(report_data){
     
     promoterScores = suceData[, "Promoter2"]
     
-    if(length(promoterScores[!is.na(promoterScores)]) > 0) {
+    if(length(promoterScores[!is.na(promoterScores)]) > 2) {
       
       FFT = round(sum(promoterScores %in% 4:5, na.rm = TRUE) /
                     sum(promoterScores %in% 0:5, na.rm = TRUE) * 100, 0)
+    } else {
+      
+      FFT = NULL
     }
     
     # Quality score
     
-    SQ = round(mean(suceData[, "Service"], na.rm = TRUE) * 20, 0)
+    serviceScores <- suceData[, "Service"]
     
+    if(length(serviceScores[!is.na(serviceScores)]) > 2){
+      
+      SQ = round(mean(suceData[, "Service"], na.rm = TRUE) * 20, 0)
+    } else {
+      
+      SQ = NULL
+    }
+
     # Number of responses
     
     NR = nrow(suceData)
@@ -120,6 +131,9 @@ trend_function <- function(trend_data){
   
   theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "InvCare", "Positive")
   
+  # useful test- poor data
+  # trend_data <- trustData %>% filter(TeamC %in% 505, Date > Sys.Date() - 365 * 2)
+  
   sample_data <- trend_data
   
   sample_data$Quarter = yq(paste0(year(sample_data$Date), ": Q", quarter(sample_data$Date)))
@@ -143,6 +157,7 @@ trend_function <- function(trend_data){
   
   mean_score %>% 
     gather(Question, value, -Quarter) %>% 
+    filter(!is.na(value)) %>% 
     left_join(select(questionFrame, code, value), by = c("Question" = "code")) %>% 
     ggplot(aes(x = Quarter, y = value.x, group = value.y, colour = value.y)) +
     geom_line() +  geom_point() +

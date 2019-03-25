@@ -218,7 +218,7 @@ output$downloadDoc <- downloadHandler(
         number_rows = trustData %>%
           filter(Directorate %in% input$report_directorate) %>% 
           filter(Date >= first_date, Date <= end_date) %>% 
-            nrow()
+          nrow()
         
         if(number_rows >= 10){
           
@@ -256,10 +256,10 @@ output$downloadDoc <- downloadHandler(
         return()
       }
     }
+    
+    if(input$serviceArea == "Team"){
       
-      if(input$serviceArea == "Team"){
-        
-        if(isTruthy(input$report_team)){
+      if(isTruthy(input$report_team)){
         
         area_name_team <- counts %>% 
           filter(TeamC %in% input$report_team) %>% 
@@ -270,29 +270,29 @@ output$downloadDoc <- downloadHandler(
         params <- list(team = input$report_team,
                        carerSU = input$carerSU,
                        area_name = area_name_team)
-        } else {
+      } else {
         
-          showModal(
-            modalDialog(
-              title = "Error!",
-              HTML("Please select a team"),
-              easyClose = TRUE
-            )
+        showModal(
+          modalDialog(
+            title = "Error!",
+            HTML("Please select a team"),
+            easyClose = TRUE
           )
-          
-          return()
-        }
+        )
+        
+        return()
       }
+    }
     
     if(input$serviceArea == "Team"){
       
       render(paste0("reports/team_quarterly.Rmd"), output_format = "word_document",
              quiet = TRUE, params = params,
              envir = new.env(parent = globalenv()))
-
+      
       # copy docx to 'file'
       file.copy(paste0("reports/team_quarterly.docx"), file, overwrite = TRUE)
-
+      
     } else {
       
       render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
@@ -316,18 +316,30 @@ dataSummary <- reactive({
 
 output$sqBox <- renderValueBox({
   
-  valueBox(value = paste0(dataSummary()[["SQ"]], "%"), 
-           subtitle = HTML(paste0("Service quality<br>(", dataSummary()[["NSQ"]], " responses)")),
-           icon = icon("thumbs-up")
-  )
+  if(is.null(dataSummary()[["SQ"]])){
+    
+    valueBox(value = "Error", 
+             subtitle = HTML("Not enough<br>data"))
+  } else {
+    
+    valueBox(value = paste0(dataSummary()[["SQ"]], "%"), 
+             subtitle = HTML(paste0("Service quality<br>(", dataSummary()[["NSQ"]], " responses)")),
+             icon = icon("thumbs-up"))
+  }
 })
 
 output$fftBox <- renderValueBox({
   
-  valueBox(value = paste0(dataSummary()[["FFT"]], "%"), 
-           subtitle = HTML(paste0("Would you recommend?<br>(", dataSummary()[["NFFT"]], " responses)")),
-           icon = icon("smile")
-  )
+  if(is.null(dataSummary()[["FFT"]])){
+    
+    valueBox(value = "Error", 
+             subtitle = HTML("Not enough<br>data"))
+  } else {
+    
+    valueBox(value = paste0(dataSummary()[["FFT"]], "%"), 
+             subtitle = HTML(paste0("Would you recommend?<br>(", dataSummary()[["NFFT"]], " responses)")),
+             icon = icon("smile"))
+  }
 })
 
 output$numberResponsesBox <- renderValueBox({
@@ -501,9 +513,16 @@ output$topCompliment1 <- renderValueBox({
   
   count_table = returnTopComments(1, "Best")
   
-  valueBox(value = paste0(count_table$percent, "%"), 
-           subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
-           icon = icon("smile"))
+  if(nrow(count_table) == 0){
+    
+    valueBox(value = "Error", 
+             subtitle = HTML("Not enough<br>data"))
+  } else {
+    
+    valueBox(value = paste0(count_table$percent, "%"), 
+             subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+             icon = icon("smile"))
+  }
 })
 
 output$topCompliment2 <- renderValueBox({
@@ -512,9 +531,16 @@ output$topCompliment2 <- renderValueBox({
   
   count_table = returnTopComments(2, "Best")
   
-  valueBox(value = paste0(count_table$percent, "%"), 
-           subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
-           icon = icon("smile"))
+  if(nrow(count_table) == 0){
+    
+    valueBox(value = "Error", 
+             subtitle = HTML("Not enough<br>data"))
+  } else {
+    
+    valueBox(value = paste0(count_table$percent, "%"), 
+             subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+             icon = icon("smile"))
+  }
 })
 
 output$topCompliment3 <- renderValueBox({
@@ -523,9 +549,16 @@ output$topCompliment3 <- renderValueBox({
   
   count_table = returnTopComments(3, "Best")
   
-  valueBox(value = paste0(count_table$percent, "%"), 
-           subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
-           icon = icon("smile"))
+  if(nrow(count_table) == 0){
+    
+    valueBox(value = "Error", 
+             subtitle = HTML("Not enough<br>data"))
+  } else {
+    
+    valueBox(value = paste0(count_table$percent, "%"), 
+             subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+             icon = icon("smile"))
+  }
 })
 
 output$changeCompliment <- renderValueBox({
@@ -579,10 +612,17 @@ output$changeCompliment <- renderValueBox({
     arrange(-abs(difference)) %>% 
     slice(1)
   
-  valueBox(value = paste0(difference_table$difference, "%"), 
-           subtitle = HTML(paste0(difference_table$Super, ":<br>", difference_table$Category)),
-           color = ifelse(difference_table$difference >= 0, "green", "red"),
-           icon = icon("smile"))
+  if(is.na(difference_table$difference)){
+    
+    valueBox(value = "Error", 
+             subtitle = HTML("Not enough<br>data"))
+  } else {
+    
+    valueBox(value = paste0(difference_table$difference, "%"), 
+             subtitle = HTML(paste0(difference_table$Super, ":<br>", difference_table$Category)),
+             color = ifelse(difference_table$difference >= 0, "green", "red"),
+             icon = icon("smile"))
+  }
 })
 
 
@@ -594,9 +634,16 @@ output$topCriticism1 <- renderValueBox({
   
   count_table = returnTopComments(1, "Improve")
   
-  valueBox(value = paste0(count_table$percent, "%"), 
-           subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
-           icon = icon("frown"))
+  if(nrow(count_table) == 0){
+    
+    valueBox(value = "Error", 
+             subtitle = HTML("Not enough<br>data"))
+  } else {
+    
+    valueBox(value = paste0(count_table$percent, "%"), 
+             subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+             icon = icon("frown"))
+  }
 })
 
 output$topCriticism2 <- renderValueBox({
@@ -605,9 +652,16 @@ output$topCriticism2 <- renderValueBox({
   
   count_table = returnTopComments(2, "Improve")
   
-  valueBox(value = paste0(count_table$percent, "%"), 
-           subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
-           icon = icon("frown"))
+  if(nrow(count_table) == 0){
+    
+    valueBox(value = "Error", 
+             subtitle = HTML("Not enough<br>data"))
+  } else {
+    
+    valueBox(value = paste0(count_table$percent, "%"), 
+             subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+             icon = icon("frown"))
+  }
 })
 
 output$topCriticism3 <- renderValueBox({
@@ -616,9 +670,16 @@ output$topCriticism3 <- renderValueBox({
   
   count_table = returnTopComments(3, "Improve")
   
-  valueBox(value = paste0(count_table$percent, "%"), 
-           subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
-           icon = icon("frown"))
+  if(nrow(count_table) == 0){
+    
+    valueBox(value = "Error", 
+             subtitle = HTML("Not enough<br>data"))
+  } else {
+    
+    valueBox(value = paste0(count_table$percent, "%"), 
+             subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+             icon = icon("frown"))
+  }
 })
 
 # change in criticism
@@ -674,10 +735,17 @@ output$changeCriticism <- renderValueBox({
     arrange(-abs(difference)) %>% 
     slice(1)
   
-  valueBox(value = paste0(difference_table$difference, "%"), 
-           subtitle = HTML(paste0(difference_table$Super, ":<br>", difference_table$Category)),
-           color = ifelse(difference_table$difference >= 0, "green", "red"),
-           icon = icon("frown"))
+  if(is.na(difference_table$difference)){
+    
+    valueBox(value = "Error", 
+             subtitle = HTML("Not enough<br>data"))
+  } else {
+    
+    valueBox(value = paste0(difference_table$difference, "%"), 
+             subtitle = HTML(paste0(difference_table$Super, ":<br>", difference_table$Category)),
+             color = ifelse(difference_table$difference >= 0, "green", "red"),
+             icon = icon("frown"))
+  }
 })
 
 # fifth row----
@@ -752,106 +820,69 @@ highLowScoreChange <- reactive({
 
 output$topScore <- renderValueBox({
   
-  top_score = round(as.numeric(highLowScoreChange()[["high_score"]]), 1)
+  top_score <- round(as.numeric(highLowScoreChange()[["high_score"]]), 1)
   
   top_score_name = names(highLowScoreChange()[["high_score"]])
   
   valueBox(value = paste0(top_score, "%"),
            subtitle = top_score_name,
-           color = "green"
-  )
+           color = "green")
 })
 
 output$lowestScore <- renderValueBox({
   
-  low_score = round(as.numeric(highLowScoreChange()[["low_score"]]), 1)
+  low_score <- round(as.numeric(highLowScoreChange()[["low_score"]]), 1)
   
   low_score_name = names(highLowScoreChange()[["low_score"]])
   
   valueBox(value = paste0(low_score, "%"),
            subtitle = low_score_name,
-           color = "red"
-  )
+           color = "red")
 })
 
 output$biggestIncrease <- renderValueBox({
   
   biggest_increase = round(as.numeric(highLowScoreChange()[["biggest_increase"]]), 1)
   
-  if(biggest_increase > 0){
+  if(is.na(biggest_increase)){
     
-    biggest_increase <- paste0("+", biggest_increase)
+    valueBox(value = "Error", 
+             subtitle = HTML("Not enough<br>data"))
+  } else {
+    
+    if(biggest_increase > 0){
+      
+      biggest_increase <- paste0("+", biggest_increase)
+    }
+    
+    biggest_increase_name = names(highLowScoreChange()[["biggest_increase"]])
+    
+    valueBox(value = paste0(biggest_increase, "%"),
+             subtitle = biggest_increase_name,
+             color = "green")
   }
-  
-  biggest_increase_name = names(highLowScoreChange()[["biggest_increase"]])
-  
-  valueBox(value = paste0(biggest_increase, "%"),
-           subtitle = biggest_increase_name,
-           color = "green"
-  )
 })
 
 output$biggestDecrease <- renderValueBox({
   
   biggest_decrease = round(as.numeric(highLowScoreChange()[["biggest_decrease"]]), 1)
   
-  if(biggest_decrease > 0){
+  if(is.na(biggest_decrease)){
     
-    biggest_decrease <- paste0("+", biggest_decrease)
+    valueBox(value = "Error", 
+             subtitle = HTML("Not enough<br>data"))
+  } else {
+    
+    if(biggest_decrease > 0){
+      
+      biggest_decrease <- paste0("+", biggest_decrease)
+    }
+    
+    biggest_decrease_name = names(highLowScoreChange()[["biggest_decrease"]])
+    
+    valueBox(value = paste0(biggest_decrease, "%"),
+             subtitle = biggest_decrease_name,
+             color = "red")
   }
-  
-  biggest_decrease_name = names(highLowScoreChange()[["biggest_decrease"]])
-  
-  valueBox(value = paste0(biggest_decrease, "%"),
-           subtitle = biggest_decrease_name,
-           color = "red"
-  )
 })
-
-# valueBoxOutput("impCritPercentageBox", width = 3), # number comments
-# 
-# valueBoxOutput("numberImproveBox", width = 3), # number comments
-#
-# valueBoxOutput("numberBestBox", width = 3), # number comments
-#
-# valueBoxOutput("criticalBox"), # criticality summary
-# 
-# valueBoxOutput("teamsRespondingBox"), # breakdown of teams responding (zero responding teams, <3 responding teams)
-# 
-# valueBoxOutput("bestScoreBox"), # best score
-# 
-# valueBoxOutput("worstScoreBox") # worst score
-
-# this is the function that draws the parameterized rmarkdown
-
-observe({
-  
-  searchString <- parseQueryString(session$clientData$url_search)
-  
-  cat(searchString[["division"]])
-  
-  # # update inputs according to query string
-  # if(length(searchString) > 0){ # if the searchString exists
-  #   # deal with first query which indicates the audience
-  #   if(searchString[[1]] == "nhs"){ # for NHS users do the following
-  #     updateCheckboxGroupInput(session, "domainShow",
-  #                              choices = list("NHS users" = "nhs.uk",
-  #                                             "Other" = "Other"), selected = c("nhs.uk"))
-  #   }
-  #   # do they want a smooth?
-  #   if(searchString[[2]] == "yes"){
-  #     updateTabsetPanel(session, "theTabs", selected = "trend")
-  #     updateCheckboxInput(session, inputId = "smooth",
-  #                         value = TRUE)
-  #   }
-  # }
-  # 
-  # input$Division
-  # 
-  # input$selDirect
-  # 
-  # input$selTeam
-  
-})
-
 

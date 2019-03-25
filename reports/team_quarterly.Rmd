@@ -21,7 +21,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 # source the code with the functions in
 
-# source("../report_functions.R")
+source("../report_functions.R", local = TRUE)
 
 ```
 
@@ -143,11 +143,12 @@ cat(myString)
 
 ```
 
-## Summary of responses
-
 ```{r fig.width=7, fig.height=6, echo=FALSE, warning=FALSE, fig.cap="Percentage of responses", dpi=400}
 
-stack_function(suceData)
+if(!is.null(stack_function(suceData))){
+  
+  stack_function(suceData)
+}
 
 ```
 
