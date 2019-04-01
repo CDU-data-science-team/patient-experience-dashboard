@@ -3,920 +3,977 @@
 
 output$summaryPage <- renderUI({
   
-  tagList(
-    column(8, uiOutput("summaryOutputs")),
-    column(4, h2("Report builder"),
-           
-           # write the stuff in here
-           
-           # I've had a good idea where the report updates the numbers
-           # of responses, service areas, that kind of thing, as you go
-           
-           # Quarterly
-           # Access to services, Pharmacy
-           # Diversity
-           # Exception based reporting
-           # Show zero returning teams more easily (maybe outside the feedback tracker)
-           
-           selectInput("reportTime", "Report type (more reports TBA)", 
-                       choices = c("Quarterly" = "quarterly"),
-                       selected = "quarterly"),
-           
-           selectInput("serviceArea", "Service area", 
-                       choices = c("Division", "Directorate", "Team")),
-           
-           uiOutput("reportCustomAreaSelector"),
-           
-           downloadButton("downloadDoc", "Download report")
-    )
-  )
-})
-
-# main value box output interface defined here----
-
-output$summaryOutputs = renderUI({
+  # give the current quarter here and write it in the quarterly control
   
-  tagList(
-    
-    div("Some boxes will give more information if you hover pointer over the text."),
-    hr(),
-    htmlOutput("summary_text"),
-    
-    fluidRow(
-      
-      valueBoxOutput("sqBox", width = 3), # service quality
-      
-      valueBoxOutput("fftBox", width = 3), # fft
-      
-      valueBoxOutput("numberResponsesBox", width = 3), # number respones
-      
-      valueBoxOutput("zeroRespondingTeams", width = 3) # breakdown of teams responding (zero responding teams, <3 responding teams)
-      
-    ),
-    
-    fluidRow(
-      
-      valueBoxOutput("impCritOneBox", width = 3), # minmally critical
-      
-      valueBoxOutput("impCritTwoBox", width = 3), # mildy critical
-      
-      valueBoxOutput("impCritThreeBox", width = 3), # highly critical
-      
-      valueBoxOutput("changeInCriticality", width = 3) # trend in criticality
-    ),
-    
-    fluidRow(
-      
-      valueBoxOutput("topCompliment1", width = 3),
-      
-      valueBoxOutput("topCompliment2", width = 3),
-      
-      valueBoxOutput("topCompliment3", width = 3),
-      
-      valueBoxOutput("changeCompliment", width = 3)
-    ),
-    
-    fluidRow(
-      
-      valueBoxOutput("topCriticism1", width = 3),
-      
-      valueBoxOutput("topCriticism2", width = 3),
-      
-      valueBoxOutput("topCriticism3", width = 3),
-      
-      valueBoxOutput("changeCriticism", width = 3)
-    ),
-    
-    fluidRow(
-      
-      valueBoxOutput("topScore", width = 3), # best score
-      
-      valueBoxOutput("lowestScore", width = 3), # lowest score
-      
-      valueBoxOutput("biggestIncrease", width = 3), # lowest score
-      
-      valueBoxOutput("biggestDecrease", width = 3) # lowest score
-    )
-  )
-})
-
-# this is the reactive interface referred to in the first bit of the code
-
-output$reportCustomAreaSelector <- renderUI({
+  today = Sys.Date()
   
-  if(input$serviceArea == "Division"){
+  previous_quarter <- (quarter(today)) - 1 %% 4
+  previous_year <- year(today)
+  
+  if(previous_quarter == 0){
     
-    selectInput("report_division", "Division (defaults to whole Trust)", 
-                list("Local Partnerships- Mental Healthcare" = 0,
-                     "Local Partnerships- Community Healthcare" = 2, "Forensic" = 1),
-                multiple = TRUE)
-    
-  } else if(input$serviceArea == "Directorate"){
-    
-    finalTable = dirTable %>%
-      filter(!DirC %in% c(0, 40))
-    
-    # finally pull the directorates and names
-    
-    directorates = finalTable %>%
-      pull(DirC)
-    
-    names(directorates) = finalTable %>%
-      pull(DirT)
-    
-    selectInput("report_directorate", "Choose directorate(s)",
-                directorates, multiple = TRUE)
-    
-  } else if(input$serviceArea == "Team"){
-    
-    teams <- trustData %>% 
-      filter(Date > Sys.Date() - 180) %>% 
-      distinct(TeamC) %>% 
-      inner_join(
-        counts %>% 
-          group_by(TeamC) %>%
-          slice(which.max(as.Date(date_from)))
-      ) %>% 
-      left_join(dirTable, c("Directorate" = "DirC")) %>% 
-      filter(!is.na(TeamN))
-    
-    team_names <- map(unique(teams$DirT), function(x) {
-      
-      team_name <- teams %>% 
-        filter(DirT == x)
-      
-      numbers <- team_name$TeamC
-      
-      set_names(numbers, team_name$TeamN)
-    })
-    
-    names(team_names) <- unique(teams$DirT)
-    
-    tagList(p("Please note that there are many teams listed within 
-              this control. You can type to search or you may prefer to use 
-              the custom selector"),
-            selectInput("report_team", "Choose team(s)",
-                        team_names, multiple = TRUE, selected = "All")
-    )
-  } else if(input$serviceArea == "Custom"){
-    
-    p("This feature is not yet implemented")
+    previous_quarter <- 4
+    previous_year <- previous_year - 1
   }
+  
+  first_date <- yq(paste0(previous_year, ": Q", previous_quarter))
+  
+  end_date <- yq(paste0(year(today), ": Q", quarter(today))) - 1
+  
+  # render the whole control as a list
+  
+  choice_text <- list("quarterly")
+  
+  names(choice_text) = c(paste0("Quarterly (", 
+                                substr(first_date, 1, 7), " to ", 
+                                substr(end_date, 1, 7), ")"))
+  
+  tagList(
+    column(4, 
+           box(width = 12, downloadButton("downloadCurrent", "Download currently selected data"),
+               # hr(),
+               selectInput("commentSummary", "Comment summary type",
+                           choices = c("Verbatim comments" = "verbatimComments",
+                                       "Summary of text" = "textSummary"))
+           ),
+           "Hello"
+    ),
+      column(8, uiOutput("summaryOutputs")),
+      column(4, h2("Report builder"),
+             
+             # write the stuff in here
+             
+             # I've had a good idea where the report updates the numbers
+             # of responses, service areas, that kind of thing, as you go
+             
+             # Quarterly
+             # Access to services, Pharmacy
+             # Diversity
+             # Exception based reporting
+             # Show zero returning teams more easily (maybe outside the feedback tracker)
+             
+             selectInput("reportTime", "Report type (more reports TBA)", 
+                         choices = choice_text,
+                         selected = "quarterly"),
+             
+             selectInput("serviceArea", "Service area", 
+                         choices = c("Division", "Directorate", "Team")),
+             
+             uiOutput("reportCustomAreaSelector"),
+             
+             downloadButton("downloadDoc", "Download report")
+      )
+    )
 })
-
-# report page outputs defined here----
-
-output$downloadDoc <- downloadHandler(
-  filename = "CustomReport.docx",
-  content = function(file){
+  
+  # main value box output interface defined here----
+  
+  output$summaryOutputs = renderUI({
     
-    # determine which report we're rendering
-    
-    report_name = input$reportTime
-    
-    # Set up parameters to pass to Rmd document
-    
-    # if they're on the division selector
+    tagList(
+      
+      div("Some boxes will give more information if you hover pointer over the text."),
+      hr(),
+      htmlOutput("summary_text"),
+      
+      fluidRow(
+        
+        valueBoxOutput("sqBox", width = 3), # service quality
+        
+        valueBoxOutput("fftBox", width = 3), # fft
+        
+        valueBoxOutput("numberResponsesBox", width = 3), # number respones
+        
+        valueBoxOutput("zeroRespondingTeams", width = 3) # breakdown of teams responding (zero responding teams, <3 responding teams)
+        
+      ),
+      
+      fluidRow(
+        
+        valueBoxOutput("impCritOneBox", width = 3), # minmally critical
+        
+        valueBoxOutput("impCritTwoBox", width = 3), # mildy critical
+        
+        valueBoxOutput("impCritThreeBox", width = 3), # highly critical
+        
+        valueBoxOutput("changeInCriticality", width = 3) # trend in criticality
+      ),
+      
+      fluidRow(
+        
+        valueBoxOutput("topCompliment1", width = 3),
+        
+        valueBoxOutput("topCompliment2", width = 3),
+        
+        valueBoxOutput("topCompliment3", width = 3),
+        
+        valueBoxOutput("changeCompliment", width = 3)
+      ),
+      
+      fluidRow(
+        
+        valueBoxOutput("topCriticism1", width = 3),
+        
+        valueBoxOutput("topCriticism2", width = 3),
+        
+        valueBoxOutput("topCriticism3", width = 3),
+        
+        valueBoxOutput("changeCriticism", width = 3)
+      ),
+      
+      fluidRow(
+        
+        valueBoxOutput("topScore", width = 3), # best score
+        
+        valueBoxOutput("lowestScore", width = 3), # lowest score
+        
+        valueBoxOutput("biggestIncrease", width = 3), # lowest score
+        
+        valueBoxOutput("biggestDecrease", width = 3) # lowest score
+      )
+    )
+  })
+  
+  # this is the reactive interface referred to in the first bit of the code
+  
+  output$reportCustomAreaSelector <- renderUI({
     
     if(input$serviceArea == "Division"){
       
-      if(isTruthy(input$report_division)){
-        
-        area_name <- c("Local Partnerships- Mental Healthcare", 
-                       "Forensic Services", 
-                       "Local Partnerships- Community Healthcare")[as.numeric(input$report_division) + 1]
-        
-        params <- list(division = input$report_division,
-                       carerSU = input$carerSU,
-                       area_name = area_name)
-      } else {
-        
-        area_name <- "the whole Trust"
-        
-        params <- list(division = "NA",
-                       carerSU = input$carerSU,
-                       area_name = area_name)
-      }
-    }
-    
-    if(input$serviceArea == "Directorate"){
+      selectInput("report_division", "Division (defaults to whole Trust)", 
+                  list("Local Partnerships- Mental Healthcare" = 0,
+                       "Local Partnerships- Community Healthcare" = 2, "Forensic" = 1),
+                  multiple = TRUE)
       
-      if(isTruthy(input$report_directorate)){
+    } else if(input$serviceArea == "Directorate"){
+      
+      finalTable = dirTable %>%
+        filter(!DirC %in% c(0, 40))
+      
+      # finally pull the directorates and names
+      
+      directorates = finalTable %>%
+        pull(DirC)
+      
+      names(directorates) = finalTable %>%
+        pull(DirT)
+      
+      selectInput("report_directorate", "Choose directorate(s)",
+                  directorates, multiple = TRUE)
+      
+    } else if(input$serviceArea == "Team"){
+      
+      teams <- trustData %>% 
+        filter(Date > Sys.Date() - 180) %>% 
+        distinct(TeamC) %>% 
+        inner_join(
+          counts %>% 
+            group_by(TeamC) %>%
+            slice(which.max(as.Date(date_from)))
+        ) %>% 
+        left_join(dirTable, c("Directorate" = "DirC")) %>% 
+        filter(!is.na(TeamN))
+      
+      team_names <- map(unique(teams$DirT), function(x) {
         
-        today = Sys.Date()
+        team_name <- teams %>% 
+          filter(DirT == x)
         
-        previous_quarter <- (quarter(today)) - 1 %% 4
-        previous_year <- year(today)
+        numbers <- team_name$TeamC
         
-        if(previous_quarter == 0){
+        set_names(numbers, team_name$TeamN)
+      })
+      
+      names(team_names) <- unique(teams$DirT)
+      
+      tagList(p("Please note that there are many teams listed within 
+              this control. You can type to search or you may prefer to use 
+              the custom selector"),
+              selectInput("report_team", "Choose team(s)",
+                          team_names, multiple = TRUE, selected = "All")
+      )
+    } else if(input$serviceArea == "Custom"){
+      
+      p("This feature is not yet implemented")
+    }
+  })
+  
+  # report page outputs defined here----
+  
+  output$downloadDoc <- downloadHandler(
+    filename = "CustomReport.docx",
+    content = function(file){
+      
+      # determine which report we're rendering
+      
+      report_name = input$reportTime
+      
+      # Set up parameters to pass to Rmd document
+      
+      # if they're on the division selector
+      
+      if(input$serviceArea == "Division"){
+        
+        if(isTruthy(input$report_division)){
           
-          previous_quarter <- 4
-          previous_year <- previous_year - 1
-        }
-        
-        first_date <- yq(paste0(previous_year, ": Q", previous_quarter))
-        
-        end_date <- yq(paste0(year(today), ": Q", quarter(today))) - 1
-        
-        number_rows = trustData %>%
-          filter(Directorate %in% input$report_directorate) %>% 
-          filter(Date >= first_date, Date <= end_date) %>% 
-          nrow()
-        
-        if(number_rows >= 10){
+          area_name <- c("Local Partnerships- Mental Healthcare", 
+                         "Forensic Services", 
+                         "Local Partnerships- Community Healthcare")[as.numeric(input$report_division) + 1]
           
-          area_name <- dirTable %>% 
-            filter(DirC %in% input$report_directorate) %>% 
-            pull(DirT) %>% 
-            paste(collapse = ", ")
-          
-          params <- list(directorate = input$report_directorate,
+          params <- list(division = input$report_division,
                          carerSU = input$carerSU,
                          area_name = area_name)
+        } else {
+          
+          area_name <- "the whole Trust"
+          
+          params <- list(division = "NA",
+                         carerSU = input$carerSU,
+                         area_name = area_name)
+        }
+      }
+      
+      if(input$serviceArea == "Directorate"){
+        
+        if(isTruthy(input$report_directorate)){
+          
+          today = Sys.Date()
+          
+          previous_quarter <- (quarter(today)) - 1 %% 4
+          previous_year <- year(today)
+          
+          if(previous_quarter == 0){
+            
+            previous_quarter <- 4
+            previous_year <- previous_year - 1
+          }
+          
+          first_date <- yq(paste0(previous_year, ": Q", previous_quarter))
+          
+          end_date <- yq(paste0(year(today), ": Q", quarter(today))) - 1
+          
+          number_rows = trustData %>%
+            filter(Directorate %in% input$report_directorate) %>% 
+            filter(Date >= first_date, Date <= end_date) %>% 
+            nrow()
+          
+          if(number_rows >= 10){
+            
+            area_name <- dirTable %>% 
+              filter(DirC %in% input$report_directorate) %>% 
+              pull(DirT) %>% 
+              paste(collapse = ", ")
+            
+            params <- list(directorate = input$report_directorate,
+                           carerSU = input$carerSU,
+                           area_name = area_name)
+          } else {
+            
+            showModal(
+              modalDialog(
+                title = "Error!",
+                HTML("Too few responses in the last quarter"),
+                easyClose = TRUE
+              )
+            )
+            
+            return()
+          }
+          
         } else {
           
           showModal(
             modalDialog(
               title = "Error!",
-              HTML("Too few responses in the last quarter"),
+              HTML("Please select a directorate"),
               easyClose = TRUE
             )
           )
           
           return()
         }
+      }
+      
+      if(input$serviceArea == "Team"){
+        
+        if(isTruthy(input$report_team)){
+          
+          area_name_team <- counts %>% 
+            filter(TeamC %in% input$report_team) %>% 
+            pull(TeamN) %>% 
+            unique() %>% 
+            paste(collapse = ", ")
+          
+          params <- list(team = input$report_team,
+                         carerSU = input$carerSU,
+                         area_name = area_name_team)
+        } else {
+          
+          showModal(
+            modalDialog(
+              title = "Error!",
+              HTML("Please select a team"),
+              easyClose = TRUE
+            )
+          )
+          
+          return()
+        }
+      }
+      
+      # if it's a custom report add the date range to the params
+      
+      if(report_name == "custom"){
+        
+        params = c(params, list("date_from" = input$dateRange[1],
+                                "date_to" = input$dateRange[2],
+                                "comment_summary" = input$commentSummary))
+      }
+      
+      if(input$serviceArea == "Team"){
+        
+        if(report_name == "custom"){
+          
+          render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
+                 quiet = TRUE, params = params,
+                 envir = new.env(parent = globalenv()))
+          
+          # copy docx to 'file'
+          file.copy(paste0("reports/", report_name, ".docx"), file, overwrite = TRUE)
+        } else {
+          
+          render(paste0("reports/team_quarterly.Rmd"), output_format = "word_document",
+                 quiet = TRUE, params = params,
+                 envir = new.env(parent = globalenv()))
+          
+          # copy docx to 'file'
+          file.copy(paste0("reports/team_quarterly.docx"), file, overwrite = TRUE)
+        }
         
       } else {
         
-        showModal(
-          modalDialog(
-            title = "Error!",
-            HTML("Please select a directorate"),
-            easyClose = TRUE
-          )
-        )
+        render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
+               quiet = TRUE, params = params,
+               envir = new.env(parent = globalenv()))
         
-        return()
+        # copy docx to 'file'
+        file.copy(paste0("reports/", report_name, ".docx"), file, overwrite = TRUE)
       }
     }
+  )
+  
+  # reactive text to describe reports
+  
+  # reactive function to produce data summary to pass to value boxes and to report
+  
+  dataSummary <- reactive({
     
-    if(input$serviceArea == "Team"){
-      
-      if(isTruthy(input$report_team)){
-        
-        area_name_team <- counts %>% 
-          filter(TeamC %in% input$report_team) %>% 
-          pull(TeamN) %>% 
-          unique() %>% 
-          paste(collapse = ", ")
-        
-        params <- list(team = input$report_team,
-                       carerSU = input$carerSU,
-                       area_name = area_name_team)
-      } else {
-        
-        showModal(
-          modalDialog(
-            title = "Error!",
-            HTML("Please select a team"),
-            easyClose = TRUE
-          )
-        )
-        
-        return()
-      }
-    }
+    reportFunction(passData()[["currentData"]])
+  })
+  
+  # 1st row----
+  
+  output$sqBox <- renderValueBox({
     
-    if(input$serviceArea == "Team"){
+    if(is.null(dataSummary()[["SQ"]])){
       
-      render(paste0("reports/team_quarterly.Rmd"), output_format = "word_document",
-             quiet = TRUE, params = params,
-             envir = new.env(parent = globalenv()))
-      
-      # copy docx to 'file'
-      file.copy(paste0("reports/team_quarterly.docx"), file, overwrite = TRUE)
-      
+      valueBox(value = "Error", 
+               subtitle = HTML("Not enough<br>data"))
     } else {
       
-      render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
-             quiet = TRUE, params = params,
-             envir = new.env(parent = globalenv()))
-      
-      # copy docx to 'file'
-      file.copy(paste0("reports/", report_name, ".docx"), file, overwrite = TRUE)
+      valueBox(value = paste0(dataSummary()[["SQ"]], "%"), 
+               subtitle = HTML(paste0("Service quality<br>(", dataSummary()[["NSQ"]], " responses)")),
+               icon = icon("thumbs-up"))
     }
-  }
-)
-
-# reactive function to produce data summary to pass to value boxes and to report
-
-dataSummary <- reactive({
+  })
   
-  reportFunction(passData()[["currentData"]])
-})
-
-# 1st row----
-
-output$sqBox <- renderValueBox({
-  
-  if(is.null(dataSummary()[["SQ"]])){
+  output$fftBox <- renderValueBox({
     
-    valueBox(value = "Error", 
-             subtitle = HTML("Not enough<br>data"))
-  } else {
+    if(is.null(dataSummary()[["FFT"]])){
+      
+      valueBox(value = "Error", 
+               subtitle = HTML("Not enough<br>data"))
+    } else {
+      
+      valueBox(value = paste0(dataSummary()[["FFT"]], "%"), 
+               subtitle = HTML(paste0("Would you recommend?<br>(", dataSummary()[["NFFT"]], " responses)")),
+               icon = icon("smile"))
+    }
+  })
+  
+  output$numberResponsesBox <- renderValueBox({
     
-    valueBox(value = paste0(dataSummary()[["SQ"]], "%"), 
-             subtitle = HTML(paste0("Service quality<br>(", dataSummary()[["NSQ"]], " responses)")),
-             icon = icon("thumbs-up"))
-  }
-})
-
-output$fftBox <- renderValueBox({
+    valueBox(value = dataSummary()[["NR"]], 
+             subtitle = HTML("Number of<br>responses"),
+             icon = icon("book-open")
+    )
+  })
   
-  if(is.null(dataSummary()[["FFT"]])){
+  output$zeroRespondingTeams <- renderValueBox({
     
-    valueBox(value = "Error", 
-             subtitle = HTML("Not enough<br>data"))
-  } else {
+    # need to filter counts according to division/ directorate/ team
     
-    valueBox(value = paste0(dataSummary()[["FFT"]], "%"), 
-             subtitle = HTML(paste0("Would you recommend?<br>(", dataSummary()[["NFFT"]], " responses)")),
-             icon = icon("smile"))
-  }
-})
-
-output$numberResponsesBox <- renderValueBox({
-  
-  valueBox(value = dataSummary()[["NR"]], 
-           subtitle = HTML("Number of<br>responses"),
-           icon = icon("book-open")
-  )
-})
-
-output$zeroRespondingTeams <- renderValueBox({
-  
-  # need to filter counts according to division/ directorate/ team
-  
-  all_teams = counts %>% # if the whole Trust is selected do this
-    filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
-    pull(TeamC) %>% 
-    unique()
-  
-  if(!is.null(input$Division)){ 
-    
-    all_teams = counts %>% 
+    all_teams = counts %>% # if the whole Trust is selected do this
       filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
-      filter(Division %in% input$Division) %>% 
       pull(TeamC) %>% 
       unique()
-  } 
-  
-  if(!is.null(input$selDirect)){ # otherwise look at the directorate code
     
-    all_teams = counts %>% 
-      filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
-      filter(Directorate %in% input$selDirect) %>% 
-      pull(TeamC) %>% 
-      unique()
+    if(!is.null(input$Division)){ 
+      
+      all_teams = counts %>% 
+        filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
+        filter(Division %in% input$Division) %>% 
+        pull(TeamC) %>% 
+        unique()
+    } 
+    
+    if(!is.null(input$selDirect)){ # otherwise look at the directorate code
+      
+      all_teams = counts %>% 
+        filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
+        filter(Directorate %in% input$selDirect) %>% 
+        pull(TeamC) %>% 
+        unique()
+    }
+    
+    if(!is.null(input$selTeam)){
+      
+      all_teams = counts %>% 
+        filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
+        filter(TeamC %in% input$TeamC) %>% 
+        pull(TeamC) %>% 
+        unique()
+    }
+    
+    df <- passData()[["currentData"]] %>% 
+      mutate(quarter_date = floor_date(Date, "quarter")) %>% 
+      mutate(TeamC = factor(TeamC, levels = all_teams)) %>% 
+      group_by(TeamC, quarter_date) %>% 
+      summarise(n = n()) %>%
+      ungroup() %>% 
+      complete(TeamC, quarter_date) %>%
+      arrange(TeamC, quarter_date)
+    
+    zero_teams <- df %>% filter(!is.na(TeamC)) %>% 
+      fill(TeamC) %>% 
+      spread(quarter_date, n, fill = 0) %>%
+      mutate(row_total = rowSums(select(., -1))) %>% 
+      filter(row_total == 0) %>% 
+      nrow()
+    
+    valueBox(value = zero_teams,
+             subtitle = HTML("Zero responding<br>teams")
+    )
+  })
+  
+  # second row----
+  
+  output$impCritOneBox <- renderValueBox({
+    
+    valueBox(value = dataSummary()[["improve_numbers"]][1], 
+             subtitle = HTML("Minimally critical<br>comments"),
+             color = "green"
+    )
+  })
+  
+  output$impCritTwoBox <- renderValueBox({
+    
+    valueBox(value = dataSummary()[["improve_numbers"]][2], 
+             subtitle = HTML("Moderately critical<br>comments"),
+             color = "orange"
+    )
+  })
+  
+  output$impCritThreeBox <- renderValueBox({
+    
+    valueBox(value = dataSummary()[["improve_numbers"]][3], 
+             subtitle = HTML("Highly critical<br>comments"),
+             color = "red"
+    )
+  })
+  
+  output$changeInCriticality <- renderValueBox({
+    
+    req(passData()[["comparisonData"]])
+    
+    # take the current period and compare with three months previously
+    
+    current_criticality <- passData()[["currentData"]] %>% 
+      filter(ImpCrit %in% 1:3) %>% 
+      pull(ImpCrit) %>% 
+      mean()
+    
+    previous_criticality <- passData()[["comparisonData"]] %>% 
+      filter(ImpCrit %in% 1:3) %>% 
+      pull(ImpCrit) %>% 
+      mean()
+    
+    change <- round((current_criticality - previous_criticality) / current_criticality * 100, 1)
+    
+    req(change)
+    
+    valueBox(value = paste0(change, "%"), 
+             subtitle = HTML("<p title = 'Green less critical, red more critical'>Change in<br>criticality</p>"),
+             color = ifelse(change < 0, "green", "red")
+    )
+  })
+  
+  # third row----
+  
+  # write a function to return the nth element of improve/ best thing table
+  
+  returnTopComments <- function(nth_row, type){
+    
+    if(type == "Improve"){
+      
+      check1 <- passData()[["currentData"]] %>% 
+        filter(!is.na(Imp1)) %>% 
+        left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
+        select(Category, Super)
+      
+      check2 <- passData()[["currentData"]] %>% 
+        filter(!is.na(Imp2)) %>% 
+        left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
+        select(Category, Super)
+    }
+    
+    if(type == "Best"){
+      
+      check1 <- passData()[["currentData"]] %>% 
+        filter(!is.na(Best1)) %>% 
+        left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
+        select(Category, Super)
+      
+      check2 <- passData()[["currentData"]] %>% 
+        filter(!is.na(Best2)) %>% 
+        left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
+        select(Category, Super)
+    }
+    
+    check_final <- rbind(check1, check2)
+    
+    count_table <- check_final %>% 
+      filter(!is.na(Super), !is.na(Category)) %>% 
+      group_by(Category, Super) %>% 
+      count() %>% 
+      ungroup()
+    
+    count_sum <- sum(count_table$n)
+    
+    count_table %>% 
+      mutate(percent = round(n / count_sum * 100, 1)) %>% 
+      arrange(-percent) %>% 
+      slice(nth_row)
   }
   
-  if(!is.null(input$selTeam)){
+  output$topCompliment1 <- renderValueBox({
     
-    all_teams = counts %>% 
-      filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
-      filter(TeamC %in% input$TeamC) %>% 
-      pull(TeamC) %>% 
-      unique()
-  }
-  
-  df <- passData()[["currentData"]] %>% 
-    mutate(quarter_date = floor_date(Date, "quarter")) %>% 
-    mutate(TeamC = factor(TeamC, levels = all_teams)) %>% 
-    group_by(TeamC, quarter_date) %>% 
-    summarise(n = n()) %>%
-    ungroup() %>% 
-    complete(TeamC, quarter_date) %>%
-    arrange(TeamC, quarter_date)
-  
-  zero_teams <- df %>% filter(!is.na(TeamC)) %>% 
-    fill(TeamC) %>% 
-    spread(quarter_date, n, fill = 0) %>%
-    mutate(row_total = rowSums(select(., -1))) %>% 
-    filter(row_total == 0) %>% 
-    nrow()
-  
-  valueBox(value = zero_teams,
-           subtitle = HTML("Zero responding<br>teams")
-  )
-})
-
-# second row----
-
-output$impCritOneBox <- renderValueBox({
-  
-  valueBox(value = dataSummary()[["improve_numbers"]][1], 
-           subtitle = HTML("Minimally critical<br>comments"),
-           color = "green"
-  )
-})
-
-output$impCritTwoBox <- renderValueBox({
-  
-  valueBox(value = dataSummary()[["improve_numbers"]][2], 
-           subtitle = HTML("Moderately critical<br>comments"),
-           color = "orange"
-  )
-})
-
-output$impCritThreeBox <- renderValueBox({
-  
-  valueBox(value = dataSummary()[["improve_numbers"]][3], 
-           subtitle = HTML("Highly critical<br>comments"),
-           color = "red"
-  )
-})
-
-output$changeInCriticality <- renderValueBox({
-  
-  req(passData()[["comparisonData"]])
-  
-  # take the current period and compare with three months previously
-  
-  current_criticality <- passData()[["currentData"]] %>% 
-    filter(ImpCrit %in% 1:3) %>% 
-    pull(ImpCrit) %>% 
-    mean()
-  
-  previous_criticality <- passData()[["comparisonData"]] %>% 
-    filter(ImpCrit %in% 1:3) %>% 
-    pull(ImpCrit) %>% 
-    mean()
-  
-  change <- round((current_criticality - previous_criticality) / current_criticality * 100, 1)
-  
-  req(change)
-  
-  valueBox(value = paste0(change, "%"), 
-           subtitle = HTML("<p title = 'Green less critical, red more critical'>Change in<br>criticality</p>"),
-           color = ifelse(change < 0, "green", "red")
-  )
-})
-
-# third row----
-
-# write a function to return the nth element of improve/ best thing table
-
-returnTopComments <- function(nth_row, type){
-  
-  if(type == "Improve"){
+    # fetch from function
     
-    check1 <- passData()[["currentData"]] %>% 
-      filter(!is.na(Imp1)) %>% 
-      left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
-      select(Category, Super)
+    count_table = returnTopComments(1, "Best")
     
-    check2 <- passData()[["currentData"]] %>% 
-      filter(!is.na(Imp2)) %>% 
-      left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
-      select(Category, Super)
-  }
+    if(nrow(count_table) == 0){
+      
+      valueBox(value = "Error", 
+               subtitle = HTML("Not enough<br>data"))
+    } else {
+      
+      valueBox(value = paste0(count_table$percent, "%"), 
+               subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+               icon = icon("smile"))
+    }
+  })
   
-  if(type == "Best"){
+  output$topCompliment2 <- renderValueBox({
     
-    check1 <- passData()[["currentData"]] %>% 
+    # fetch from function
+    
+    count_table = returnTopComments(2, "Best")
+    
+    if(nrow(count_table) == 0){
+      
+      valueBox(value = "Error", 
+               subtitle = HTML("Not enough<br>data"))
+    } else {
+      
+      valueBox(value = paste0(count_table$percent, "%"), 
+               subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+               icon = icon("smile"))
+    }
+  })
+  
+  output$topCompliment3 <- renderValueBox({
+    
+    # fetch from function
+    
+    count_table = returnTopComments(3, "Best")
+    
+    if(nrow(count_table) == 0){
+      
+      valueBox(value = "Error", 
+               subtitle = HTML("Not enough<br>data"))
+    } else {
+      
+      valueBox(value = paste0(count_table$percent, "%"), 
+               subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+               icon = icon("smile"))
+    }
+  })
+  
+  output$changeCompliment <- renderValueBox({
+    
+    current1 <- passData()[["currentData"]] %>% 
       filter(!is.na(Best1)) %>% 
       left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
       select(Category, Super)
     
-    check2 <- passData()[["currentData"]] %>% 
+    current2 <- passData()[["currentData"]] %>% 
       filter(!is.na(Best2)) %>% 
       left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
       select(Category, Super)
-  }
-  
-  check_final <- rbind(check1, check2)
-  
-  count_table <- check_final %>% 
-    filter(!is.na(Super), !is.na(Category)) %>% 
-    group_by(Category, Super) %>% 
-    count() %>% 
-    ungroup()
-  
-  count_sum <- sum(count_table$n)
-  
-  count_table %>% 
-    mutate(percent = round(n / count_sum * 100, 1)) %>% 
-    arrange(-percent) %>% 
-    slice(nth_row)
-}
-
-output$topCompliment1 <- renderValueBox({
-  
-  # fetch from function
-  
-  count_table = returnTopComments(1, "Best")
-  
-  if(nrow(count_table) == 0){
     
-    valueBox(value = "Error", 
-             subtitle = HTML("Not enough<br>data"))
-  } else {
+    previous1 <- passData()[["comparisonData"]] %>% 
+      filter(!is.na(Best1)) %>% 
+      left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
+      select(Category, Super)
     
-    valueBox(value = paste0(count_table$percent, "%"), 
-             subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
-             icon = icon("smile"))
-  }
-})
-
-output$topCompliment2 <- renderValueBox({
-  
-  # fetch from function
-  
-  count_table = returnTopComments(2, "Best")
-  
-  if(nrow(count_table) == 0){
+    previous2 <- passData()[["comparisonData"]] %>% 
+      filter(!is.na(Best2)) %>% 
+      left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
+      select(Category, Super)
     
-    valueBox(value = "Error", 
-             subtitle = HTML("Not enough<br>data"))
-  } else {
+    current_final <- rbind(current1, current2)
     
-    valueBox(value = paste0(count_table$percent, "%"), 
-             subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
-             icon = icon("smile"))
-  }
-})
-
-output$topCompliment3 <- renderValueBox({
-  
-  # fetch from function
-  
-  count_table = returnTopComments(3, "Best")
-  
-  if(nrow(count_table) == 0){
+    previous_final <- rbind(previous1, previous2)
     
-    valueBox(value = "Error", 
-             subtitle = HTML("Not enough<br>data"))
-  } else {
+    current_table <- current_final %>% 
+      filter(!is.na(Super), !is.na(Category)) %>% 
+      group_by(Category, Super) %>% 
+      count() %>% 
+      ungroup() %>% 
+      mutate(percent = round(n / sum(n) * 100, 1)) %>% 
+      arrange(percent) %>% 
+      select(-n)
     
-    valueBox(value = paste0(count_table$percent, "%"), 
-             subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
-             icon = icon("smile"))
-  }
-})
-
-output$changeCompliment <- renderValueBox({
-  
-  current1 <- passData()[["currentData"]] %>% 
-    filter(!is.na(Best1)) %>% 
-    left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
-    select(Category, Super)
-  
-  current2 <- passData()[["currentData"]] %>% 
-    filter(!is.na(Best2)) %>% 
-    left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
-    select(Category, Super)
-  
-  previous1 <- passData()[["comparisonData"]] %>% 
-    filter(!is.na(Best1)) %>% 
-    left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
-    select(Category, Super)
-  
-  previous2 <- passData()[["comparisonData"]] %>% 
-    filter(!is.na(Best2)) %>% 
-    left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
-    select(Category, Super)
-  
-  current_final <- rbind(current1, current2)
-  
-  previous_final <- rbind(previous1, previous2)
-  
-  current_table <- current_final %>% 
-    filter(!is.na(Super), !is.na(Category)) %>% 
-    group_by(Category, Super) %>% 
-    count() %>% 
-    ungroup() %>% 
-    mutate(percent = round(n / sum(n) * 100, 1)) %>% 
-    arrange(percent) %>% 
-    select(-n)
-  
-  previous_table <- previous_final %>% 
-    filter(!is.na(Super), !is.na(Category)) %>% 
-    group_by(Category, Super) %>% 
-    count() %>% 
-    ungroup() %>% 
-    mutate(percent = round(n / sum(n) * 100, 1)) %>% 
-    arrange(percent) %>% 
-    select(-n)
-  
-  difference_table <- merge(current_table, previous_table, 
-                            by = c("Category", "Super"), 
-                            all = TRUE) %>% 
-    mutate(difference = percent.x - percent.y) %>% 
-    arrange(-abs(difference)) %>% 
-    slice(1)
-  
-  if(is.na(difference_table$difference)){
+    previous_table <- previous_final %>% 
+      filter(!is.na(Super), !is.na(Category)) %>% 
+      group_by(Category, Super) %>% 
+      count() %>% 
+      ungroup() %>% 
+      mutate(percent = round(n / sum(n) * 100, 1)) %>% 
+      arrange(percent) %>% 
+      select(-n)
     
-    valueBox(value = "Error", 
-             subtitle = HTML("Not enough<br>data"))
-  } else {
+    difference_table <- merge(current_table, previous_table, 
+                              by = c("Category", "Super"), 
+                              all = TRUE) %>% 
+      mutate(difference = percent.x - percent.y) %>% 
+      arrange(-abs(difference)) %>% 
+      slice(1)
     
-  biggest_difference <- difference_table$difference
+    if(is.na(difference_table$difference)){
+      
+      valueBox(value = "Error", 
+               subtitle = HTML("Not enough<br>data"))
+    } else {
+      
+      biggest_difference <- difference_table$difference
+      
+      if(biggest_difference > 0){
+        
+        biggest_difference <- paste0("+", biggest_difference)
+      }
+      
+      box1 <- valueBox(value = paste0(biggest_difference, "%"), 
+                       subtitle = HTML(paste0("<p title = 'Largest change in category (green increase, red decrease)'>", 
+                                              difference_table$Super, ":<br>", difference_table$Category, "</p>")),
+                       color = ifelse(difference_table$difference >= 0, "green", "red"),
+                       icon = icon("smile"),
+                       # href = actionLink("button", label = ""))
+                       href = '<a class="action-button">An action link</a>')
+      
+      box1$children[[1]]$attribs$class<-"action-button"
+      box1$children[[1]]$attribs$id<-"button_box_01"
+      return(box1)
+    }
+  })
   
-  if(biggest_difference > 0){
+  observeEvent(input$button_box_01, {
     
-    biggest_difference <- paste0("+", biggest_difference)
-  }
+    updateTabItems(session, "tabs", "comments")
+  })
   
-  box1 <- valueBox(value = paste0(biggest_difference, "%"), 
-                   subtitle = HTML(paste0("<p title = 'Largest change in category (green increase, red decrease)'>", 
-                                          difference_table$Super, ":<br>", difference_table$Category, "</p>")),
-                   color = ifelse(difference_table$difference >= 0, "green", "red"),
-                   icon = icon("smile"),
-                   # href = actionLink("button", label = ""))
-                   href = '<a class="action-button">An action link</a>')
   
-  box1$children[[1]]$attribs$class<-"action-button"
-  box1$children[[1]]$attribs$id<-"button_box_01"
-  return(box1)
-  }
-})
-
-observeEvent(input$button_box_01, {
+  # fourth row----
   
-  updateTabItems(session, "tabs", "comments")
-})
-
-
-# fourth row----
-
-output$topCriticism1 <- renderValueBox({
-  
-  # fetch from function
-  
-  count_table = returnTopComments(1, "Improve")
-  
-  if(nrow(count_table) == 0){
+  output$topCriticism1 <- renderValueBox({
     
-    valueBox(value = "Error", 
-             subtitle = HTML("Not enough<br>data"))
-  } else {
+    # fetch from function
     
-    valueBox(value = paste0(count_table$percent, "%"), 
-             subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
-             icon = icon("frown"))
-  }
-})
-
-output$topCriticism2 <- renderValueBox({
-  
-  # fetch from function
-  
-  count_table = returnTopComments(2, "Improve")
-  
-  if(nrow(count_table) == 0){
+    count_table = returnTopComments(1, "Improve")
     
-    valueBox(value = "Error", 
-             subtitle = HTML("Not enough<br>data"))
-  } else {
+    if(nrow(count_table) == 0){
+      
+      valueBox(value = "Error", 
+               subtitle = HTML("Not enough<br>data"))
+    } else {
+      
+      valueBox(value = paste0(count_table$percent, "%"), 
+               subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+               icon = icon("frown"))
+    }
+  })
+  
+  output$topCriticism2 <- renderValueBox({
     
-    valueBox(value = paste0(count_table$percent, "%"), 
-             subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
-             icon = icon("frown"))
-  }
-})
-
-output$topCriticism3 <- renderValueBox({
-  
-  # fetch from function
-  
-  count_table = returnTopComments(3, "Improve")
-  
-  if(nrow(count_table) == 0){
+    # fetch from function
     
-    valueBox(value = "Error", 
-             subtitle = HTML("Not enough<br>data"))
-  } else {
+    count_table = returnTopComments(2, "Improve")
     
-    valueBox(value = paste0(count_table$percent, "%"), 
-             subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
-             icon = icon("frown"))
-  }
-})
-
-# change in criticism
-
-output$changeCriticism <- renderValueBox({
+    if(nrow(count_table) == 0){
+      
+      valueBox(value = "Error", 
+               subtitle = HTML("Not enough<br>data"))
+    } else {
+      
+      valueBox(value = paste0(count_table$percent, "%"), 
+               subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+               icon = icon("frown"))
+    }
+  })
   
-  current1 <- passData()[["currentData"]] %>% 
-    filter(!is.na(Imp1)) %>% 
-    left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
-    select(Category, Super)
-  
-  current2 <- passData()[["currentData"]] %>% 
-    filter(!is.na(Imp2)) %>% 
-    left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
-    select(Category, Super)
-  
-  previous1 <- passData()[["comparisonData"]] %>% 
-    filter(!is.na(Imp1)) %>% 
-    left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
-    select(Category, Super)
-  
-  previous2 <- passData()[["comparisonData"]] %>% 
-    filter(!is.na(Imp2)) %>% 
-    left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
-    select(Category, Super)
-  
-  current_final <- rbind(current1, current2)
-  
-  previous_final <- rbind(previous1, previous2)
-  
-  current_table <- current_final %>% 
-    filter(!is.na(Super), !is.na(Category)) %>% 
-    group_by(Category, Super) %>% 
-    count() %>% 
-    ungroup() %>% 
-    mutate(percent = round(n / sum(n) * 100, 1)) %>% 
-    arrange(percent) %>% 
-    select(-n)
-  
-  previous_table <- previous_final %>% 
-    filter(!is.na(Super), !is.na(Category)) %>% 
-    group_by(Category, Super) %>% 
-    count() %>% 
-    ungroup() %>% 
-    mutate(percent = round(n / sum(n) * 100, 1)) %>% 
-    arrange(percent) %>% 
-    select(-n)
-  
-  difference_table <- merge(current_table, previous_table, 
-                            by = c("Category", "Super"), 
-                            all = TRUE) %>% 
-    mutate(difference = percent.x - percent.y) %>% 
-    arrange(-abs(difference)) %>% 
-    slice(1)
-  
-  if(is.na(difference_table$difference)){
+  output$topCriticism3 <- renderValueBox({
     
-    valueBox(value = "Error", 
-             subtitle = HTML("Not enough<br>data"))
-  } else {
+    # fetch from function
     
-  biggest_difference <- difference_table$difference
-  
-  if(biggest_difference > 0){
+    count_table = returnTopComments(3, "Improve")
     
-    biggest_difference <- paste0("+", biggest_difference)
-  }
+    if(nrow(count_table) == 0){
+      
+      valueBox(value = "Error", 
+               subtitle = HTML("Not enough<br>data"))
+    } else {
+      
+      valueBox(value = paste0(count_table$percent, "%"), 
+               subtitle = HTML(paste0(count_table$Super, ":<br>", count_table$Category)),
+               icon = icon("frown"))
+    }
+  })
   
-  valueBox(value = paste0(biggest_difference, "%"), 
-           subtitle = HTML(paste0("<p title = 'Largest change in category (green increase, red decrease)'>", 
-                                  difference_table$Super, ":<br>", difference_table$Category, "</p>")),
-           color = ifelse(difference_table$difference >= 0, "green", "red"),
-           icon = icon("frown"))
-  }
-})
-
-# fifth row----
-
-# this is a reactive which returns the top and bottom score, and the biggest change score
-
-highLowScoreChange <- reactive({
+  # change in criticism
   
-  all_data <- rbind(
-    current_data <- passData()[["currentData"]] %>% 
-      select(c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
-      mutate(time = "current"),
+  output$changeCriticism <- renderValueBox({
     
-    previous_data <- passData()[["comparisonData"]] %>% 
-      select(c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
-      mutate(time = "previous")
-  )
+    current1 <- passData()[["currentData"]] %>% 
+      filter(!is.na(Imp1)) %>% 
+      left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
+      select(Category, Super)
+    
+    current2 <- passData()[["currentData"]] %>% 
+      filter(!is.na(Imp2)) %>% 
+      left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
+      select(Category, Super)
+    
+    previous1 <- passData()[["comparisonData"]] %>% 
+      filter(!is.na(Imp1)) %>% 
+      left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
+      select(Category, Super)
+    
+    previous2 <- passData()[["comparisonData"]] %>% 
+      filter(!is.na(Imp2)) %>% 
+      left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
+      select(Category, Super)
+    
+    current_final <- rbind(current1, current2)
+    
+    previous_final <- rbind(previous1, previous2)
+    
+    current_table <- current_final %>% 
+      filter(!is.na(Super), !is.na(Category)) %>% 
+      group_by(Category, Super) %>% 
+      count() %>% 
+      ungroup() %>% 
+      mutate(percent = round(n / sum(n) * 100, 1)) %>% 
+      arrange(percent) %>% 
+      select(-n)
+    
+    previous_table <- previous_final %>% 
+      filter(!is.na(Super), !is.na(Category)) %>% 
+      group_by(Category, Super) %>% 
+      count() %>% 
+      ungroup() %>% 
+      mutate(percent = round(n / sum(n) * 100, 1)) %>% 
+      arrange(percent) %>% 
+      select(-n)
+    
+    difference_table <- merge(current_table, previous_table, 
+                              by = c("Category", "Super"), 
+                              all = TRUE) %>% 
+      mutate(difference = percent.x - percent.y) %>% 
+      arrange(-abs(difference)) %>% 
+      slice(1)
+    
+    if(is.na(difference_table$difference)){
+      
+      valueBox(value = "Error", 
+               subtitle = HTML("Not enough<br>data"))
+    } else {
+      
+      biggest_difference <- difference_table$difference
+      
+      if(biggest_difference > 0){
+        
+        biggest_difference <- paste0("+", biggest_difference)
+      }
+      
+      valueBox(value = paste0(biggest_difference, "%"), 
+               subtitle = HTML(paste0("<p title = 'Largest change in category (green increase, red decrease)'>", 
+                                      difference_table$Super, ":<br>", difference_table$Category, "</p>")),
+               color = ifelse(difference_table$difference >= 0, "green", "red"),
+               icon = icon("frown"))
+    }
+  })
   
-  summary_data <- all_data %>% 
-    group_by(time) %>% 
-    summarise_all(function(x) mean(x, na.rm = TRUE) * 20) %>%
-    ungroup() %>%  
-    select(-time)
+  # fifth row----
   
-  summary_data <- rbind(summary_data, summary_data[1, ] - summary_data[2, ])
+  # this is a reactive which returns the top and bottom score, and the biggest change score
   
-  names(summary_data) <- c("Service", "Likely to recommend", "Listening", "Communication", "Respect", "Positive difference")
+  highLowScoreChange <- reactive({
+    
+    all_data <- rbind(
+      current_data <- passData()[["currentData"]] %>% 
+        select(c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+        mutate(time = "current"),
+      
+      previous_data <- passData()[["comparisonData"]] %>% 
+        select(c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+        mutate(time = "previous")
+    )
+    
+    summary_data <- all_data %>% 
+      group_by(time) %>% 
+      summarise_all(function(x) mean(x, na.rm = TRUE) * 20) %>%
+      ungroup() %>%  
+      select(-time)
+    
+    summary_data <- rbind(summary_data, summary_data[1, ] - summary_data[2, ])
+    
+    names(summary_data) <- c("Service", "Likely to recommend", "Listening", "Communication", "Respect", "Positive difference")
+    
+    low_score_index <- summary_data %>% 
+      slice(1) %>% 
+      apply(2, min) %>% 
+      which.min()
+    
+    high_score_index <- summary_data %>% 
+      slice(1) %>% 
+      apply(2, max) %>% 
+      which.max()
+    
+    increase_index <- summary_data %>% 
+      slice(3) %>% 
+      apply(2, max) %>% 
+      which.max()
+    
+    decrease_index <- summary_data %>% 
+      slice(3) %>% 
+      apply(2, min) %>% 
+      which.min()
+    
+    low_score <- summary_data %>% 
+      select(low_score_index) %>% 
+      slice(1)
+    
+    high_score <- summary_data %>% 
+      select(high_score_index) %>% 
+      slice(1)
+    
+    biggest_increase <- summary_data %>% 
+      select(increase_index) %>% 
+      slice(3)
+    
+    biggest_decrease <- summary_data %>% 
+      select(decrease_index) %>% 
+      slice(3)
+    
+    return(
+      list("low_score" = low_score, "high_score" = high_score,
+           "biggest_increase" = biggest_increase,
+           "biggest_decrease" = biggest_decrease)
+    )
+    
+  })
   
-  low_score_index <- summary_data %>% 
-    slice(1) %>% 
-    apply(2, min) %>% 
-    which.min()
-  
-  high_score_index <- summary_data %>% 
-    slice(1) %>% 
-    apply(2, max) %>% 
-    which.max()
-  
-  increase_index <- summary_data %>% 
-    slice(3) %>% 
-    apply(2, max) %>% 
-    which.max()
-  
-  decrease_index <- summary_data %>% 
-    slice(3) %>% 
-    apply(2, min) %>% 
-    which.min()
-  
-  low_score <- summary_data %>% 
-    select(low_score_index) %>% 
-    slice(1)
-  
-  high_score <- summary_data %>% 
-    select(high_score_index) %>% 
-    slice(1)
-  
-  biggest_increase <- summary_data %>% 
-    select(increase_index) %>% 
-    slice(3)
-  
-  biggest_decrease <- summary_data %>% 
-    select(decrease_index) %>% 
-    slice(3)
-  
-  return(
-    list("low_score" = low_score, "high_score" = high_score,
-         "biggest_increase" = biggest_increase,
-         "biggest_decrease" = biggest_decrease)
-  )
-  
-})
-
-output$topScore <- renderValueBox({
-  
-  top_score <- round(as.numeric(highLowScoreChange()[["high_score"]]), 1)
-  
-  top_score_name = names(highLowScoreChange()[["high_score"]])
-  
-  valueBox(value = paste0(top_score, "%"),
-           subtitle = HTML(paste0("<p title = 'Highest score'>", 
+  output$topScore <- renderValueBox({
+    
+    top_score <- round(as.numeric(highLowScoreChange()[["high_score"]]), 1)
+    
+    top_score_name = names(highLowScoreChange()[["high_score"]])
+    
+    valueBox(value = paste0(top_score, "%"),
+             subtitle = HTML(paste0("<p title = 'Highest score'>", 
                                     top_score_name, "</p>")),
-           color = "green")
-})
-
-output$lowestScore <- renderValueBox({
+             color = "green")
+  })
   
-  low_score <- round(as.numeric(highLowScoreChange()[["low_score"]]), 1)
-  
-  low_score_name = names(highLowScoreChange()[["low_score"]])
-  
-  valueBox(value = paste0(low_score, "%"),
-           subtitle = HTML(paste0("<p title = 'Lowest score'>", 
-                                  low_score_name, "</p>")),
-           color = "red")
-})
-
-output$biggestIncrease <- renderValueBox({
-  
-  biggest_increase = round(as.numeric(highLowScoreChange()[["biggest_increase"]]), 1)
-  
-  if(is.na(biggest_increase)){
+  output$lowestScore <- renderValueBox({
     
-    valueBox(value = "Error", 
-             subtitle = HTML("Not enough<br>data"))
-  } else {
+    low_score <- round(as.numeric(highLowScoreChange()[["low_score"]]), 1)
     
-    if(biggest_increase > 0){
+    low_score_name = names(highLowScoreChange()[["low_score"]])
+    
+    valueBox(value = paste0(low_score, "%"),
+             subtitle = HTML(paste0("<p title = 'Lowest score'>", 
+                                    low_score_name, "</p>")),
+             color = "red")
+  })
+  
+  output$biggestIncrease <- renderValueBox({
+    
+    biggest_increase = round(as.numeric(highLowScoreChange()[["biggest_increase"]]), 1)
+    
+    if(is.na(biggest_increase)){
       
-      biggest_increase <- paste0("+", biggest_increase)
-    }
-    
-    biggest_increase_name = names(highLowScoreChange()[["biggest_increase"]])
-    
-  valueBox(value = paste0(biggest_increase, "%"),
-           subtitle = HTML(paste0("<p title = 'Largest increase (or smallest decrease)'>", 
-                                  biggest_increase_name, "</p>")),
-           color = "green")
-  }
-})
-
-output$biggestDecrease <- renderValueBox({
-  
-  biggest_decrease = round(as.numeric(highLowScoreChange()[["biggest_decrease"]]), 1)
-  
-  if(is.na(biggest_decrease)){
-    
-    valueBox(value = "Error", 
-             subtitle = HTML("Not enough<br>data"))
-  } else {
-    
-    if(biggest_decrease > 0){
+      valueBox(value = "Error", 
+               subtitle = HTML("Not enough<br>data"))
+    } else {
       
-      biggest_decrease <- paste0("+", biggest_decrease)
+      if(biggest_increase > 0){
+        
+        biggest_increase <- paste0("+", biggest_increase)
+      }
+      
+      biggest_increase_name = names(highLowScoreChange()[["biggest_increase"]])
+      
+      valueBox(value = paste0(biggest_increase, "%"),
+               subtitle = HTML(paste0("<p title = 'Largest increase (or smallest decrease)'>", 
+                                      biggest_increase_name, "</p>")),
+               color = "green")
     }
+  })
+  
+  output$biggestDecrease <- renderValueBox({
     
-    biggest_decrease_name = names(highLowScoreChange()[["biggest_decrease"]])
+    biggest_decrease = round(as.numeric(highLowScoreChange()[["biggest_decrease"]]), 1)
     
-  valueBox(value = paste0(biggest_decrease, "%"),
-           subtitle = HTML(paste0("<p title = 'Largest decrease (or smallest increase)'>", 
-                                  biggest_decrease_name, "</p>")),
-           color = "red")
-  }
-})
-
+    if(is.na(biggest_decrease)){
+      
+      valueBox(value = "Error", 
+               subtitle = HTML("Not enough<br>data"))
+    } else {
+      
+      if(biggest_decrease > 0){
+        
+        biggest_decrease <- paste0("+", biggest_decrease)
+      }
+      
+      biggest_decrease_name = names(highLowScoreChange()[["biggest_decrease"]])
+      
+      valueBox(value = paste0(biggest_decrease, "%"),
+               subtitle = HTML(paste0("<p title = 'Largest decrease (or smallest increase)'>", 
+                                      biggest_decrease_name, "</p>")),
+               color = "red")
+    }
+  })
+  
+  
