@@ -707,6 +707,8 @@ output$summaryPage <- renderUI({
   
   output$changeCompliment <- renderValueBox({
     
+    req(passData()[["comparisonData"]])
+    
     current1 <- passData()[["currentData"]] %>% 
       filter(!is.na(Best1)) %>% 
       left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
@@ -849,6 +851,8 @@ output$summaryPage <- renderUI({
   
   output$changeCriticism <- renderValueBox({
     
+    req(passData()[["comparisonData"]])
+    
     current1 <- passData()[["currentData"]] %>% 
       filter(!is.na(Imp1)) %>% 
       left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
@@ -925,6 +929,8 @@ output$summaryPage <- renderUI({
   
   highLowScoreChange <- reactive({
     
+    req(passData()[["comparisonData"]])
+    
     all_data <- rbind(
       current_data <- passData()[["currentData"]] %>% 
         select(c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
@@ -991,6 +997,8 @@ output$summaryPage <- renderUI({
   
   output$topScore <- renderValueBox({
     
+    req(highLowScoreChange()[["high_score"]])
+    
     top_score <- round(as.numeric(highLowScoreChange()[["high_score"]]), 1)
     
     top_score_name = names(highLowScoreChange()[["high_score"]])
@@ -1003,6 +1011,8 @@ output$summaryPage <- renderUI({
   
   output$lowestScore <- renderValueBox({
     
+    req(highLowScoreChange()[["low_score"]])
+    
     low_score <- round(as.numeric(highLowScoreChange()[["low_score"]]), 1)
     
     low_score_name = names(highLowScoreChange()[["low_score"]])
@@ -1014,6 +1024,8 @@ output$summaryPage <- renderUI({
   })
   
   output$biggestIncrease <- renderValueBox({
+    
+    req(highLowScoreChange()[["biggest_increase"]])
     
     biggest_increase = round(as.numeric(highLowScoreChange()[["biggest_increase"]]), 1)
     
@@ -1038,6 +1050,8 @@ output$summaryPage <- renderUI({
   })
   
   output$biggestDecrease <- renderValueBox({
+    
+    req(highLowScoreChange()[["biggest_decrease"]])
     
     biggest_decrease = round(as.numeric(highLowScoreChange()[["biggest_decrease"]]), 1)
     
