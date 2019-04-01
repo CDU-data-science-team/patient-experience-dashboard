@@ -29,41 +29,33 @@ output$summaryPage <- renderUI({
                                 substr(end_date, 1, 7), ")"))
   
   tagList(
+    column(width = 12, h2("Report builder")),
     column(4, 
-           box(width = 12, downloadButton("downloadCurrent", "Download currently selected data"),
-               # hr(),
+           box(width = 12, 
+               h4("Current selected time and area"),
+               hr(),
                selectInput("commentSummary", "Comment summary type",
-                           choices = c("Verbatim comments" = "verbatimComments",
-                                       "Summary of text" = "textSummary"))
+                           choices = c("Written summary" = "textSummary",
+                                       "Verbatim comments" = "verbatimComments")),
+               downloadButton("downloadCurrent", "Download report")
            ),
-           "Hello"
+           box(width = 12,
+               h4("Pre defined template reports"),
+
+               selectInput("reportTime", "Report type (more reports TBA)", 
+                           choices = choice_text,
+                           selected = "quarterly"),
+               
+               selectInput("serviceArea", "Service area", 
+                           choices = c("Division", "Directorate", "Team")),
+               
+               uiOutput("reportCustomAreaSelector"),
+               
+               downloadButton("downloadDoc", "Download report")
+           )
     ),
-      column(8, uiOutput("summaryOutputs")),
-      column(4, h2("Report builder"),
-             
-             # write the stuff in here
-             
-             # I've had a good idea where the report updates the numbers
-             # of responses, service areas, that kind of thing, as you go
-             
-             # Quarterly
-             # Access to services, Pharmacy
-             # Diversity
-             # Exception based reporting
-             # Show zero returning teams more easily (maybe outside the feedback tracker)
-             
-             selectInput("reportTime", "Report type (more reports TBA)", 
-                         choices = choice_text,
-                         selected = "quarterly"),
-             
-             selectInput("serviceArea", "Service area", 
-                         choices = c("Division", "Directorate", "Team")),
-             
-             uiOutput("reportCustomAreaSelector"),
-             
-             downloadButton("downloadDoc", "Download report")
-      )
-    )
+      column(8, uiOutput("summaryOutputs"))
+  )
 })
   
   # main value box output interface defined here----
@@ -320,36 +312,16 @@ output$summaryPage <- renderUI({
           return()
         }
       }
-      
-      # if it's a custom report add the date range to the params
-      
-      if(report_name == "custom"){
-        
-        params = c(params, list("date_from" = input$dateRange[1],
-                                "date_to" = input$dateRange[2],
-                                "comment_summary" = input$commentSummary))
-      }
-      
+
       if(input$serviceArea == "Team"){
         
-        if(report_name == "custom"){
-          
-          render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
-                 quiet = TRUE, params = params,
-                 envir = new.env(parent = globalenv()))
-          
-          # copy docx to 'file'
-          file.copy(paste0("reports/", report_name, ".docx"), file, overwrite = TRUE)
-        } else {
-          
           render(paste0("reports/team_quarterly.Rmd"), output_format = "word_document",
                  quiet = TRUE, params = params,
                  envir = new.env(parent = globalenv()))
           
           # copy docx to 'file'
           file.copy(paste0("reports/team_quarterly.docx"), file, overwrite = TRUE)
-        }
-        
+
       } else {
         
         render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
@@ -362,8 +334,121 @@ output$summaryPage <- renderUI({
     }
   )
   
-  # reactive text to describe reports
-  
+  output$downloadCurrent <- downloadHandler(
+    filename = "CustomReport.docx",
+    content = function(file){
+      
+      # Set up parameters to pass to Rmd document
+      
+      # find which areas are selected
+      
+      report_area <- case_when(
+        isTruthy(input$selTeam) ~ "team",
+        isTruthy(input$selDirect) ~ "directorate",
+        isTruthy(input$Division) ~ "division",
+        TRUE ~ "trust"
+      )
+      
+      if(report_area == "trust"){
+        
+        area_name <- "the whole Trust"
+        
+        params <- list(division = "NA",
+                       carerSU = input$carerSU,
+                       area_name = area_name,
+                       date_from = input$dateRange[1],
+                       date_to = input$dateRange[2],
+                       comment_summary = input$commentSummary)
+      }
+      
+      if(report_area == "division"){
+        
+          area_name <- c("Local Partnerships- Mental Healthcare", 
+                         "Forensic Services", 
+                         "Local Partnerships- Community Healthcare")[as.numeric(input$Division) + 1]
+          
+          params <- list(division = input$Division,
+                         carerSU = input$carerSU,
+                         area_name = area_name,
+                         date_from = input$dateRange[1],
+                         date_to = input$dateRange[2],
+                         comment_summary = input$commentSummary)
+        }
+      
+      if(report_area == "directorate"){
+        
+          today = Sys.Date()
+          
+          previous_quarter <- (quarter(today)) - 1 %% 4
+          previous_year <- year(today)
+          
+          if(previous_quarter == 0){
+            
+            previous_quarter <- 4
+            previous_year <- previous_year - 1
+          }
+          
+          first_date <- yq(paste0(previous_year, ": Q", previous_quarter))
+          
+          end_date <- yq(paste0(year(today), ": Q", quarter(today))) - 1
+          
+          number_rows = trustData %>%
+            filter(Directorate %in% input$selDirect) %>% 
+            filter(Date >= first_date, Date <= end_date) %>% 
+            nrow()
+          
+          if(number_rows >= 10){
+            
+            area_name <- dirTable %>% 
+              filter(DirC %in% input$selDirect) %>% 
+              pull(DirT) %>% 
+              paste(collapse = ", ")
+            
+            params <- list(directorate = input$selDirect,
+                           carerSU = input$carerSU,
+                           area_name = area_name,
+                           date_from = input$dateRange[1],
+                           date_to = input$dateRange[2],
+                           comment_summary = input$commentSummary)
+          } else {
+            
+            showModal(
+              modalDialog(
+                title = "Error!",
+                HTML("Too few responses in the last quarter"),
+                easyClose = TRUE
+              )
+            )
+            
+            return()
+          }
+      }
+
+      if(report_area == "team"){
+        
+          area_name_team <- counts %>% 
+            filter(TeamC %in% input$selTeam) %>% 
+            pull(TeamN) %>% 
+            unique() %>% 
+            paste(collapse = ", ")
+          
+          params <- list(team = input$selTeam,
+                         carerSU = input$carerSU,
+                         area_name = area_name_team,
+                         date_from = input$dateRange[1],
+                         date_to = input$dateRange[2],
+                         comment_summary = input$commentSummary)
+      }
+      
+        render(paste0("reports/custom.Rmd"), output_format = "word_document",
+               quiet = TRUE, params = params,
+               envir = new.env(parent = globalenv()))
+        
+        # copy docx to 'file'
+        file.copy(paste0("reports/custom.docx"), file, overwrite = TRUE)
+    }
+  )
+
   # reactive function to produce data summary to pass to value boxes and to report
   
   dataSummary <- reactive({

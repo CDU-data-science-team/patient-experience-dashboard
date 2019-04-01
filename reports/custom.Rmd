@@ -167,7 +167,7 @@ returnTopComments <- function(nth_row, type){
   
   # we need at least three categories and a decent number in each
   
-  if(nrow(count_table < 5) | sum(count_table$n) < 12){
+  if(nrow(count_table) < 5 | sum(count_table$n) < 12){
     
     return(NULL)
   }
@@ -223,7 +223,7 @@ if(params$comment_summary == "textSummary"){
   
   if(is.null(improve_1)){
     
-    cat("Insufficient dat for this type of summary. Please rerun report and select \"verbatim comments\"")
+    cat("Insufficient data for this type of summary. Please rerun report and select \"verbatim comments\"  \n  \n")
   } else {
     
     improve_2 <- returnTopComments(2, "Improve")[["return_table"]]
@@ -231,13 +231,16 @@ if(params$comment_summary == "textSummary"){
     
     cat("## What could we do better?  \n")
     
-    cat("The most common comment category was ", paste0(improve_1$Super, ": ", improve_1$Category, paste0(improve_1$percent, "%. ")),
+    cat("The most common comment category was ", 
+        paste0(improve_1$Super, ": ", improve_1$Category, paste0(improve_1$percent, "%. ")),
         "Example comments include: ", returnTopComments(1, "Improve")[["return_comments"]])
     
-    cat("The second most common comment category was ", paste0(improve_2$Super, ": ", improve_2$Category, paste0(improve_2$percent, "%. ")),
+    cat("The second most common comment category was ", 
+        paste0(improve_2$Super, ": ", improve_2$Category, paste0(improve_2$percent, "%. ")),
         "Example comments include: ", returnTopComments(2, "Improve")[["return_comments"]])
     
-    cat("The third most common comment category was ", paste0(improve_3$Super, ": ", improve_3$Category, paste0(improve_3$percent, "%. ")),
+    cat("The third most common comment category was ", 
+        paste0(improve_3$Super, ": ", improve_3$Category, paste0(improve_3$percent, "%. ")),
         "Example comments include: ", returnTopComments(3, "Improve")[["return_comments"]], "  \n")
     
   }
@@ -245,21 +248,24 @@ if(params$comment_summary == "textSummary"){
   best_1 <- returnTopComments(1, "Best")[["return_table"]]
   
   if(is.null(best_1)){
-    
-    cat("Insufficient dat for this type of summary. Please rerun report and select \"verbatim comments\"")
+  
+    cat("Insufficient data for this type of summary. Please rerun report and select verbatim comments  \n  \n")
   } else {
     
     cat("## What did we do well?  \n")
     best_2 <- returnTopComments(2, "Best")[["return_table"]]
     best_3 <- returnTopComments(3, "Best")[["return_table"]]
     
-    cat("The most common comment category was ", paste0(best_1$Super, ": ", best_1$Category, paste0(best_1$percent, "%. ")),
+    cat("The most common comment category was ", 
+        paste0(best_1$Super, ": ", best_1$Category, paste0(best_1$percent, "%. ")),
         "Example comments include: ", returnTopComments(1, "Best")[["return_comments"]])
     
-    cat("The second most common comment category was ", paste0(best_2$Super, ": ", best_2$Category, paste0(best_2$percent, "%. ")),
+    cat("The second most common comment category was ", 
+        paste0(best_2$Super, ": ", best_2$Category, paste0(best_2$percent, "%. ")),
         "Example comments include: ", returnTopComments(2, "Best")[["return_comments"]])
     
-    cat("The third most common comment category was ", paste0(best_3$Super, ": ", best_3$Category, paste0(best_3$percent, "%. ")),
+    cat("The third most common comment category was ", 
+        paste0(best_3$Super, ": ", best_3$Category, paste0(best_3$percent, "%. ")),
         "Example comments include: ", returnTopComments(3, "Best")[["return_comments"]])
     
   }
@@ -271,23 +277,21 @@ if(params$comment_summary == "textSummary"){
 
 if(params$comment_summary == "verbatimComments"){
   
-  cat("## What could we do better?  \n")
-  
   do_better <- suceData %>% 
     filter(!is.na(Improve)) %>% 
     pull(Improve) 
   
   if(length(do_better) > 1000){
     
-    cat("Error. Too many comments. Please reduce your selection")
+    cat("Error. Too many comments. Please reduce your selection  \n")
   } else {
     
+    cat("## What could we do better?  \n")
+
     cat(
       paste0("<p>", do_better, "</p>", collapse = "")
     )
   }
-  
-  cat("## What did we do well?  \n")
   
   do_well <- suceData %>% 
     filter(!is.na(Best)) %>% 
@@ -295,9 +299,11 @@ if(params$comment_summary == "verbatimComments"){
   
   if(length(do_better) > 1000){
     
-    cat("Error. Too many comments. Please reduce your selection")
+    cat("Error. Too many comments. Please reduce your selection  \n")
   } else {
     
+    cat("## What did we do well?  \n")
+
     cat(
       paste0("<p>", do_well, "</p>", collapse = "")
     )
