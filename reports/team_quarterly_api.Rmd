@@ -1,0 +1,100 @@
+---
+title: Quarterly report
+output: html_document
+params:
+  team: NA
+---
+
+```{r setup, include=FALSE}
+
+library(lubridate)
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = FALSE)
+
+load("../shiny.Rdata")
+
+# source the code with the functions in
+
+source("../report_functions.R", local = TRUE)
+
+```
+
+```{r}
+
+# calculate the date range first
+
+today = Sys.Date()
+
+previous_quarter <- (quarter(today)) - 1 %% 4
+previous_year <- year(today)
+
+if(previous_quarter == 0){
+  
+  previous_quarter <- 4
+  previous_year <- previous_year - 1
+}
+
+first_date <- yq(paste0(previous_year, ": Q", previous_quarter))
+
+end_date <- yq(paste0(year(today), ": Q", quarter(today))) - 1
+
+# filter by area and name the areas
+
+suceData = trustData %>% 
+  filter(TeamC %in% params$team)
+
+# filter by time last and produce another dataset with 2 years in
+
+two_year_data <- suceData %>% 
+  filter(Date > end_date - 365 * 2)
+
+suceData <- suceData %>% 
+  filter(Date >= first_date, Date <= end_date)
+
+area_name <- suceData %>% 
+  pull(TeamN) %>% 
+  tail(1)
+
+# generate report information
+
+report_information <- reportFunction(suceData)
+
+```
+
+## Summary
+
+This report summarises data from `r first_date` to `r end_date`
+
+```{r, results = "asis"}
+
+if(is.null(report_information)){
+  
+  myString = "Within the selected time and area there were no responses"
+} else {
+  
+  myString = paste0("<p>Within ", area_name, " in the selected time there were ", report_information[["NR"]],
+                    " responses.</p><br>",
+                    "<p>There were ", report_information[["IC"]], " 'What could we do better' responses and ", report_information[["BC"]],
+                    " 'What did we do well' responses</p><br>",
+                    ifelse(report_information[["NFFT"]] > 9,
+                           paste0("<p>The Friends and Family Test Score is the proportion of patients
+      who are extremely likely or likely to recommend a service. In the selected period of time it was ",
+      report_information[["FFT"]], "% (based on ", report_information[["NFFT"]], " responses.)", "</p><br>"), ""),
+      ifelse(report_information[["NSQ"]] > 9,
+             paste0("<p>Service quality rating was ", report_information[["SQ"]], 
+                    "% (based on ", report_information[["NSQ"]],
+                    " responses.)</p>"), ""),
+      ifelse(sum(report_information[["complaint_numbers"]]) > 3,
+             paste0("<p>", report_information[["complaint_numbers"]][3], 
+                    " individuals reported that they knew how to make a complaint, ",
+                    report_information[["complaint_numbers"]][2], 
+                    " reported that they did not know how to make a complaint, and ",
+                    report_information[["complaint_numbers"]][1], 
+                    " reported that they were unsure if they knew.</p>"), "")
+  )
+}
+
+cat(myString)
+
+```
