@@ -96,16 +96,6 @@ report_information <- reportFunction(suceData)
 
 ```
 
-<!-- ## Context -->
-
-```{r}
-
-# what I need more than anything here is a list of the other report areas so I can link 
-
-# fetch the state of the teams
-
-```
-
 ## Summary
 
 This report summarises data from `r first_date` to `r end_date`

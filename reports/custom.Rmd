@@ -278,7 +278,7 @@ if(params$comment_summary == "textSummary"){
 if(params$comment_summary == "verbatimComments"){
   
   do_better <- suceData %>% 
-    filter(!is.na(Improve)) %>% 
+    filter(!is.na(Improve), (Imp1 != 4444 | is.na(Imp1))) %>% 
     pull(Improve) 
   
   if(length(do_better) > 1000){
