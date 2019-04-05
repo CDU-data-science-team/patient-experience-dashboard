@@ -232,7 +232,11 @@ if(params$directorate == "NA"){
   
   if(is.null(improve_1)){
     
+<<<<<<< HEAD
     cat("Insufficient data for this type of summary.   \n  \n")
+=======
+    cat("Insufficient data for this type of summary.  \n  \n")
+>>>>>>> develop
   } else {
     
     improve_2 <- returnTopComments(2, "Improve")[["return_table"]]
@@ -336,7 +340,8 @@ if(params$directorate == "NA"){
 #     mutate(print = paste0("[", TeamN, "](http://suce.co.uk:8000/word?team=", TeamC, ")  \n  \n")) %>%
 #     pull(print) %>%
 #     cat()
-  
-}
+
+#   
+# }
 
 ```
