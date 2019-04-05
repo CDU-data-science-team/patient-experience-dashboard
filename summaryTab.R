@@ -91,6 +91,8 @@ output$summaryPage <- renderUI({
         valueBoxOutput("changeInCriticality", width = 3) # trend in criticality
       ),
       
+      h4("What did we do well?"),
+      
       fluidRow(
         
         valueBoxOutput("topCompliment1", width = 3),
@@ -101,6 +103,8 @@ output$summaryPage <- renderUI({
         
         valueBoxOutput("changeCompliment", width = 3)
       ),
+      
+      h4("What could be improved?"),
       
       fluidRow(
         
