@@ -377,20 +377,9 @@ output$summaryPage <- renderUI({
       
       if(report_area == "directorate"){
         
-          today = Sys.Date()
+          first_date <- input$dateRange[1]
           
-          previous_quarter <- (quarter(today)) - 1 %% 4
-          previous_year <- year(today)
-          
-          if(previous_quarter == 0){
-            
-            previous_quarter <- 4
-            previous_year <- previous_year - 1
-          }
-          
-          first_date <- yq(paste0(previous_year, ": Q", previous_quarter))
-          
-          end_date <- yq(paste0(year(today), ": Q", quarter(today))) - 1
+          end_date <- input$dateRange[2]
           
           number_rows = trustData %>%
             filter(Directorate %in% input$selDirect) %>% 
