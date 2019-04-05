@@ -9,8 +9,9 @@ params:
 
 library(lubridate)
 library(tidyverse)
+library(scales)
 
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 load("../shiny.Rdata")
 
@@ -98,3 +99,19 @@ if(is.null(report_information)){
 cat(myString)
 
 ```
+
+```{r fig.width=7, fig.height=6, echo=FALSE, warning=FALSE, fig.cap="Percentage of responses", dpi=400}
+
+if(!is.null(stack_function(suceData))){
+  
+  stack_function(suceData)
+}
+
+```
+
+```{r fig.width=7, fig.height=6, echo=FALSE, warning=FALSE, fig.cap="Trend over time", dpi=400}
+
+trend_function(two_year_data)
+
+```
+
