@@ -141,8 +141,6 @@ trend_function(two_year_data)
 
 ```
 
-## What could we do better?
-
 ```{r, results = "asis"}
 
 # produce all the variables and then place them inline below the chunk
@@ -222,73 +220,122 @@ returnTopComments <- function(nth_row, type){
               "return_comments" = return_comments))
 }
 
-improve_1 <- returnTopComments(1, "Improve")[["return_table"]]
-improve_2 <- returnTopComments(2, "Improve")[["return_table"]]
-improve_3 <- returnTopComments(3, "Improve")[["return_table"]]
-
 ```
-
-The most common comment category was `r paste0(improve_1$Super, ": ", improve_1$Category)` (`r paste0(improve_1$percent, "%")`). Example comments include:
-
-`r returnTopComments(1, "Improve")[["return_comments"]]`
-
-The second most common comment category was `r paste0(improve_2$Super, ": ", improve_2$Category)` (`r paste0(improve_2$percent, "%")`). Example comments include:
-
-`r returnTopComments(2, "Improve")[["return_comments"]]`
-
-The third most common comment category was `r paste0(improve_3$Super, ": ", improve_3$Category)` (`r paste0(improve_3$percent, "%")`). Example comments include:
-
-`r returnTopComments(3, "Improve")[["return_comments"]]`
-
-## What did we do well?
 
 ```{r, results = "asis"}
 
-best_1 <- returnTopComments(1, "Best")[["return_table"]]
-best_2 <- returnTopComments(2, "Best")[["return_table"]]
-best_3 <- returnTopComments(3, "Best")[["return_table"]]
+# do this if they have selected a text summary of comments
+
+if(params$directorate == "NA"){
+  
+  improve_1 <- returnTopComments(1, "Improve")[["return_table"]]
+  
+  if(is.null(improve_1)){
+    
+    cat("Insufficient data for this type of summary.  \n  \n")
+  } else {
+    
+    improve_2 <- returnTopComments(2, "Improve")[["return_table"]]
+    improve_3 <- returnTopComments(3, "Improve")[["return_table"]]
+    
+    cat("## What could we do better?  \n")
+    
+    cat("The most common comment category was ", 
+        paste0(improve_1$Super, ": ", improve_1$Category, paste0(improve_1$percent, "%. ")),
+        "Example comments include: ", returnTopComments(1, "Improve")[["return_comments"]])
+    
+    cat("The second most common comment category was ", 
+        paste0(improve_2$Super, ": ", improve_2$Category, paste0(improve_2$percent, "%. ")),
+        "Example comments include: ", returnTopComments(2, "Improve")[["return_comments"]])
+    
+    cat("The third most common comment category was ", 
+        paste0(improve_3$Super, ": ", improve_3$Category, paste0(improve_3$percent, "%. ")),
+        "Example comments include: ", returnTopComments(3, "Improve")[["return_comments"]], "  \n")
+    
+  }
+  
+  best_1 <- returnTopComments(1, "Best")[["return_table"]]
+  
+  if(is.null(best_1)){
+    
+    cat("Insufficient data for this type of summary.   \n  \n")
+  } else {
+    
+    cat("## What did we do well?  \n")
+    best_2 <- returnTopComments(2, "Best")[["return_table"]]
+    best_3 <- returnTopComments(3, "Best")[["return_table"]]
+    
+    cat("The most common comment category was ", 
+        paste0(best_1$Super, ": ", best_1$Category, paste0(best_1$percent, "%. ")),
+        "Example comments include: ", returnTopComments(1, "Best")[["return_comments"]])
+    
+    cat("The second most common comment category was ", 
+        paste0(best_2$Super, ": ", best_2$Category, paste0(best_2$percent, "%. ")),
+        "Example comments include: ", returnTopComments(2, "Best")[["return_comments"]])
+    
+    cat("The third most common comment category was ", 
+        paste0(best_3$Super, ": ", best_3$Category, paste0(best_3$percent, "%. ")),
+        "Example comments include: ", returnTopComments(3, "Best")[["return_comments"]])
+    
+  }
+} else {
+  
+  do_better <- suceData %>% 
+    filter(!is.na(Improve), (Imp1 != 4444 | is.na(Imp1))) %>% 
+    pull(Improve) 
+  
+  if(length(do_better) > 1000){
+    
+    cat("Error. Too many comments. Please reduce your selection  \n")
+  } else {
+    
+    cat("## What could we do better?  \n")
+    
+    cat(
+      paste0("<p>", do_better, "</p>", collapse = "")
+    )
+  }
+  
+  do_well <- suceData %>% 
+    filter(!is.na(Best)) %>% 
+    pull(Best)
+  
+  if(length(do_better) > 1000){
+    
+    cat("Error. Too many comments. Please reduce your selection  \n")
+  } else {
+    
+    cat("## What did we do well?  \n")
+    
+    cat(
+      paste0("<p>", do_well, "</p>", collapse = "")
+    )
+  }
+}
 
 ```
 
-The most common comment category was `r paste0(best_1$Super, ": ", best_1$Category)` (`r paste0(best_1$percent, "%")`). Example comments include:
-
-`r returnTopComments(1, "Best")[["return_comments"]]`
-
-The second most common comment category was `r paste0(best_2$Super, ": ", best_2$Category)` (`r paste0(best_2$percent, "%")`). Example comments include:
-
-`r returnTopComments(2, "Best")[["return_comments"]]`
-
-The second most common comment category was `r paste0(best_3$Super, ": ", best_3$Category)` (`r paste0(best_3$percent, "%")`). Example comments include:
-
-`r returnTopComments(3, "Best")[["return_comments"]]`
-
-<!-- ## Team reports -->
+## Team reports- click to download
 
 ```{r, results = "asis", message = FALSE}
 
 # this is where if it's a directorate report I'm going to produce
 # a set of links that go to all the team reports that exist
 
-# suceData <- trustData %>% filter(Date > as.Date("2018-04-01"), Directorate == 2)
-
 # if(params$directorate != "NA"){
 #   
-#   team_numbers <- suceData %>% 
-#     group_by(TeamC) %>% 
-#     count() %>% 
-#     filter(n > 2) %>% 
-#     inner_join(counts) %>% 
-#     filter(!duplicated(TeamC)) %>% 
+#   team_numbers <- suceData %>%
+#     group_by(TeamC) %>%
+#     count() %>%
+#     filter(n > 2) %>%
+#     inner_join(counts) %>%
+#     filter(!duplicated(TeamC)) %>%
 #     ungroup()
 #   
-#   team_numbers %>% 
-#     mutate(print = paste0("[", TeamN, "](http://localhost:9727/team-html?team=", TeamC, ")  \n  \n")) %>% 
-#     pull(print) %>% 
+#   team_numbers %>%
+#     mutate(print = paste0("[", TeamN, "](http://suce.co.uk:8000/word?team=", TeamC, ")  \n  \n")) %>%
+#     pull(print) %>%
 #     cat()
-# 
-#   # cat(paste0("<a href = http://localhost:9727/team-html?team=", team_numbers, ">team link</a>\n"))
-#   
-#   # cat(paste0("[team link](http://localhost:9727/team-html?team=", team_numbers, ")  \n  \n"))
 #   
 # }
 
