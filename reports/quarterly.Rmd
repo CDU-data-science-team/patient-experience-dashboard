@@ -17,7 +17,7 @@ params:
 
 ```{r setup, include=FALSE}
 
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 # source the code with the functions in
 
@@ -101,7 +101,7 @@ if(is.null(report_information)){
   myString = "Within the selected time and area there were no responses"
 } else {
   
-  myString = paste0("<p>Within ", report_information[["theArea"]], " in the selected time there were ", report_information[["NR"]],
+  myString = paste0("<p>Within ", params$area_name, " in the selected time there were ", report_information[["NR"]],
                     " responses.</p><br>",
                     "<p>There were ", report_information[["IC"]], " 'What could we do better' responses and ", report_information[["BC"]],
                     " 'What did we do well' responses</p><br>",
