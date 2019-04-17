@@ -42,7 +42,8 @@ output$stackedTableSuceModal <- renderDT({
     count(value.x) %>%
     mutate(prop = prop.table(n) * 100) %>%
     select(-n) %>%
-    spread(value.x, prop) %>%
+    mutate(value.x = factor(value.x, levels = 1:5)) %>% 
+    spread(value.x, prop, drop = FALSE) %>%
     ungroup() %>%
     setNames(c("Question", rev(c("Excellent", "Good", "Fair", "Poor", "Very poor")))) %>% 
     mutate_if(is.numeric, funs(replace(., is.na(.), 0))) %>%
