@@ -482,8 +482,10 @@ output$summaryPage <- renderUI({
   output$numberResponsesBox <- renderValueBox({
     
     valueBox(value = dataSummary()[["NR"]], 
-             subtitle = HTML("Number of<br>responses"),
-             icon = icon("book-open")
+             subtitle = HTML("<p title = 'Click to show response numbers for individual teams'>
+                             Number of<br>responses</p>"),
+             icon = icon("book-open"),
+             href = "/apps/feedback_tracker"
     )
   })
   
@@ -540,11 +542,12 @@ output$summaryPage <- renderUI({
       nrow()
     
     valueBox(value = zero_teams,
-             subtitle = HTML("Zero responding<br>teams"),
-             href = "/feedback_tracker"
+             subtitle = HTML("<p title = 'Click to show response numbers for individual teams'>
+                             Zero responding<br>teams</p>"),
+             href = "/apps/feedback_tracker"
     )
   })
-  
+
   # second row----
   
   output$impCritOneBox <- renderValueBox({
