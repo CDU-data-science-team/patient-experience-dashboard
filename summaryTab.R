@@ -540,7 +540,8 @@ output$summaryPage <- renderUI({
       nrow()
     
     valueBox(value = zero_teams,
-             subtitle = HTML("Zero responding<br>teams")
+             subtitle = HTML("Zero responding<br>teams"),
+             href = "/feedback_tracker"
     )
   })
   
@@ -769,8 +770,8 @@ output$summaryPage <- renderUI({
                                               difference_table$Super, ":<br>", difference_table$Category, "</p>")),
                        color = ifelse(difference_table$difference >= 0, "green", "red"),
                        icon = icon("smile"),
-                       # href = actionLink("button", label = ""))
-                       href = '<a class="action-button">An action link</a>')
+                       # href = '<a class="action-button">An action link</a>')
+                       href = 'Link to comments')
       
       box1$children[[1]]$attribs$class<-"action-button"
       box1$children[[1]]$attribs$id<-"button_box_01"
