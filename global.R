@@ -10,4 +10,9 @@ if(Sys.info()["nodename"] == "otis"){
   load("~/shiny.Rdata")
 }
 
+# filter out the staff teams from the counts object
+
+counts <- counts %>% 
+  filter(Division < 3)
+
 enableBookmarking(store = "server")
