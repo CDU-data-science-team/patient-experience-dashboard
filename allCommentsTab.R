@@ -52,10 +52,13 @@ output$allImproveComments = renderText({
       
       commentsFrame = df %>% filter(ImpCrit == x) %>% select(Improve, Location)
       
-      paste0("<h3>", nameVector[x], "</h3>", 
-             paste0("<p>", commentsFrame$Improve, " (", 
-                    commentsFrame$Location, ")</p>", collapse = "")
-      )
+      if(nrow(commentsFrame) > 0){
+        
+        paste0("<h3>", nameVector[x], "</h3>", 
+               paste0("<p>", commentsFrame$Improve, " (", 
+                      commentsFrame$Location, ")</p>", collapse = "")
+        )
+      }
     })
     
     return(unlist(finalText))
@@ -118,14 +121,30 @@ output$allBestComments = renderText({
       
       commentsFrame = df %>% filter(BestCrit == x) %>% select(Best, Location)
       
-      paste0("<h3>", nameVector[x], "</h3>", 
-             paste0("<p>", commentsFrame$Best, " (", 
-                    commentsFrame$Location, ")</p>", collapse = "")
-      )
+      if(nrow(commentsFrame) > 0){
+        
+        paste0("<h3>", nameVector[x], "</h3>", 
+               paste0("<p>", commentsFrame$Best, " (", 
+                      commentsFrame$Location, ")</p>", collapse = "")
+        )
+      }
     })
     
     return(unlist(finalText))
   }
 })
 
+# download all comments button
 
+output$downloadAllComments <- downloadHandler(
+  filename = "AllComments.docx",
+  content = function(file){
+    
+    render("reports/AllComments.Rmd", output_format = "word_document",
+           quiet = TRUE, envir = environment())
+    
+    # copy docx to 'file'
+    file.copy("reports/AllComments.docx", file, overwrite = TRUE)
+    
+  }
+)
