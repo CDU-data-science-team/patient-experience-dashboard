@@ -1,19 +1,4 @@
 
-library(shinydashboard)
-library(scales)
-library(knitr)
-library(tidyverse)
-library(rmarkdown)
-library(DT)
-library(lubridate)
-library(pander)
-library(magrittr)
-library(tidytext)
-library(igraph)
-library(ggraph)
-library(stringi)
-library(stringr)
-
 # lappend
 
 lappend = function(lst, obj){
@@ -223,7 +208,7 @@ function(input, output, session){
     if(input$carerSU == "SU"){
       
       finalData = finalData %>%
-        filter(is.na(formtype) | formtype != "SUCE")
+        filter(is.na(formtype) | formtype != "carer")
       
     } else if(input$carerSU == "carer"){
       
