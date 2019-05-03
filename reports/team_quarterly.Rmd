@@ -152,12 +152,29 @@ trend_function(two_year_data)
 
 ```{r, results = "asis"}
 
-cat(
-  suceData %>% 
-    filter(!is.na(Improve)) %>% 
-    pull(Improve) %>% 
-    paste0("<p>", ., "</p>", collapse = "")
-)
+do_better <- suceData %>% 
+  filter(!is.na(Improve), (Imp1 != 4444 | is.na(Imp1))) %>% 
+  mutate(comment_with_location = paste0(Improve, " (", Location, ")")) %>% 
+  pull(comment_with_location)
+
+if(length(do_better) > 1000){
+  
+  cat("Error. Too many comments. Please reduce your selection  \n")
+} else {
+  
+  cat("## What could we do better?  \n")
+  
+  number_of_4444 <- suceData %>% filter(Imp1 == 4444) %>% nrow()
+  
+  if(number_of_4444 > 0){
+    
+    cat(paste0("There were ", number_of_4444, " responses saying that nothing could be improved  \n"))
+  }
+  
+  cat(
+    paste0("<p>", do_better, "</p>", collapse = "")
+  )
+}
 
 ```
 
@@ -165,11 +182,21 @@ cat(
 
 ```{r, results = "asis"}
 
-cat(
-  suceData %>% 
+  do_well <- suceData %>% 
     filter(!is.na(Best)) %>% 
-    pull(Best) %>% 
-    paste0("<p>", ., "</p>", collapse = "")
-)
+    mutate(comment_with_location_best = paste0(Best, " (", Location, ")")) %>% 
+    pull(comment_with_location_best)
+
+  if(length(do_better) > 1000){
+    
+    cat("Error. Too many comments. Please reduce your selection  \n")
+  } else {
+    
+    cat("## What did we do well?  \n")
+    
+    cat(
+      paste0("<p>", do_well, "</p>", collapse = "")
+    )
+  }
 
 ```

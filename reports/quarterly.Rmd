@@ -282,7 +282,8 @@ if(params$directorate == "NA"){
   
   do_better <- suceData %>% 
     filter(!is.na(Improve), (Imp1 != 4444 | is.na(Imp1))) %>% 
-    pull(Improve) 
+    mutate(comment_with_location = paste0(Improve, " (", Location, ")")) %>% 
+    pull(comment_with_location)
   
   if(length(do_better) > 1000){
     
@@ -291,6 +292,15 @@ if(params$directorate == "NA"){
     
     cat("## What could we do better?  \n")
     
+    number_of_4444 <- suceData %>% filter(Imp1 == 4444) %>% nrow()
+    
+    cat(str(number_of_4444))
+
+    if(number_of_4444 > 0){
+      
+      cat(paste0("There were ", number_of_4444, " responses saying that nothing could be improved  \n"))
+    }
+    
     cat(
       paste0("<p>", do_better, "</p>", collapse = "")
     )
@@ -298,8 +308,9 @@ if(params$directorate == "NA"){
   
   do_well <- suceData %>% 
     filter(!is.na(Best)) %>% 
-    pull(Best)
-  
+    mutate(comment_with_location_best = paste0(Best, " (", Location, ")")) %>% 
+    pull(comment_with_location_best)
+
   if(length(do_better) > 1000){
     
     cat("Error. Too many comments. Please reduce your selection  \n")
@@ -315,29 +326,27 @@ if(params$directorate == "NA"){
 
 ```
 
-<!-- ## Team reports- click to download -->
+## Team reports- click to download
 
 ```{r, results = "asis", message = FALSE}
 
 # this is where if it's a directorate report I'm going to produce
 # a set of links that go to all the team reports that exist
 
-# if(params$directorate != "NA"){
-#   
-#   team_numbers <- suceData %>%
-#     group_by(TeamC) %>%
-#     count() %>%
-#     filter(n > 2) %>%
-#     inner_join(counts) %>%
-#     filter(!duplicated(TeamC)) %>%
-#     ungroup()
-#   
-#   team_numbers %>%
-#     mutate(print = paste0("[", TeamN, "](http://suce.co.uk:8000/word?team=", TeamC, ")  \n  \n")) %>%
-#     pull(print) %>%
-#     cat()
+if(params$directorate != "NA"){
 
-#   
-# }
+  team_numbers <- suceData %>%
+    group_by(TeamC) %>%
+    count() %>%
+    filter(n > 2) %>%
+    inner_join(counts) %>%
+    filter(!duplicated(TeamC)) %>%
+    ungroup()
+
+  team_numbers %>%
+    mutate(print = paste0("[", TeamN, "](http://suce.co.uk:8000/word?team=", TeamC, ")  \n  \n")) %>%
+    pull(print) %>%
+    cat()
+}
 
 ```
