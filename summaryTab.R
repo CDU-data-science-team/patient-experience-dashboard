@@ -419,8 +419,7 @@ output$downloadCurrent <- downloadHandler(
     
     if(report_area == "team"){
       
-      area_name_team <- counts %>% 
-        filter(TeamC %in% input$selTeam) %>% 
+      area_name_team <- passData()[["currentData"]] %>% 
         pull(TeamN) %>% 
         unique() %>% 
         paste(collapse = ", ")
