@@ -288,6 +288,13 @@ if(params$comment_summary == "verbatimComments"){
   } else {
     
     cat("## What could we do better?  \n")
+    
+    number_of_4444 <- suceData %>% filter(Imp1 == 4444) %>% nrow()
+
+    if(number_of_4444 > 0){
+      
+      cat(paste0("There were ", number_of_4444, " responses saying that nothing could be improved  \n"))
+    }
 
     cat(
       paste0("<p>", do_better, "</p>", collapse = "")

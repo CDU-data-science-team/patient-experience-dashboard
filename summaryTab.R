@@ -935,7 +935,7 @@ output$changeCriticism <- renderValueBox({
     arrange(-abs(difference)) %>% 
     slice(1)
   
-  if(is.na(difference_table$difference)){
+  if(nrow(difference_table) == 0 | is.na(difference_table$difference)){
     
     valueBox(value = "Error", 
              subtitle = HTML("Not enough<br>data"))
