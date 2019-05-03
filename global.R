@@ -1,4 +1,19 @@
 
+library(shinydashboard)
+library(scales)
+library(knitr)
+library(tidyverse)
+library(rmarkdown)
+library(DT)
+library(lubridate)
+library(pander)
+library(magrittr)
+library(tidytext)
+library(igraph)
+library(ggraph)
+library(stringi)
+library(stringr)
+
 ## global.R ##
 
 if(Sys.info()["nodename"] == "otis"){
