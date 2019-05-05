@@ -20,65 +20,22 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 source("../report_functions.R")
 
-first_date <- params$date_from
+report_list <- report_data(division = params$division, directorate = params$directorate, 
+                           team = params$team, date_from = params$date_from, date_to = params$date_to, 
+                           carerSU = params$carerSU, area_name = params$area_name,
+                           comment_summary = params$comment_summary)
 
-end_date <- params$date_to
-
-# filter by area and name the areas
-
-if(params$division != "NA"){
-  
-  suceData = trustData %>%
-    filter(Division %in% params$division)
-  
-} else if(params$directorate != "NA"){
-  
-  suceData = trustData %>%
-    filter(Directorate %in% params$directorate)
-  
-} else if(params$team != "NA"){
-  
-  suceData = trustData %>%
-    filter(TeamC %in% params$team)
-} else {
-  
-  suceData = trustData
-}
-
-# now filter by SU/ carer
-
-if(params$carerSU == "SU"){
-  
-  suceData = suceData %>%
-    filter(is.na(formtype) | formtype != "SUCE")
-  
-} else if(params$carerSU == "carer"){
-  
-  suceData = suceData %>%
-    filter(formtype == "carer")
-  
-} else if(params$carerSU == "bothCarerSU"){
-  
-  # nothing!
-}
-
-# filter by time last and produce another dataset with 2 years in
-
-two_year_data <- suceData %>% 
-  filter(Date > end_date - 365 * 2)
-
-suceData <- suceData %>% 
-  filter(Date >= first_date, Date <= end_date)
-
-report_information <- reportFunction(suceData)
+suceData <- report_list[["suceData"]]
 
 ```
 
 ## Summary
 
-This report summarises data from `r first_date` to `r end_date`
+This report summarises data from `r params$date_from` to `r params$date_to`
 
 ```{r, results = "asis"}
+
+report_information <- report_list[["report_information"]]
 
 if(is.null(report_information)){
   
@@ -87,8 +44,8 @@ if(is.null(report_information)){
   
   myString = paste0("<p>Within ", params$area_name, " in the selected time there were ", report_information[["NR"]],
                     " responses.</p><br>",
-                    "<p>There were ", report_information[["IC"]], " 'What could we do better' responses and ", report_information[["BC"]],
-                    " 'What did we do well' responses</p><br>",
+                    "<p>There were ", report_information[["IC"]], " 'What could we do better' responses and ",
+                    report_information[["BC"]], " 'What did we do well' responses</p><br>",
                     ifelse(report_information[["NFFT"]] > 9,
                            paste0("<p>The Friends and Family Test Score is the proportion of patients
       who are extremely likely or likely to recommend a service. In the selected period of time it was ",
@@ -121,95 +78,7 @@ stack_function(suceData)
 
 ```{r fig.width=7, fig.height=6, echo=FALSE, warning=FALSE, fig.cap="Trend over time", dpi=400}
 
-trend_function(two_year_data)
-
-```
-
-```{r, results = "asis"}
-
-# produce all the variables and then place them inline below the chunk
-
-returnTopComments <- function(nth_row, type){
-  
-  if(type == "Improve"){
-    
-    check1 <- suceData %>% 
-      filter(!is.na(Imp1)) %>% 
-      left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
-      select(Category, Super)
-    
-    check2 <- suceData %>% 
-      filter(!is.na(Imp2)) %>% 
-      left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
-      select(Category, Super)
-  }
-  
-  if(type == "Best"){
-    
-    check1 <- suceData %>% 
-      filter(!is.na(Best1)) %>% 
-      left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
-      select(Category, Super)
-    
-    check2 <- suceData %>% 
-      filter(!is.na(Best2)) %>% 
-      left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
-      select(Category, Super)
-  }
-  
-  check_final <- rbind(check1, check2)
-  
-  count_table <- check_final %>% 
-    filter(!is.na(Super), !is.na(Category)) %>% 
-    group_by(Category, Super) %>% 
-    count() %>% 
-    ungroup()
-  
-  # we need at least three categories and a decent number in each
-  
-  if(nrow(count_table) < 5 | sum(count_table$n) < 12){
-    
-    return(NULL)
-  }
-  
-  # this is the bit that returns the nth top comment
-  
-  return_table <- count_table %>% 
-    mutate(percent = round(n / sum(n) * 100, 1)) %>% 
-    arrange(-percent) %>% 
-    slice(nth_row)
-  
-  # return three comments that are exemplars of that comment
-  
-  comment_numbers <- return_table %>% 
-    left_join(categoriesTable, by = c("Category", "Super")) %>% 
-    pull(Number)
-  
-  if(type == "Improve"){
-    
-    return_comments <- suceData %>% 
-      filter(Imp1 %in% comment_numbers |
-               Imp2 %in% comment_numbers) %>% 
-      filter(!is.na(Improve)) %>% 
-      sample_n(ifelse(nrow(.) >= 3, 3, nrow(.))) %>%  
-      pull(Improve) %>% 
-      paste0("<p>", 1 : length(.), ": ", ., "</p>", collapse = "")
-  }
-  
-  if(type == "Best"){
-    
-    return_comments <- suceData %>% 
-      filter(Best1 %in% comment_numbers |
-               Best2 %in% comment_numbers) %>% 
-      filter(!is.na(Best)) %>% 
-      sample_n(ifelse(nrow(.) >= 3, 3, nrow(.))) %>%  
-      pull(Best) %>% 
-      paste0("<p>", 1 : length(.), ": ", ., "</p>", collapse = "")
-  }
-  
-  return(list("return_table" = return_table, 
-              "return_comments" = return_comments))
-}
+trend_function(report_list[["two_year_data"]])
 
 ```
 
@@ -219,55 +88,54 @@ returnTopComments <- function(nth_row, type){
 
 if(params$comment_summary == "textSummary"){
   
-  improve_1 <- returnTopComments(1, "Improve")[["return_table"]]
+  improve_1 <- returnTopComments(suceData, 1, "Improve")[["return_table"]]
   
   if(is.null(improve_1)){
     
     cat("Insufficient data for this type of summary. Please rerun report and select \"verbatim comments\"  \n  \n")
   } else {
     
-    improve_2 <- returnTopComments(2, "Improve")[["return_table"]]
-    improve_3 <- returnTopComments(3, "Improve")[["return_table"]]
+    improve_2 <- returnTopComments(suceData, 2, "Improve")[["return_table"]]
+    improve_3 <- returnTopComments(suceData, 3, "Improve")[["return_table"]]
     
     cat("## What could we do better?  \n")
     
     cat("The most common comment category was ", 
         paste0(improve_1$Super, ": ", improve_1$Category, paste0(improve_1$percent, "%. ")),
-        "Example comments include: ", returnTopComments(1, "Improve")[["return_comments"]])
+        "Example comments include: ", returnTopComments(suceData, 1, "Improve")[["return_comments"]])
     
     cat("The second most common comment category was ", 
         paste0(improve_2$Super, ": ", improve_2$Category, paste0(improve_2$percent, "%. ")),
-        "Example comments include: ", returnTopComments(2, "Improve")[["return_comments"]])
+        "Example comments include: ", returnTopComments(suceData, 2, "Improve")[["return_comments"]])
     
     cat("The third most common comment category was ", 
         paste0(improve_3$Super, ": ", improve_3$Category, paste0(improve_3$percent, "%. ")),
-        "Example comments include: ", returnTopComments(3, "Improve")[["return_comments"]], "  \n")
+        "Example comments include: ", returnTopComments(suceData, 3, "Improve")[["return_comments"]], "  \n")
     
   }
   
   best_1 <- returnTopComments(1, "Best")[["return_table"]]
   
   if(is.null(best_1)){
-  
+    
     cat("Insufficient data for this type of summary. Please rerun report and select verbatim comments  \n  \n")
   } else {
     
     cat("## What did we do well?  \n")
-    best_2 <- returnTopComments(2, "Best")[["return_table"]]
-    best_3 <- returnTopComments(3, "Best")[["return_table"]]
+    best_2 <- returnTopComments(suceData, 2, "Best")[["return_table"]]
+    best_3 <- returnTopComments(suceData, 3, "Best")[["return_table"]]
     
     cat("The most common comment category was ", 
         paste0(best_1$Super, ": ", best_1$Category, paste0(best_1$percent, "%. ")),
-        "Example comments include: ", returnTopComments(1, "Best")[["return_comments"]])
+        "Example comments include: ", returnTopComments(suceData, 1, "Best")[["return_comments"]])
     
     cat("The second most common comment category was ", 
         paste0(best_2$Super, ": ", best_2$Category, paste0(best_2$percent, "%. ")),
-        "Example comments include: ", returnTopComments(2, "Best")[["return_comments"]])
+        "Example comments include: ", returnTopComments(suceData, 2, "Best")[["return_comments"]])
     
     cat("The third most common comment category was ", 
         paste0(best_3$Super, ": ", best_3$Category, paste0(best_3$percent, "%. ")),
-        "Example comments include: ", returnTopComments(3, "Best")[["return_comments"]])
-    
+        "Example comments include: ", returnTopComments(suceData, 3, "Best")[["return_comments"]])
   }
 }
 
@@ -289,13 +157,15 @@ if(params$comment_summary == "verbatimComments"){
     
     cat("## What could we do better?  \n")
     
-    number_of_4444 <- suceData %>% filter(Imp1 == 4444) %>% nrow()
-
+    number_of_4444 <- suceData %>% 
+      filter(Imp1 == 4444) %>% 
+      nrow()
+    
     if(number_of_4444 > 0){
       
       cat(paste0("There were ", number_of_4444, " responses saying that nothing could be improved  \n"))
     }
-
+    
     cat(
       paste0("<p>", do_better, "</p>", collapse = "")
     )
@@ -312,14 +182,13 @@ if(params$comment_summary == "verbatimComments"){
   } else {
     
     cat("## What did we do well?  \n")
-
+    
     cat(
       paste0("<p>", do_well, "</p>", collapse = "")
     )
   }
 }
-  
+
 ```
-  
-  
-  
+
+
