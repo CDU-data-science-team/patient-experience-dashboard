@@ -44,55 +44,16 @@ first_date <- yq(paste0(previous_year, ": Q", previous_quarter))
 
 end_date <- yq(paste0(year(today), ": Q", quarter(today))) - 1
 
-# filter by area and name the areas
+report_list <- report_data(division = params$division, directorate = params$directorate, 
+                           team = params$team, date_from = first_date, date_to = end_date, 
+                           carerSU = params$carerSU, area_name = params$area_name,
+                           comment_summary = params$comment_summary)
 
-if(params$division != "NA"){
-  
-  suceData = trustData %>%
-    filter(Division %in% params$division)
-  
-} else if(params$directorate != "NA"){
-  
-  suceData = trustData %>%
-    filter(Directorate %in% params$directorate)
-  
-} else if(params$team != "NA"){
-  
-  suceData = trustData %>%
-    filter(TeamC %in% params$team)
-} else {
-  
-  suceData = trustData
-}
+suceData <- report_list[["suceData"]]
 
-# now filter by SU/ carer
+two_year_data <- report_list[["two_year_data"]]
 
-if(params$carerSU == "SU"){
-  
-  suceData = suceData %>%
-    filter(is.na(formtype) | formtype != "SUCE")
-  
-} else if(params$carerSU == "carer"){
-  
-  suceData = suceData %>%
-    filter(formtype == "carer")
-  
-} else if(params$carerSU == "bothCarerSU"){
-  
-  # nothing!
-}
-
-# filter by time last and produce another dataset with 2 years in
-
-two_year_data <- suceData %>% 
-  filter(Date > end_date - 365 * 2)
-
-suceData <- suceData %>% 
-  filter(Date >= first_date, Date <= end_date)
-
-# generate report information
-
-report_information <- reportFunction(suceData)
+report_information <- report_list[["report_information"]]
 
 ```
 

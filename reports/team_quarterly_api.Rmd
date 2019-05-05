@@ -115,3 +115,28 @@ trend_function(two_year_data)
 
 ```
 
+## What could we do better?
+
+```{r, results = "asis"}
+
+cat(
+  suceData %>% 
+    filter(!is.na(Improve)) %>% 
+    pull(Improve) %>% 
+    paste0("<p>", ., "</p>", collapse = "")
+)
+
+```
+
+## What did we do well?
+
+```{r, results = "asis"}
+
+cat(
+  suceData %>% 
+    filter(!is.na(Best)) %>% 
+    pull(Best) %>% 
+    paste0("<p>", ., "</p>", collapse = "")
+)
+
+```

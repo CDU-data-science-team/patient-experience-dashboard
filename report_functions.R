@@ -165,3 +165,192 @@ trend_function <- function(trend_data){
     ylim(minimum_value, 100) 
 }
 
+# this function returns all comments sorted by category/ criticality & could improve/ do well
+
+allComments <- function(comment_data, category_criticality, improve_do_well){
+  
+  if(improve_do_well == "Improve"){
+    
+    improve_well_code <- "Imp1"
+    improve_well_crit <- "ImpCrit"
+    
+  } else {
+    
+    improve_well_code <- "Best1"
+    improve_well_crit <- "BestCrit"
+    
+  }
+  
+  if(category_criticality == "Category"){
+    
+    # going to left join the improve codes to the category table to produce
+    # a fully labelled dataframe with all comments, sub and super categories
+    
+    df = comment_data %>% 
+      filter(!is.na(!!(sym(improve_well_code))), !is.na(!!(sym(improve_do_well)))) %>% 
+      left_join(categoriesTable, by = setNames("Number", improve_well_code)) %>%  
+      select(key : Time, Improve : CommentCoderBest, 
+             Location, Division, Directorate, Division2 : type) %>% 
+      filter(!is.na(Super)) %>% 
+      group_by(Super) %>% 
+      mutate(count = n()) %>% 
+      arrange(-count, Location)
+    
+    return(df)
+  }
+  
+  # now let's do a whole other thing for if they want to sort by criticality
+  
+  if(category_criticality == "Criticality"){
+    
+    df = comment_data %>%
+      filter(!is.na(!!(sym(improve_well_crit))), !is.na(!!(sym(improve_do_well)))) %>%
+      select(key : Time, Improve : CommentCoderBest,
+             Location, Division, Directorate, Division2) %>%
+      arrange(Location)
+    
+    return(df)
+  }
+}
+
+# this is a data generation function for all of the reports
+
+report_data <- function(division = "NA", directorate = "NA", team = "NA",
+                        date_from = NULL, date_to = NULL, carerSU = NULL,
+                        area_name = NULL, comment_sort = NULL, comment_summary = NULL){
+  
+  first_date <- date_from
+  
+  end_date <- date_to
+  
+  # filter by area and name the areas
+  
+  if(division != "NA"){
+    
+    suceData = trustData %>%
+      filter(Division %in% division)
+    
+  } else if(directorate != "NA"){
+    
+    suceData = trustData %>%
+      filter(Directorate %in% directorate)
+    
+  } else if(team != "NA"){
+    
+    suceData = trustData %>%
+      filter(TeamC %in% team)
+  } else {
+    
+    suceData = trustData
+  }
+  
+  # now filter by SU/ carer
+  
+  if(carerSU == "SU"){
+    
+    suceData = suceData %>%
+      filter(is.na(formtype) | formtype != "SUCE")
+    
+  } else if(carerSU == "carer"){
+    
+    suceData = suceData %>%
+      filter(formtype == "carer")
+    
+  } else if(carerSU == "bothCarerSU"){
+    
+    # nothing!
+  }
+  
+  # filter by time last and produce another dataset with 2 years in
+  
+  two_year_data <- suceData %>% 
+    filter(Date > end_date - 365 * 2)
+  
+  suceData <- suceData %>% 
+    filter(Date >= first_date, Date <= end_date)
+  
+  report_information <- reportFunction(suceData)
+  
+  return(list("suceData" = suceData, "two_year_data" = two_year_data,
+              "report_information" = report_information))
+  
+}
+
+# produce all the variables and then place them inline below the chunk
+
+returnTopComments <- function(the_data, nth_row, type){
+  
+  if(type == "Improve"){
+    
+    check1 <- the_data %>% 
+      filter(!is.na(Imp1)) %>% 
+      left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
+      select(Category, Super)
+    
+    check2 <- the_data %>% 
+      filter(!is.na(Imp2)) %>% 
+      left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
+      select(Category, Super)
+  }
+  
+  if(type == "Best"){
+    
+    check1 <- the_data %>% 
+      filter(!is.na(Best1)) %>% 
+      left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
+      select(Category, Super)
+    
+    check2 <- the_data %>% 
+      filter(!is.na(Best2)) %>% 
+      left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
+      select(Category, Super)
+  }
+  
+  check_final <- rbind(check1, check2)
+  
+  count_table <- check_final %>% 
+    filter(!is.na(Super), !is.na(Category)) %>% 
+    group_by(Category, Super) %>% 
+    count() %>% 
+    ungroup()
+  
+  # this is the bit that returns the nth top comment
+  
+  return_table <- count_table %>% 
+    mutate(percent = round(n / sum(n) * 100, 1)) %>% 
+    arrange(-percent) %>% 
+    slice(nth_row)
+  
+  # return three comments that are exemplars of that comment
+  
+  comment_numbers <- return_table %>% 
+    left_join(categoriesTable, by = c("Category", "Super")) %>% 
+    pull(Number)
+  
+  if(type == "Improve"){
+    
+    return_comments <- the_data %>% 
+      filter(Imp1 %in% comment_numbers |
+               Imp2 %in% comment_numbers) %>% 
+      filter(!is.na(Improve)) %>% 
+      sample_n(ifelse(nrow(.) >= 3, 3, nrow(.))) %>%  
+      pull(Improve) %>% 
+      paste0("<p>", 1 : length(.), ": ", ., "</p>", collapse = "")
+  }
+  
+  if(type == "Best"){
+    
+    return_comments <- the_data %>% 
+      filter(Best1 %in% comment_numbers |
+               Best2 %in% comment_numbers) %>% 
+      filter(!is.na(Best)) %>% 
+      sample_n(ifelse(nrow(.) >= 3, 3, nrow(.))) %>%  
+      pull(Best) %>% 
+      paste0("<p>", 1 : length(.), ": ", ., "</p>", collapse = "")
+  }
+  
+  return(list("return_table" = return_table, 
+              "return_comments" = return_comments))
+}
+
+
