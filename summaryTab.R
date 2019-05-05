@@ -136,7 +136,7 @@ output$reportCustomAreaSelector <- renderUI({
   
   if(input$serviceArea == "Division"){
     
-    selectInput("report_division", "Division (defaults to whole Trust)", 
+    selectInput("report_division", "Division (leave blank for whole Trust)", 
                 list("Local Partnerships- Mental Healthcare" = 0,
                      "Local Partnerships- Community Healthcare" = 2, "Forensic" = 1),
                 multiple = TRUE)
@@ -638,60 +638,14 @@ output$changeInCriticality <- renderValueBox({
 })
 
 # third row----
-
-# write a function to return the nth element of improve/ best thing table
-
-returnTopComments <- function(nth_row, type){
-  
-  if(type == "Improve"){
-    
-    check1 <- passData()[["currentData"]] %>% 
-      filter(!is.na(Imp1)) %>% 
-      left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
-      select(Category, Super)
-    
-    check2 <- passData()[["currentData"]] %>% 
-      filter(!is.na(Imp2)) %>% 
-      left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
-      select(Category, Super)
-  }
-  
-  if(type == "Best"){
-    
-    check1 <- passData()[["currentData"]] %>% 
-      filter(!is.na(Best1)) %>% 
-      left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
-      select(Category, Super)
-    
-    check2 <- passData()[["currentData"]] %>% 
-      filter(!is.na(Best2)) %>% 
-      left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
-      select(Category, Super)
-  }
-  
-  check_final <- rbind(check1, check2)
-  
-  count_table <- check_final %>% 
-    filter(!is.na(Super), !is.na(Category)) %>% 
-    group_by(Category, Super) %>% 
-    count() %>% 
-    ungroup()
-  
-  count_sum <- sum(count_table$n)
-  
-  count_table %>% 
-    mutate(percent = round(n / count_sum * 100, 1)) %>% 
-    arrange(-percent) %>% 
-    slice(nth_row)
-}
-
+                    
 output$topCompliment1 <- renderValueBox({
   
   # fetch from function
   
-  count_table = returnTopComments(1, "Best")
+  count_table = returnTopComments(passData()[["currentData"]], 1, "Best")[["return_table"]]
   
-  if(nrow(count_table) == 0){
+  if(is.null(count_table)){
     
     valueBox(value = "Error", 
              subtitle = HTML("Not enough<br>data"))
@@ -707,9 +661,9 @@ output$topCompliment2 <- renderValueBox({
   
   # fetch from function
   
-  count_table = returnTopComments(2, "Best")
+  count_table = returnTopComments(passData()[["currentData"]], 2, "Best")[["return_table"]]
   
-  if(nrow(count_table) == 0){
+  if(is.null(count_table)){
     
     valueBox(value = "Error", 
              subtitle = HTML("Not enough<br>data"))
@@ -725,9 +679,9 @@ output$topCompliment3 <- renderValueBox({
   
   # fetch from function
   
-  count_table = returnTopComments(3, "Best")
+  count_table = returnTopComments(passData()[["currentData"]], 3, "Best")[["return_table"]]
   
-  if(nrow(count_table) == 0){
+  if(is.null(count_table)){
     
     valueBox(value = "Error", 
              subtitle = HTML("Not enough<br>data"))
@@ -830,9 +784,9 @@ output$topCriticism1 <- renderValueBox({
   
   # fetch from function
   
-  count_table = returnTopComments(1, "Improve")
+  count_table = returnTopComments(passData()[["currentData"]], 1, "Improve")[["return_table"]]
   
-  if(nrow(count_table) == 0){
+  if(is.null(count_table)){
     
     valueBox(value = "Error", 
              subtitle = HTML("Not enough<br>data"))
@@ -848,9 +802,9 @@ output$topCriticism2 <- renderValueBox({
   
   # fetch from function
   
-  count_table = returnTopComments(2, "Improve")
+  count_table = returnTopComments(passData()[["currentData"]], 2, "Improve")[["return_table"]]
   
-  if(nrow(count_table) == 0){
+  if(is.null(count_table)){
     
     valueBox(value = "Error", 
              subtitle = HTML("Not enough<br>data"))
@@ -866,9 +820,9 @@ output$topCriticism3 <- renderValueBox({
   
   # fetch from function
   
-  count_table = returnTopComments(3, "Improve")
+  count_table = returnTopComments(passData()[["currentData"]], 3, "Improve")[["return_table"]]
   
-  if(nrow(count_table) == 0){
+  if(is.null(count_table)){
     
     valueBox(value = "Error", 
              subtitle = HTML("Not enough<br>data"))
