@@ -211,7 +211,7 @@ if(params$directorate == "NA"){
 
 if(params$directorate != "NA"){
   
-  cat("## What could we do better?  \n")
+  cat("## Team reports, click to download  \n")
 
   team_numbers <- suceData %>%
     group_by(TeamC) %>%
