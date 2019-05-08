@@ -337,13 +337,13 @@ output$filterText = renderText({ # this is for the category tables
                        UQ(sym(variableName[1])) %in% theNumbers |
                          UQ(sym(variableName[2])) %in% theNumbers) %>%
     filter(!is.na(UQ(sym(longName)))) %>% 
-    pull(UQ(sym(longName)))
-  
+    select(UQ(sym(longName)), Location) %>% 
+    set_names(c("Comment", "Location")) %>% 
+    mutate(final_comment = paste0(Comment, " (", Location, ")")) %>% 
+    pull(final_comment)
+
   HTML(
-    paste(
-      map_chr(theComments,
-              function(x) paste0("<p>", x, "</p>")
-      ), collapse = "")
+    paste("<p>", theComments, "</p>", collapse = "")
   )
 })
 
@@ -387,14 +387,14 @@ output$filterTextSubcategory <- renderText({
   theComments = passData()[["currentData"]] %>% 
     filter(!is.na(UQ(sym(longName)))) %>% 
     filter(UQ(sym(variableName[1])) %in% relevant_comment_codes |
-                         UQ(sym(variableName[2])) %in% relevant_comment_codes) %>%
-    pull(UQ(sym(longName)))
-  
+                         UQ(sym(variableName[2])) %in% relevant_comment_codes) %>% 
+    select(UQ(sym(longName)), Location) %>% 
+    set_names(c("Comment", "Location")) %>% 
+    mutate(final_comment = paste0(Comment, " (", Location, ")")) %>% 
+    pull(final_comment)
+
   HTML(
-    paste(
-      map_chr(theComments,
-              function(x) paste0("<p>", x, "</p>")
-      ), collapse = "")
+    paste("<p>", theComments, "</p>", collapse = "")
   )
 })
 
@@ -432,13 +432,13 @@ output$filterTextCrit = renderText({ # this is for the criticality tables
                        UQ(sym(variableName)) %in% theClick |
                          UQ(sym(variableName)) %in% theClick) %>%
     filter(!is.na(UQ(sym(longName)))) %>% 
-    pull(UQ(sym(longName)))
+    select(UQ(sym(longName)), Location) %>% 
+    set_names(c("Comment", "Location")) %>% 
+    mutate(final_comment = paste0(Comment, " (", Location, ")")) %>% 
+    pull(final_comment)
   
   HTML(
-    paste(
-      map_chr(theComments,
-              function(x) paste0("<p>", x, "</p>")
-      ), collapse = "")
+    paste("<p>", theComments, "</p>", collapse = "")
   )
 })
 
