@@ -205,9 +205,10 @@ function(request) {
         ),
         tabItem(tabName = "allComments",
                 fluidRow(
-                  column(12, radioButtons("sortCategoryCriticality", 
+                  column(6, radioButtons("sortCategoryCriticality", 
                                           "Sort by category or Criticality?",
-                                          choices = c("Category", "Criticality")))
+                                          choices = c("Category", "Criticality"))),
+                  column(6, downloadButton("downloadAllComments", "Download all comments"))
                 ),
                 fluidRow(
                   column(6, h2("What could we do better?"), htmlOutput("allImproveComments")),
