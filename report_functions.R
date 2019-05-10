@@ -37,7 +37,7 @@ reportFunction <- function(report_data){
       
       SQ = NULL
     }
-
+    
     # Number of responses
     
     NR = nrow(suceData)
@@ -280,33 +280,47 @@ report_data <- function(division = "NA", directorate = "NA", team = "NA",
 
 returnTopComments <- function(the_data, nth_row, type){
   
+  check_improve <- rbind(
+    the_data %>% 
+      filter(!is.na(Imp1)) %>% 
+      mutate(Number = Imp1) %>% 
+      select(-c(Imp1, Imp2, Best1, Best2)),
+    
+    the_data %>% 
+      filter(!is.na(Imp2)) %>% 
+      mutate(Number = Imp2) %>% 
+      select(-c(Imp1, Imp2, Best1, Best2))
+  )
+  
+  check_best <- rbind(
+    the_data %>% 
+      filter(!is.na(Best1)) %>% 
+      mutate(Number = Best1) %>% 
+      select(-c(Imp1, Imp2, Best1, Best2)),
+    
+    the_data %>% 
+      filter(!is.na(Best2)) %>% 
+      mutate(Number = Best2) %>% 
+      select(-c(Imp1, Imp2, Best1, Best2))
+  )
+
   if(type == "Improve"){
     
-    check1 <- the_data %>% 
-      filter(!is.na(Imp1)) %>% 
-      left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
-      select(Category, Super)
-    
-    check2 <- the_data %>% 
-      filter(!is.na(Imp2)) %>% 
-      left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
-      select(Category, Super)
+    check_final <- check_improve
   }
   
   if(type == "Best"){
     
-    check1 <- the_data %>% 
-      filter(!is.na(Best1)) %>% 
-      left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
-      select(Category, Super)
-    
-    check2 <- the_data %>% 
-      filter(!is.na(Best2)) %>% 
-      left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
-      select(Category, Super)
+    check_final <- check_best
   }
   
-  check_final <- rbind(check1, check2)
+  if(type == "Both"){
+    
+    check_final <- rbind(check_improve, check_best)
+  }
+
+  check_final <- check_final %>% 
+    filter(Number != 4444)
   
   if(nrow(check_final) < 10){
     
@@ -314,29 +328,26 @@ returnTopComments <- function(the_data, nth_row, type){
   }
   
   count_table <- check_final %>% 
-    filter(!is.na(Super), !is.na(Category)) %>% 
-    group_by(Category, Super) %>% 
+    filter(!is.na(Number)) %>% 
+    group_by(Number) %>% 
     count() %>% 
     ungroup()
-  
-  # this is the bit that returns the nth top comment
   
   return_table <- count_table %>% 
     mutate(percent = round(n / sum(n) * 100, 1)) %>% 
     arrange(-percent) %>% 
-    slice(nth_row)
+    slice(nth_row) %>% 
+    left_join(categoriesTable)
   
   # return three comments that are exemplars of that comment
-  
-  comment_numbers <- return_table %>% 
-    left_join(categoriesTable, by = c("Category", "Super")) %>% 
-    pull(Number)
+  # the "both" method returns rubbish because it doesn't work and 
+  # isn't supposed to
   
   if(type == "Improve"){
     
     return_comments <- the_data %>% 
-      filter(Imp1 %in% comment_numbers |
-               Imp2 %in% comment_numbers) %>% 
+      filter(Imp1 %in% return_table$Number |
+               Imp2 %in% return_table$Number) %>% 
       filter(!is.na(Improve)) %>% 
       sample_n(ifelse(nrow(.) >= 3, 3, nrow(.))) %>%  
       pull(Improve) %>% 
@@ -346,12 +357,17 @@ returnTopComments <- function(the_data, nth_row, type){
   if(type == "Best"){
     
     return_comments <- the_data %>% 
-      filter(Best1 %in% comment_numbers |
-               Best2 %in% comment_numbers) %>% 
+      filter(Best1 %in% return_table$Number |
+               Best2 %in% return_table$Number) %>% 
       filter(!is.na(Best)) %>% 
       sample_n(ifelse(nrow(.) >= 3, 3, nrow(.))) %>%  
       pull(Best) %>% 
       paste0("<p>", 1 : length(.), ": ", ., "</p>", collapse = "")
+  }
+  
+  if(type == "Both"){
+    
+    return_comments = NULL
   }
   
   return(list("return_table" = return_table, 

@@ -1,13 +1,4 @@
 
-# lappend
-
-lappend = function(lst, obj){
-  
-  lst[[length(lst) + 1]] <- obj
-  
-  return(lst)
-}
-
 # blank ggplot2 theme
 
 new_theme_empty <- theme_bw()
@@ -31,6 +22,7 @@ function(input, output, session){
   source("textAnalysis.R", local = TRUE)
   source("sentimentTab.R", local = TRUE)
   source("report_functions.R", local = TRUE)
+  source("commentSearch.R", local = TRUE)
   # source("topicExplorer.R", local = TRUE)
   
   # handle reactive UI from division selection

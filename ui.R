@@ -16,7 +16,8 @@ function(request) {
         menuItem("Summary", tabName = "summary", icon = icon("dashboard")),
         menuItem("Scores", tabName = "scores", icon = icon("bar-chart")),
         menuItem("Comments", tabName = "comments", icon = icon("comment")),
-        menuItem("All comments", tabName = "allComments", icon = icon("comment"))
+        menuItem("All comments", tabName = "allComments", icon = icon("comment")),
+        menuItem("Search comments", tabName = "commentSearch", icon = icon("question-circle"))
         # menuItem("Text analysis", tabName = "textAnalysis", icon = icon("font")),
         # menuItem("Sentiment analysis", tabName = "sentimentAnalysis", icon = icon("font"))
       ),
@@ -213,6 +214,11 @@ function(request) {
                 fluidRow(
                   column(6, h2("What could we do better?"), htmlOutput("allImproveComments")),
                   column(6, h2("What did we do well?"), htmlOutput("allBestComments"))
+                )
+        ),
+        tabItem(tabName = "commentSearch",
+                fluidRow(
+                  uiOutput("commentSearchOutput")
                 )
         ),
         tabItem(tabName = "textAnalysis",

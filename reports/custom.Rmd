@@ -101,15 +101,15 @@ if(params$comment_summary == "textSummary"){
     cat("## What could we do better?  \n")
     
     cat("The most common comment category was ", 
-        paste0(improve_1$Super, ": ", improve_1$Category, paste0(improve_1$percent, "%. ")),
+        paste0(improve_1$Super, ": ", improve_1$Category, " ", paste0(improve_1$percent, "%. ")),
         "Example comments include: ", returnTopComments(suceData, 1, "Improve")[["return_comments"]])
     
     cat("The second most common comment category was ", 
-        paste0(improve_2$Super, ": ", improve_2$Category, paste0(improve_2$percent, "%. ")),
+        paste0(improve_2$Super, ": ", improve_2$Category, " ", paste0(improve_2$percent, "%. ")),
         "Example comments include: ", returnTopComments(suceData, 2, "Improve")[["return_comments"]])
     
     cat("The third most common comment category was ", 
-        paste0(improve_3$Super, ": ", improve_3$Category, paste0(improve_3$percent, "%. ")),
+        paste0(improve_3$Super, ": ", improve_3$Category, " ", paste0(improve_3$percent, "%. ")),
         "Example comments include: ", returnTopComments(suceData, 3, "Improve")[["return_comments"]], "  \n")
     
   }
@@ -126,15 +126,15 @@ if(params$comment_summary == "textSummary"){
     best_3 <- returnTopComments(suceData, 3, "Best")[["return_table"]]
     
     cat("The most common comment category was ", 
-        paste0(best_1$Super, ": ", best_1$Category, paste0(best_1$percent, "%. ")),
+        paste0(best_1$Super, ": ", best_1$Category, " ", paste0(best_1$percent, "%. ")),
         "Example comments include: ", returnTopComments(suceData, 1, "Best")[["return_comments"]])
     
     cat("The second most common comment category was ", 
-        paste0(best_2$Super, ": ", best_2$Category, paste0(best_2$percent, "%. ")),
+        paste0(best_2$Super, ": ", best_2$Category, " ", paste0(best_2$percent, "%. ")),
         "Example comments include: ", returnTopComments(suceData, 2, "Best")[["return_comments"]])
     
     cat("The third most common comment category was ", 
-        paste0(best_3$Super, ": ", best_3$Category, paste0(best_3$percent, "%. ")),
+        paste0(best_3$Super, ": ", best_3$Category, " ", paste0(best_3$percent, "%. ")),
         "Example comments include: ", returnTopComments(suceData, 3, "Best")[["return_comments"]])
   }
 }
