@@ -13,8 +13,7 @@ library(igraph)
 library(ggraph)
 library(stringi)
 library(stringr)
-
-## global.R ##
+library(shinyWidgets)
 
 if(Sys.info()["nodename"] == "otis"){
   
