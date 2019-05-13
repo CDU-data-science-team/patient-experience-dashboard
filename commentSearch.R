@@ -10,7 +10,7 @@ output$commentSearchSelector <- renderUI({
   
   list_names <- comment_table$Number
   
-  names(list_names) = paste0(comment_table$Super, ": ", comment_table$Category)
+  names(list_names) = paste0(comment_table$Super, ":<br>", comment_table$Category)
   
   # 2. Criticality- preprocess
   
@@ -51,7 +51,7 @@ output$commentSearchOutput <- renderUI({
     fluidRow(
       column(4, uiOutput("commentSearchSelector")),
       column(8, 
-             box(width = 12,
+             box(width = 12, h3("Click points to read the comment"),
                  textOutput("beeswarmText"), plotOutput("beeswarmComments", click = "beeswarm_click")
              ),
              box(width = 12,
@@ -92,14 +92,17 @@ output$showImprove <- renderText({
       filter(!grepl(paste(fixSearchExclude(), collapse = "|"), Improve))
   }
   
-   improve_data %>%
+   commentsFrame <- improve_data %>%
     mutate(ImpCrit = -ImpCrit) %>% 
     filter(Imp1 %in% input$topSixThemes |
              Imp2 %in% input$topSixThemes) %>%
     filter(ImpCrit %in% input$criticalityLevels) %>% 
-    filter(!is.na(Improve)) %>%
-    pull(Improve) %>%
-    paste0("<p>", ., "</p>", collapse = "")
+    filter(!is.na(Improve))
+   
+   req(nrow(commentsFrame) > 0)
+   
+   paste0("<p>", commentsFrame$Improve, " (", 
+          commentsFrame$Location, ")</p>", collapse = "")
 })
 
 output$showBest <- renderText({
@@ -113,13 +116,16 @@ output$showBest <- renderText({
     best_data <- passData()[["currentData"]]
   }
 
-  best_data %>%
+  commentsFrame <- best_data %>%
     filter(Best1 %in% input$topSixThemes |
              Best2 %in% input$topSixThemes) %>%
     filter(BestCrit %in% input$criticalityLevels) %>% 
-    filter(!is.na(Best)) %>%
-    pull(Best) %>%
-    paste0("<p>", ., "</p>", collapse = "")
+    filter(!is.na(Best))
+  
+  req(nrow(commentsFrame) > 0)
+    
+    paste0("<p>", commentsFrame$Best, " (", 
+           commentsFrame$Location, ")</p>", collapse = "")
 })
 
 # this is being cached so the plot click can access it
@@ -129,14 +135,14 @@ beeswarmGraph <- reactive({
   combined <- rbind(
     
     passData()[["currentData"]] %>% 
-      select(Date, Imp1, ImpCrit, Improve) %>% 
-      gather(key, value, -Date, -ImpCrit, -Improve) %>% 
+      select(Date, Imp1, ImpCrit, Improve, Location) %>% 
+      gather(key, value, -Date, -ImpCrit, -Improve, -Location) %>% 
       rename(Crit = ImpCrit, Comment = Improve) %>% 
       mutate(Crit = -Crit),
     
     passData()[["currentData"]] %>% 
-      select(Date, Best1, BestCrit, Best) %>% 
-      gather(key, value, -Date, -BestCrit, -Best) %>% 
+      select(Date, Best1, BestCrit, Best, Location) %>% 
+      gather(key, value, -Date, -BestCrit, -Best, -Location) %>% 
       rename(Crit = BestCrit, Comment = Best)
   )
   
@@ -167,7 +173,12 @@ output$beeswarmComments <- renderPlot({
 
 output$beeswarmText <- renderText({
   
-  nearPoints(beeswarmGraph(), input$beeswarm_click, threshold = 100, maxpoints = 1)$Comment
+  beeswarm_df <- nearPoints(beeswarmGraph(), input$beeswarm_click, threshold = 100, maxpoints = 1)
+  
+  req(nrow(beeswarm_df) > 0)
+
+  with(beeswarm_df, paste0(Comment, " (", Location, ")"))
+  
 })
 
 
