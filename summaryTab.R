@@ -206,6 +206,23 @@ output$downloadDoc <- downloadHandler(
     
     # Set up parameters to pass to Rmd document
     
+    # date
+    
+    today = Sys.Date()
+    
+    previous_quarter <- (quarter(today)) - 1 %% 4
+    previous_year <- year(today)
+    
+    if(previous_quarter == 0){
+      
+      previous_quarter <- 4
+      previous_year <- previous_year - 1
+    }
+    
+    first_date <- yq(paste0(previous_year, ": Q", previous_quarter))
+    
+    end_date <- yq(paste0(year(today), ": Q", quarter(today))) - 1
+    
     # if they're on the division selector
     
     if(input$serviceArea == "Division"){
@@ -218,35 +235,27 @@ output$downloadDoc <- downloadHandler(
         
         params <- list(division = input$report_division,
                        carerSU = input$carerSU,
-                       area_name = area_name)
+                       area_name = area_name,
+                       date_from = first_date,
+                       date_to = end_date,
+                       comment_summary = "textSummary")
+
       } else {
         
         area_name <- "the whole Trust"
         
         params <- list(division = "NA",
                        carerSU = input$carerSU,
-                       area_name = area_name)
+                       area_name = area_name,
+                       date_from = first_date,
+                       date_to = end_date,
+                       comment_summary = "textSummary")
       }
     }
     
     if(input$serviceArea == "Directorate"){
       
       if(isTruthy(input$report_directorate)){
-        
-        today = Sys.Date()
-        
-        previous_quarter <- (quarter(today)) - 1 %% 4
-        previous_year <- year(today)
-        
-        if(previous_quarter == 0){
-          
-          previous_quarter <- 4
-          previous_year <- previous_year - 1
-        }
-        
-        first_date <- yq(paste0(previous_year, ": Q", previous_quarter))
-        
-        end_date <- yq(paste0(year(today), ": Q", quarter(today))) - 1
         
         number_rows = trustData %>%
           filter(Directorate %in% input$report_directorate) %>% 
@@ -262,7 +271,11 @@ output$downloadDoc <- downloadHandler(
           
           params <- list(directorate = input$report_directorate,
                          carerSU = input$carerSU,
-                         area_name = area_name)
+                         area_name = area_name,
+                         date_from = first_date,
+                         date_to = end_date,
+                         comment_summary = "verbatimComments")
+
         } else {
           
           showModal(
@@ -302,7 +315,10 @@ output$downloadDoc <- downloadHandler(
         
         params <- list(team = input$report_team,
                        carerSU = input$carerSU,
-                       area_name = area_name_team)
+                       area_name = area_name_team,
+                       date_from = first_date,
+                       date_to = end_date,
+                       comment_summary = "verbatimComments")
       } else {
         
         showModal(
@@ -317,24 +333,12 @@ output$downloadDoc <- downloadHandler(
       }
     }
     
-    if(input$serviceArea == "Team"){
-      
-      render(paste0("reports/team_quarterly.Rmd"), output_format = "word_document",
-             quiet = TRUE, params = params,
+      render(paste0("reports/oneRmarkdownToRuleThemAll.Rmd"), output_format = "word_document",
+             output_file = "quarterly_report.docx", quiet = TRUE, params = params,
              envir = new.env(parent = globalenv()))
       
       # copy docx to 'file'
-      file.copy(paste0("reports/team_quarterly.docx"), file, overwrite = TRUE)
-      
-    } else {
-      
-      render(paste0("reports/", report_name, ".Rmd"), output_format = "word_document",
-             quiet = TRUE, params = params,
-             envir = new.env(parent = globalenv()))
-      
-      # copy docx to 'file'
-      file.copy(paste0("reports/", report_name, ".docx"), file, overwrite = TRUE)
-    }
+      file.copy(paste0("reports/quarterly_report.docx"), file, overwrite = TRUE)
   }
 )
 
@@ -432,12 +436,12 @@ output$downloadCurrent <- downloadHandler(
                      comment_summary = input$commentSummary)
     }
     
-    render(paste0("reports/custom.Rmd"), output_format = "word_document",
-           quiet = TRUE, params = params,
+    render(paste0("reports/oneRmarkdownToRuleThemAll.Rmd"), output_format = "word_document",
+           output_file = "custom_report.docx", quiet = TRUE, params = params,
            envir = new.env(parent = globalenv()))
     
     # copy docx to 'file'
-    file.copy(paste0("reports/custom.docx"), file, overwrite = TRUE)
+    file.copy(paste0("reports/custom_report.docx"), file, overwrite = TRUE)
   }
 )
 

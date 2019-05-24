@@ -3,6 +3,7 @@ title: Quarterly report
 output: html_document
 params:
   team: NA
+  carer_su: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -53,6 +54,21 @@ two_year_data <- suceData %>%
 suceData <- suceData %>% 
   filter(Date >= first_date, Date <= end_date)
 
+if(params$carer_su == "SU"){
+  
+  suceData = suceData %>%
+    filter(is.na(formtype) | formtype != "SUCE")
+  
+} else if(params$carer_su == "carer"){
+  
+  suceData = suceData %>%
+    filter(formtype == "carer")
+  
+} else if(params$carer_su == "bothCarerSU"){
+  
+  # nothing!
+}
+
 area_name <- suceData %>% 
   pull(TeamN) %>% 
   tail(1)
@@ -102,14 +118,53 @@ cat(myString)
 
 ```{r fig.width=7, fig.height=6, echo=FALSE, warning=FALSE, fig.cap="Percentage of responses", dpi=400}
 
-if(!is.null(stack_function(suceData))){
+if(params$carer_su == "SU"){
   
-  stack_function(suceData)
+  if(!is.null(stack_function(suceData, type = "suce_report"))){
+  
+  stack_function(suceData, type = "suce_report")
+  }
+}
+
+if(params$carer_su == "carer"){
+  
+  if(!is.null(stack_function(suceData, type = "carer_report"))){
+    
+  stack_function(suceData, type = "carer_report")
+  }
+}
+
+if(params$carer_su == "bothCarerSU"){
+  
+  if(!is.null(stack_function(suceData, type = "carer_report"))){
+  
+  stack_function(suceData, type = "suce_dashboard")
+  
+  stack_function(suceData, type = "carer_dashboard")
+  
+  }
 }
 
 ```
 
 ```{r fig.width=7, fig.height=6, echo=FALSE, warning=FALSE, fig.cap="Trend over time", dpi=400}
+
+if(params$carer_su == "SU"){
+  
+  trend_function(two_year_data, type = "suce_report")
+}
+
+if(params$carer_su == "carer"){
+  
+  trend_function(two_year_data, type = "carer_report")
+}
+
+if(params$carer_su == "bothCarerSU"){
+  
+  trend_function(two_year_data, type = "suce_dashboard")
+  
+  trend_function(two_year_data, type = "carer_dashboard")
+}
 
 trend_function(two_year_data)
 

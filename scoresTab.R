@@ -1,5 +1,5 @@
 
-# Generate stacked plot of the requested variable
+# SUCE stacked plot
 
 output$StackPlot <- renderPlot({
   
@@ -7,7 +7,18 @@ output$StackPlot <- renderPlot({
     need(passData()[["currentData"]], "Not enough data")
   )
   
-  stack_function(passData()[["currentData"]])
+  stack_function(passData()[["currentData"]], type = "suce_dashboard")
+})
+
+# carers stacked chart
+
+output$carersPlot <- renderPlot({
+  
+  validate(
+    need(passData()[["currentData"]], "Not enough data")
+  )
+  
+  stack_function(passData()[["currentData"]], type = "carer_dashboard")
 })
 
 # produce click interaction to bring up table
@@ -24,7 +35,7 @@ observeEvent(input$stacked_suce_click, {
 
 output$stackedTableSuceModal <- renderDT({
   
-  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "InvCare", "Positive")
+  theQuestions <- c("Service", "Promoter", "Positive", "Respect", "InformContact", "Privacy")
   
   # remove decimals from historic data
   
@@ -52,6 +63,48 @@ output$stackedTableSuceModal <- renderDT({
     formatRound(TRUE, 1)
 })
 
+# produce click interaction to bring up table
+
+observeEvent(input$stacked_carer_click, {
+  
+  showModal(
+    modalDialog(
+      dataTableOutput("stackedTableCarerModal"),
+      size = "l")
+  )
+})
+
+output$stackedTableCarerModal <- renderDT({
+  
+  theQuestions = c("InvCare", "Listening", "Communication", "CarersAssess", "SupportServices")
+  
+  # remove decimals from historic data
+  
+  fixedData = data.frame(apply(passData()[["currentData"]][, unlist(theQuestions)], 1:2,
+                               function(x) round(x + .01)))
+  
+  missnum = apply(fixedData, 2, function(x) sum(!is.na(x)))
+  
+  fixedData[, missnum > 2] %>%
+    gather(L1, value) %>% 
+    filter(!is.na(value)) %>%
+    left_join(select(questionFrame, code, value), by = c("L1" = "code")) %>%
+    select(-L1) %>%
+    group_by(value.y) %>%
+    count(value.x) %>%
+    mutate(prop = prop.table(n) * 100) %>%
+    select(-n) %>%
+    mutate(value.x = factor(value.x, levels = 1:5)) %>% 
+    spread(value.x, prop, drop = FALSE) %>%
+    ungroup() %>%
+    setNames(c("Question", rev(c("Excellent", "Good", "Fair", "Poor", "Very poor")))) %>% 
+    mutate_if(is.numeric, funs(replace(., is.na(.), 0))) %>%
+    mutate(Score = (Excellent * 5 + Good * 4 + Fair * 3 + Poor * 2 + `Very poor` * 1) / 5) %>%
+    datatable(rownames = FALSE) %>%
+    formatRound(TRUE, 1)
+})
+
+
 # generate scores to put underneath the stacked plot
 
 output$fftScore = renderText({
@@ -69,7 +122,7 @@ output$fftScore = renderText({
   return(HTML(theString))
 })
 
-# Generate line plot for trend
+# Generate line plot for trend- SUCE
 
 output$trendPlot <- renderPlot({
   
@@ -77,6 +130,19 @@ output$trendPlot <- renderPlot({
     need(passData()[["trendData"]], "Not enough data")
   )
   
-  trend_function(passData()[["trendData"]])
+  trend_function(passData()[["trendData"]], type = "suce_dashboard")
   
 })
+
+# Generate line plot for trend- carers
+
+output$carerTrendPlot <- renderPlot({
+  
+  validate(
+    need(passData()[["trendData"]], "Not enough data")
+  )
+  
+  trend_function(passData()[["trendData"]], type = "carer_dashboard")
+  
+})
+
