@@ -88,13 +88,33 @@ reportFunction <- function(report_data){
 
 # stacked plot
 
-stack_function <- function(stack_data){
+stack_function <- function(stack_data, type){
   
-  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "InvCare", "Positive")
+  if(type == "suce_dashboard"){
+    
+    theQuestions = c("Service", "Promoter", "Positive", "Respect", "InformContact", "Privacy")
+  }
+  
+  if(type == "carer_dashboard"){
+    
+    theQuestions = c("InvCare", "Listening", "Communication", "CarersAssess", "SupportServices")
+  }
+  
+  if(type == "suce_report"){
+    
+    theQuestions <- c("Service", "InvCare", "Positive", "Promoter", "Listening", 
+                      "Communication", "Respect")
+  }
+  
+  if(type == "carer_report"){
+    
+    theQuestions <- c("CarersAssess", "SupportServices", "Promoter", "Listening", 
+                      "Communication", "Respect", "InformContact", "Privacy")
+  }
   
   # remove decimals from historic data
   
-  fixedData = data.frame(apply(stack_data[, theQuestions], 1:2,
+  fixedData = data.frame(apply(stack_data[, theQuestions], 1 : 2,
                                function(x) round(x + .01)))
   
   # count the missing responses
@@ -127,12 +147,34 @@ stack_function <- function(stack_data){
 
 # trend plot
 
-trend_function <- function(trend_data){
+trend_function <- function(trend_data, type){
   
-  theQuestions = c("Service", "Promoter", "Listening", "Communication", "Respect", "InvCare", "Positive")
+  if(type == "suce_dashboard"){
+    
+    theQuestions = c("Service", "Promoter", "Positive", "Respect", "InformContact", "Privacy")
+  }
+  
+  if(type == "carer_dashboard"){
+    
+    theQuestions = c("InvCare", "Listening", "Communication", "CarersAssess", "SupportServices")
+  }
+  
+  if(type == "suce_report"){
+    
+    theQuestions <- c("Service", "InvCare", "Positive", "Promoter", "Listening", 
+                      "Communication", "Respect")
+  }
+  
+  if(type == "carer_report"){
+    
+    theQuestions <- c("CarersAssess", "SupportServices", "Promoter", "Listening", 
+                      "Communication", "Respect", "InformContact", "Privacy")
+  }
   
   # useful test- poor data
   # trend_data <- trustData %>% filter(TeamC %in% 505, Date > Sys.Date() - 365 * 2)
+  # no data
+  # trend_data <- trustData %>% filter(TeamC %in% 104, Date > Sys.Date() - 365 * 2, formtype == "carer")
   
   sample_data <- trend_data
   
@@ -146,7 +188,7 @@ trend_function <- function(trend_data){
   minimum_value = mean_score %>% 
     select(theQuestions) %>% 
     min(na.rm = TRUE) %>% 
-    `-`(20)
+    `-`(10)
   
   number_scores <- sample_data %>% 
     select(c("Quarter", theQuestions)) %>% 
@@ -155,10 +197,17 @@ trend_function <- function(trend_data){
   
   mean_score[number_scores < 3] = NA
   
-  mean_score %>% 
+  data_for_graph <- mean_score %>% 
     gather(Question, value, -Quarter) %>% 
     filter(!is.na(value)) %>% 
-    left_join(select(questionFrame, code, value), by = c("Question" = "code")) %>% 
+    left_join(select(questionFrame, code, value), by = c("Question" = "code"))
+  
+  if(length(unique(data_for_graph$Quarter)) < 2){
+    
+    return(NULL)
+  }
+    
+  data_for_graph %>%   
     ggplot(aes(x = Quarter, y = value.x, group = value.y, colour = value.y)) +
     geom_line() +  geom_point() +
     ylab("%") + theme(legend.title=element_blank()) +
@@ -263,10 +312,10 @@ report_data <- function(division = "NA", directorate = "NA", team = "NA",
   
   # filter by time last and produce another dataset with 2 years in
   
-  two_year_data <- suceData %>% 
+  two_year_data <- suceData %>%
     filter(Date > end_date - 365 * 2)
   
-  suceData <- suceData %>% 
+  suceData <- suceData %>%
     filter(Date >= first_date, Date <= end_date)
   
   report_information <- reportFunction(suceData)
@@ -303,7 +352,7 @@ returnTopComments <- function(the_data, nth_row, type){
       mutate(Number = Best2) %>% 
       select(-c(Imp1, Imp2, Best1, Best2))
   )
-
+  
   if(type == "Improve"){
     
     check_final <- check_improve
@@ -318,7 +367,7 @@ returnTopComments <- function(the_data, nth_row, type){
     
     check_final <- rbind(check_improve, check_best)
   }
-
+  
   check_final <- check_final %>% 
     filter(Number != 4444)
   

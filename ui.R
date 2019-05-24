@@ -142,6 +142,11 @@ function(request) {
                   box(width = 6, "Click plot to see figures", 
                       plotOutput("StackPlot", click = "stacked_suce_click")),
                   box(width = 6, "Trend", plotOutput("trendPlot"))
+                ),
+                fluidRow(
+                  box(width = 6, "Click plot to see figures", 
+                      plotOutput("carersPlot", click = "stacked_carer_click")),
+                  box(width = 6, "Trend", plotOutput("carerTrendPlot"))
                 )
         ),
         tabItem(tabName = "comments",
