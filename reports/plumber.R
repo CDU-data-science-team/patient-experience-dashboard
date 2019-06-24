@@ -3,6 +3,7 @@ library(rmarkdown)
 library(tidyverse)
 library(scales)
 library(lubridate)
+library(urltools)
 
 #* @serializer contentType list(type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 #* @param team select the team for the report
@@ -15,7 +16,7 @@ function(team, date_from, date_to, carer_su, area_name, res){
   
   render("oneRmarkdownToRuleThemAll.Rmd", tmp, output_format = "word_document",
          params = list(team = team, date_from = date_from, date_to = date_to,
-                       area_name = URLdecode(area_name), carerSU = carer_su))
+                       area_name = url_decode(area_name), carerSU = carer_su))
   
   readBin(tmp, "raw", n=file.info(tmp)$size)
 }
@@ -29,7 +30,7 @@ function(team){
   
   render("oneRmarkdownToRuleThemAll.Rmd", tmp, output_format = "html_document",
          params = list(team = team, carerSU = carer_su, date_from = date_from, date_to = date_to,
-                       area_name = URLdecode(area_name)))
+                       area_name = url_decode(area_name)))
   
   readBin(tmp, "raw", n=file.info(tmp)$size)
 }
