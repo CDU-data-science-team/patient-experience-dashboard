@@ -362,56 +362,6 @@ function(input, output, session){
                     }
     )
   
-  ### feedback tracker - three for three divisions
-  
-  output$downloadFeedbackTrackerLocal <- # local division
-    downloadHandler(filename = "feedbackTrackerDiv.docx",
-                    content = function(file){
-                      
-                      passDivision = "Local Partnerships - Mental Healthcare"
-                      
-                      render("feedbackTrackerDiv.Rmd", output_format = "word_document",
-                             output_file = file,
-                             quiet = TRUE, envir = environment())
-                      
-                      # copy docx to 'file'
-                      file.copy("feedbackTrackerDiv.docx", file, overwrite = TRUE)
-                      
-                    }
-    )
-  
-  output$downloadFeedbackTrackerHealthPartnerships <- # HP
-    downloadHandler(filename = "feedbackTrackerDiv.docx",
-                    content = function(file){
-                      
-                      passDivision = "Local Partnerships - Community Healthcare"
-                      
-                      render("feedbackTrackerDiv.Rmd", output_format = "word_document",
-                             output_file = file,
-                             quiet = TRUE, envir = environment())
-                      
-                      # copy docx to 'file'
-                      file.copy("feedbackTrackerDiv.docx", file, overwrite = TRUE)
-                      
-                    }
-    )
-  
-  output$downloadFeedbackTrackerForensic <- # forensic division
-    downloadHandler(filename = "feedbackTrackerDiv.docx",
-                    content = function(file){
-                      
-                      passDivision = "Forensic division"
-                      
-                      render("feedbackTrackerDiv.Rmd", output_format = "word_document",
-                             output_file = file,
-                             quiet = TRUE, envir = environment())
-                      
-                      # copy docx to 'file'
-                      file.copy("feedbackTrackerDiv.docx", file, overwrite = TRUE)
-                      
-                    }
-    )
-  
   # show modal with warning if they click "show all teams"
   
   observeEvent(input$showTeams, {

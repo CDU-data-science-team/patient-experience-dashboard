@@ -14,6 +14,7 @@ library(ggraph)
 library(stringi)
 library(stringr)
 library(shinyWidgets)
+library(urltools)
 
 if(Sys.info()["nodename"] == "otis"){
   

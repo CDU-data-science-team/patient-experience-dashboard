@@ -134,7 +134,7 @@ output$downloadAllComments <- downloadHandler(
       
       area_name <- c("Local Partnerships- Mental Healthcare", 
                      "Forensic Services", 
-                     "Local Partnerships- Community Healthcare")[as.numeric(input$Division) + 1]
+                     "Local Partnerships- General Healthcare")[as.numeric(input$Division) + 1]
       
       params <- list(division = input$Division,
                      carerSU = input$carerSU,
