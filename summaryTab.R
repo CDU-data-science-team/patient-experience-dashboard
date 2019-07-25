@@ -1092,18 +1092,18 @@ output$selTxt <- renderPrint({
 })
 
 output$treeTxt <- renderPrint({
-  tree <- input$tree
-  if (is.null(tree)){
-    "None"
-  } else{
-    str(input$tree)
-  }
+  # tree <- input$tree
+  # if (is.null(tree)){
+  #   "None"
+  # } else{
+  #   str(input$tree)
+  # }
 })
 
 output$tree <- renderTree({
   
   to_build_amh <- trustData %>%
-    filter(Directorate %in% c(4)) %>%
+    filter(Directorate %in% c(2)) %>%
     filter(Date > "2019-01-01") %>%
     select(Date, Division, Directorate, TeamC) %>% 
     left_join(counts, by = "TeamC") %>% 
@@ -1111,17 +1111,38 @@ output$tree <- renderTree({
     arrange(Date) %>% 
     slice(1)
   
-  myList <- as.list(unique(to_build_amh$TeamC))
+  to_build_mhsop <- trustData %>%
+    filter(Directorate %in% c(7)) %>%
+    filter(Date > "2019-01-01") %>%
+    select(Date, Division, Directorate, TeamC) %>% 
+    left_join(counts, by = "TeamC") %>% 
+    group_by(TeamC) %>% 
+    arrange(Date) %>% 
+    slice(1)
   
-  names(myList) <- unique(to_build_amh$TeamN)
+  amh <- as.list(unique(to_build_amh$TeamC))
   
-  for(i in 1 : length(myList)){
+  names(amh) <- unique(to_build_amh$TeamN)
+  
+  for(i in 1 : length(amh)){
     
-    attr(myList[[i]], "stid") <- myList[[i]]
+    attr(amh[[i]], "stid") <- amh[[i]]
+    
   }
   
+  mhsop <- as.list(to_build_mhsop$TeamC)
+  
+  names(mhsop) <- to_build_mhsop$TeamN
+  
+  for(i in 1 : length(mhsop)){
+    
+    attr(mhsop[[i]], "stid") <- mhsop[[i]]
+  }
+  
+  team_list <- list("amh" = amh, "mhsop" = mhsop)
+  
   structure(
-    myList, 
+    team_list, 
     stopened = TRUE
   )
 })
