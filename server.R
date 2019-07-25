@@ -197,6 +197,15 @@ function(input, output, session){
         filter(!is.na(TeamC), TeamC %in% as.numeric(input$selTeam))
     }
     
+    # this is for shinyTree
+    
+    the_tree <- get_selected(input$tree, format = "classid")
+    
+    new_tree <- unlist(lapply(the_tree, function(x) attr(x, "stid")))
+    
+    finalData = finalData %>% 
+      filter(!is.na(TeamC), TeamC %in% new_tree)
+    
     if(input$carerSU == "SU"){
       
       finalData = finalData %>%

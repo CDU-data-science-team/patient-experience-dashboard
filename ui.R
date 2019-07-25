@@ -54,6 +54,8 @@ function(request) {
       ),
       
       checkboxInput("showTeams", "Show all teams"),
+      
+      shinyTree("tree", checkbox = TRUE, theme = "proton"),
 
       # toggle advanced controls
       

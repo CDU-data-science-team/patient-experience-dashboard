@@ -68,6 +68,14 @@ output$summaryOutputs = renderUI({
     hr(),
     htmlOutput("summary_text"),
     
+    fluidRow(    
+      "Currently Selected:",
+      verbatimTextOutput("selTxt"),
+      hr(),
+      "Full Tree:",
+      verbatimTextOutput("treeTxt")
+    ),
+    
     fluidRow(
       
       valueBoxOutput("sqBox", width = 3), # service quality
@@ -1066,3 +1074,54 @@ output$biggestDecrease <- renderValueBox({
   }
 })
 
+### shiny Tree----
+
+output$selTxt <- renderPrint({
+  tree <- input$tree
+  if (is.null(tree)){
+    "None"
+  } else{
+    # dput(get_selected(input$tree, format = "classid"))
+    
+    the_tree <- get_selected(input$tree, format = "classid")
+    
+    new_tree <- unlist(lapply(the_tree, function(x) attr(x, "stid")))
+    
+    new_tree
+  }
+})
+
+output$treeTxt <- renderPrint({
+  tree <- input$tree
+  if (is.null(tree)){
+    "None"
+  } else{
+    str(input$tree)
+  }
+})
+
+output$tree <- renderTree({
+  
+  to_build_amh <- trustData %>%
+    filter(Directorate %in% c(4)) %>%
+    filter(Date > "2019-01-01") %>%
+    select(Date, Division, Directorate, TeamC) %>% 
+    left_join(counts, by = "TeamC") %>% 
+    group_by(TeamC) %>% 
+    arrange(Date) %>% 
+    slice(1)
+  
+  myList <- as.list(unique(to_build_amh$TeamC))
+  
+  names(myList) <- unique(to_build_amh$TeamN)
+  
+  for(i in 1 : length(myList)){
+    
+    attr(myList[[i]], "stid") <- myList[[i]]
+  }
+  
+  structure(
+    myList, 
+    stopened = TRUE
+  )
+})

@@ -15,6 +15,7 @@ library(stringi)
 library(stringr)
 library(shinyWidgets)
 library(urltools)
+library(shinyTree)
 
 if(Sys.info()["nodename"] == "otis"){
   
