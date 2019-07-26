@@ -406,13 +406,12 @@ function(input, output, session){
         
         all_directorates <- map(dir_codes, function(dir_code) {
           
-          to_build <- trustData %>%
-            filter(date_from > input$dateRange[1] | date_from == "2009-04-01") %>% 
+          to_build <- counts %>%
+            filter(date_from >= input$dateRange[1] | date_to == "2099-12-31") %>% 
             filter(Directorate %in% dir_code) %>%
-            select(Date, Division, Directorate, TeamC) %>% 
-            left_join(counts, by = "TeamC") %>% 
+            select(date_from, Division, Directorate, TeamC, TeamN) %>% 
             group_by(TeamC) %>% 
-            arrange(Date) %>% 
+            arrange(date_from) %>% 
             slice(1) %>% 
             ungroup() %>% 
             arrange(TeamN)
@@ -448,13 +447,14 @@ function(input, output, session){
       stopened = TRUE
     )
   })
-  
+
   # show modal with shiny tree
   
   observeEvent(input$showTree, {
     
     showModal(
       modalDialog(
+        "Click anywhere off this box when you have made your selection",
         shinyTree("tree", checkbox = TRUE, theme = "proton"),
         easyClose = TRUE
       )
