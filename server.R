@@ -448,7 +448,7 @@ function(input, output, session){
       stopened = TRUE
     )
   })
-  
+
   # show modal with shiny tree
   
   observeEvent(input$showTree, {
