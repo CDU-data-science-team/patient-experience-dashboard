@@ -41,11 +41,6 @@ function(input, output, session){
         filter(Division %in% input$Division)
     }
     
-    # get rid of corporate and unknown
-    
-    finalTable = finalTable %>%
-      filter(!DirC %in% c(0, 40))
-    
     # finally pull the directorates and names
     
     directorates = finalTable %>%

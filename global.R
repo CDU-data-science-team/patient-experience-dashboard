@@ -32,3 +32,9 @@ counts <- counts %>%
   filter(Division < 3)
 
 enableBookmarking(store = "server")
+
+# get rid of corporate and unknown from dirTable
+
+dirTable = dirTable %>%
+  filter(!DirC %in% c(0, 40))
+

@@ -1102,47 +1102,42 @@ output$treeTxt <- renderPrint({
 
 output$tree <- renderTree({
   
-  to_build_amh <- trustData %>%
-    filter(Directorate %in% c(2)) %>%
-    filter(Date > "2019-01-01") %>%
-    select(Date, Division, Directorate, TeamC) %>% 
-    left_join(counts, by = "TeamC") %>% 
-    group_by(TeamC) %>% 
-    arrange(Date) %>% 
-    slice(1)
+  dir_codes <- dirTable %>% 
+    filter(Division == 0, DirC != 21) %>% 
+    pull(DirC) %>% 
+    unique()
   
-  to_build_mhsop <- trustData %>%
-    filter(Directorate %in% c(7)) %>%
-    filter(Date > "2019-01-01") %>%
-    select(Date, Division, Directorate, TeamC) %>% 
-    left_join(counts, by = "TeamC") %>% 
-    group_by(TeamC) %>% 
-    arrange(Date) %>% 
-    slice(1)
-  
-  amh <- as.list(unique(to_build_amh$TeamC))
-  
-  names(amh) <- unique(to_build_amh$TeamN)
-  
-  for(i in 1 : length(amh)){
+  all_directorates <- map(dir_codes, function(dir_code) {
     
-    attr(amh[[i]], "stid") <- amh[[i]]
+    to_build <- trustData %>%
+      filter(Directorate %in% dir_code) %>%
+      select(Date, Division, Directorate, TeamC) %>% 
+      left_join(counts, by = "TeamC") %>% 
+      group_by(TeamC) %>% 
+      arrange(Date) %>% 
+      slice(1)
     
-  }
-  
-  mhsop <- as.list(to_build_mhsop$TeamC)
-  
-  names(mhsop) <- to_build_mhsop$TeamN
-  
-  for(i in 1 : length(mhsop)){
+    built_list <- as.list(to_build$TeamC)
     
-    attr(mhsop[[i]], "stid") <- mhsop[[i]]
-  }
+    names(built_list) <- to_build$TeamN
+    
+    for(i in 1 : length(built_list)){
+      
+      attr(built_list[[i]], "stid") <- built_list[[i]]
+    }
+    
+    return(built_list)
+  })
   
-  team_list <- list("amh" = amh, "mhsop" = mhsop)
+  dir_names <- dirTable %>% 
+    filter(Division == 0, DirC != 21) %>% 
+    pull(DirT) %>% 
+    unique()
+  
+  names(all_directorates) <- dir_names
   
   structure(
-    team_list, 
+    all_directorates,
     stopened = TRUE
   )
 })
