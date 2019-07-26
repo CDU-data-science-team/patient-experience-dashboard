@@ -174,23 +174,7 @@ function(input, output, session){
     
     # now filter for every available filter
     
-    if(!is.null(input$Division)){ 
-      
-      finalData = finalData %>% 
-        filter(!is.na(Division), Division %in% input$Division)
-    }
-    
-    if(!is.null(input$selDirect)){ # otherwise look at the directorate code
-      
-      finalData = finalData %>% 
-        filter(!is.na(Directorate), Directorate %in% input$selDirect)
-
-    }
-    if(!is.null(input$selTeam)){
-      
-      finalData = finalData %>% 
-        filter(!is.na(TeamC), TeamC %in% as.numeric(input$selTeam))
-    }
+    # if there's nothing in shiny tree do it the old fashioned way
     
     # this is for shinyTree
     
@@ -198,8 +182,31 @@ function(input, output, session){
     
     new_tree <- unlist(lapply(the_tree, function(x) attr(x, "stid")))
     
-    finalData = finalData %>% 
-      filter(!is.na(TeamC), TeamC %in% new_tree)
+    if(length(new_tree) < 1){
+      
+      if(!is.null(input$Division)){ 
+        
+        finalData = finalData %>% 
+          filter(!is.na(Division), Division %in% input$Division)
+      }
+      
+      if(!is.null(input$selDirect)){ # otherwise look at the directorate code
+        
+        finalData = finalData %>% 
+          filter(!is.na(Directorate), Directorate %in% input$selDirect)
+        
+      }
+      if(!is.null(input$selTeam)){
+        
+        finalData = finalData %>% 
+          filter(!is.na(TeamC), TeamC %in% as.numeric(input$selTeam))
+      }
+      
+    } else { # if there is something in shiny tree use that
+      
+      finalData = finalData %>% 
+        filter(!is.na(TeamC), TeamC %in% new_tree)
+    }
     
     if(input$carerSU == "SU"){
       
@@ -249,12 +256,12 @@ function(input, output, session){
       
       comparisonData <- NULL
     }
-
+    
     return(list("currentData" = currentData, 
                 "comparisonData" = comparisonData,
                 "trendData" = trendData))
   })
-
+  
   # download graphs buttons
   
   output$downloadData.stack <- downloadHandler(
@@ -381,4 +388,76 @@ function(input, output, session){
     )
   }, ignoreInit = TRUE, once = TRUE)
   
+  # render shiny tree
+  
+  output$tree <- renderTree({
+    
+    withProgress(message = "Loading...", detail = "This is slow the first time", 
+                 value = 0, {
+      
+      team_tree <- map(c(0, 2, 1), function(division_code){
+        
+        dir_codes <- dirTable %>% 
+          filter(Division == division_code, !DirC %in% c(17, 21)) %>% 
+          pull(DirC) %>% 
+          unique()
+        
+        incProgress(1/3)
+        
+        all_directorates <- map(dir_codes, function(dir_code) {
+          
+          to_build <- trustData %>%
+            filter(date_from > input$dateRange[1] | date_from == "2009-04-01") %>% 
+            filter(Directorate %in% dir_code) %>%
+            select(Date, Division, Directorate, TeamC) %>% 
+            left_join(counts, by = "TeamC") %>% 
+            group_by(TeamC) %>% 
+            arrange(Date) %>% 
+            slice(1) %>% 
+            ungroup() %>% 
+            arrange(TeamN)
+          
+          built_list <- as.list(to_build$TeamC)
+          
+          names(built_list) <- to_build$TeamN
+          
+          for(i in 1 : length(built_list)){
+            
+            attr(built_list[[i]], "stid") <- built_list[[i]]
+          }
+          
+          return(built_list)
+        })
+        
+        dir_names <- dirTable %>% 
+          filter(Division == division_code, !DirC %in% c(17, 21)) %>% 
+          pull(DirT) %>% 
+          unique()
+        
+        names(all_directorates) <- dir_names
+        
+        return(all_directorates)
+      })
+      
+    })
+    
+    names(team_tree) <- c("Local MH", "Local GH", "Forensic")
+    
+    structure(
+      team_tree,
+      stopened = TRUE
+    )
+  })
+  
+  # show modal with shiny tree
+  
+  observeEvent(input$showTree, {
+    
+    showModal(
+      modalDialog(
+        shinyTree("tree", checkbox = TRUE, theme = "proton"),
+        easyClose = TRUE
+      )
+    )
+  }, ignoreInit = TRUE)
 }
