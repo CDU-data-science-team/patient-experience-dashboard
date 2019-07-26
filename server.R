@@ -174,23 +174,7 @@ function(input, output, session){
     
     # now filter for every available filter
     
-    if(!is.null(input$Division)){ 
-      
-      finalData = finalData %>% 
-        filter(!is.na(Division), Division %in% input$Division)
-    }
-    
-    if(!is.null(input$selDirect)){ # otherwise look at the directorate code
-      
-      finalData = finalData %>% 
-        filter(!is.na(Directorate), Directorate %in% input$selDirect)
-
-    }
-    if(!is.null(input$selTeam)){
-      
-      finalData = finalData %>% 
-        filter(!is.na(TeamC), TeamC %in% as.numeric(input$selTeam))
-    }
+    # if there's nothing in shiny tree do it the old fashioned way
     
     # this is for shinyTree
     
@@ -198,8 +182,31 @@ function(input, output, session){
     
     new_tree <- unlist(lapply(the_tree, function(x) attr(x, "stid")))
     
-    finalData = finalData %>% 
-      filter(!is.na(TeamC), TeamC %in% new_tree)
+    if(length(new_tree) < 1){
+      
+      if(!is.null(input$Division)){ 
+        
+        finalData = finalData %>% 
+          filter(!is.na(Division), Division %in% input$Division)
+      }
+      
+      if(!is.null(input$selDirect)){ # otherwise look at the directorate code
+        
+        finalData = finalData %>% 
+          filter(!is.na(Directorate), Directorate %in% input$selDirect)
+        
+      }
+      if(!is.null(input$selTeam)){
+        
+        finalData = finalData %>% 
+          filter(!is.na(TeamC), TeamC %in% as.numeric(input$selTeam))
+      }
+      
+    } else { # if there is something in shiny tree use that
+      
+      finalData = finalData %>% 
+        filter(!is.na(TeamC), TeamC %in% new_tree)
+    }
     
     if(input$carerSU == "SU"){
       
@@ -249,12 +256,12 @@ function(input, output, session){
       
       comparisonData <- NULL
     }
-
+    
     return(list("currentData" = currentData, 
                 "comparisonData" = comparisonData,
                 "trendData" = trendData))
   })
-
+  
   # download graphs buttons
   
   output$downloadData.stack <- downloadHandler(
@@ -381,4 +388,25 @@ function(input, output, session){
     )
   }, ignoreInit = TRUE, once = TRUE)
   
+  # render shiny tree
+  
+  output$tree <- renderTree({
+    
+    structure(
+      team_tree, # loaded from global
+      stopened = TRUE
+    )
+  })
+
+  # show modal with shiny tree
+  
+  observeEvent(input$showTree, {
+    
+    showModal(
+      modalDialog(
+        shinyTree("tree", checkbox = TRUE, theme = "proton"),
+        easyClose = TRUE
+      )
+    )
+  }, ignoreInit = TRUE)
 }

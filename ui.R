@@ -55,8 +55,11 @@ function(request) {
       
       checkboxInput("showTeams", "Show all teams"),
       
-      shinyTree("tree", checkbox = TRUE, theme = "proton"),
-
+      # click a button to show the Shiny tree
+      
+      actionButton("showTree", HTML("Click for team hierarchy<br>
+                                    (Click again to reset selection)")),
+      
       # toggle advanced controls
       
       # checkboxInput("custom", "Advanced controls", value = FALSE),

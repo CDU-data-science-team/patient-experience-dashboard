@@ -68,13 +68,13 @@ output$summaryOutputs = renderUI({
     hr(),
     htmlOutput("summary_text"),
     
-    fluidRow(    
-      "Currently Selected:",
-      verbatimTextOutput("selTxt"),
-      hr(),
-      "Full Tree:",
-      verbatimTextOutput("treeTxt")
-    ),
+    # fluidRow(    
+    #   "Currently Selected:",
+    #   verbatimTextOutput("selTxt"),
+    #   hr(),
+    #   "Full Tree:",
+    #   verbatimTextOutput("treeTxt")
+    # ),
     
     fluidRow(
       
@@ -1100,44 +1100,3 @@ output$treeTxt <- renderPrint({
   # }
 })
 
-output$tree <- renderTree({
-  
-  dir_codes <- dirTable %>% 
-    filter(Division == 0, DirC != 21) %>% 
-    pull(DirC) %>% 
-    unique()
-  
-  all_directorates <- map(dir_codes, function(dir_code) {
-    
-    to_build <- trustData %>%
-      filter(Directorate %in% dir_code) %>%
-      select(Date, Division, Directorate, TeamC) %>% 
-      left_join(counts, by = "TeamC") %>% 
-      group_by(TeamC) %>% 
-      arrange(Date) %>% 
-      slice(1)
-    
-    built_list <- as.list(to_build$TeamC)
-    
-    names(built_list) <- to_build$TeamN
-    
-    for(i in 1 : length(built_list)){
-      
-      attr(built_list[[i]], "stid") <- built_list[[i]]
-    }
-    
-    return(built_list)
-  })
-  
-  dir_names <- dirTable %>% 
-    filter(Division == 0, DirC != 21) %>% 
-    pull(DirT) %>% 
-    unique()
-  
-  names(all_directorates) <- dir_names
-  
-  structure(
-    all_directorates,
-    stopened = TRUE
-  )
-})
