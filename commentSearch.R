@@ -84,35 +84,36 @@ output$showImprove <- renderText({
   
   improve_data <- passData()[["currentData"]]
   
-  # "Text search"
-  
-  if(isTruthy(input$searchTextInclude)){ # or overwrite if search string exists
+  if("Text search" %in% input$filterCommentsBy){
     
-    improve_data <- improve_data %>%
-      filter(grepl(paste(
-        trimws(unlist(strsplit(input$searchTextInclude, ","))), 
-        collapse = "|"), Improve))
-  }
-  
-  if(isTruthy(input$textSearchExclude)){
+    if(isTruthy(input$searchTextInclude)){ # or overwrite if search string exists
+      
+      improve_data <- improve_data %>%
+        filter(grepl(paste(
+          trimws(unlist(strsplit(input$searchTextInclude, ","))), 
+          collapse = "|"), Improve))
+    }
     
-    improve_data <- improve_data %>%
-      filter(!grepl(paste(
-        trimws(unlist(strsplit(input$textSearchExclude, ","))), 
-        collapse = "|"), Improve))
+    if(isTruthy(input$textSearchExclude)){
+      
+      improve_data <- improve_data %>%
+        filter(!grepl(paste(
+          trimws(unlist(strsplit(input$textSearchExclude, ","))), 
+          collapse = "|"), Improve))
+    }
   }
   
   improve_data <- improve_data %>%
     mutate(ImpCrit = -ImpCrit)
   
   if("Criticality" %in% input$filterCommentsBy){
-
+    
     improve_data <- improve_data %>%
       filter(ImpCrit %in% input$criticalityLevels)
   }
-
+  
   if("Themes" %in% input$filterCommentsBy){
-
+    
     improve_data <- improve_data %>%
       filter(Imp1 %in% input$topSixThemes |
                Imp2 %in% input$topSixThemes)
@@ -131,32 +132,33 @@ output$showBest <- renderText({
   
   improve_data <- passData()[["currentData"]]
   
-  # "Text search"
-  
-  if(isTruthy(input$searchTextInclude)){ # or overwrite if search string exists
+  if("Text search" %in% input$filterCommentsBy){
     
-    improve_data <- improve_data %>%
-      filter(grepl(paste(
-        trimws(unlist(strsplit(input$searchTextInclude, ","))), 
-        collapse = "|"), Best))
-  }
-  
-  if(isTruthy(input$textSearchExclude)){
+    if(isTruthy(input$searchTextInclude)){ # or overwrite if search string exists
+      
+      improve_data <- improve_data %>%
+        filter(grepl(paste(
+          trimws(unlist(strsplit(input$searchTextInclude, ","))), 
+          collapse = "|"), Best))
+    }
     
-    improve_data <- improve_data %>%
-      filter(!grepl(paste(
-        trimws(unlist(strsplit(input$textSearchExclude, ","))), 
-        collapse = "|"), Best))
+    if(isTruthy(input$textSearchExclude)){
+      
+      improve_data <- improve_data %>%
+        filter(!grepl(paste(
+          trimws(unlist(strsplit(input$textSearchExclude, ","))), 
+          collapse = "|"), Best))
+    }
   }
   
   if("Criticality" %in% input$filterCommentsBy){
-
+    
     improve_data <- improve_data %>%
       filter(BestCrit %in% input$criticalityLevels)
   }
-
+  
   if("Themes" %in% input$filterCommentsBy){
-
+    
     improve_data <- improve_data %>%
       filter(Best1 %in% input$topSixThemes |
                Best2 %in% input$topSixThemes)
