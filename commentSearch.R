@@ -80,67 +80,93 @@ observeEvent(input$showTimeline, {
   )
 })
 
-fixSearchString <- reactive({
-  
-  trimws(unlist(strsplit(input$searchTextInclude, ",")))
-})
-
-fixSearchExclude <- reactive({
-  
-  trimws(unlist(strsplit(input$textSearchExclude, ",")))
-})
-
 output$showImprove <- renderText({
   
-  if(length(fixSearchString()) > 0){
+  improve_data <- passData()[["currentData"]]
+  
+  # "Text search"
+  
+  if(isTruthy(input$searchTextInclude)){ # or overwrite if search string exists
     
-    improve_data <- passData()[["currentData"]] %>% 
-      filter(grepl(paste(fixSearchString(), collapse = "|"), Improve))
-  } else {
-    
-    improve_data <- passData()[["currentData"]]
+    improve_data <- improve_data %>%
+      filter(grepl(paste(
+        trimws(unlist(strsplit(input$searchTextInclude, ","))), 
+        collapse = "|"), Improve))
   }
   
-  if(length(fixSearchExclude()) > 0){
+  if(isTruthy(input$textSearchExclude)){
     
-    improve_data <- improve_data %>% 
-      filter(!grepl(paste(fixSearchExclude(), collapse = "|"), Improve))
+    improve_data <- improve_data %>%
+      filter(!grepl(paste(
+        trimws(unlist(strsplit(input$textSearchExclude, ","))), 
+        collapse = "|"), Improve))
   }
   
-  commentsFrame <- improve_data %>%
-    mutate(ImpCrit = -ImpCrit) %>% 
-    filter(Imp1 %in% input$topSixThemes |
-             Imp2 %in% input$topSixThemes) %>%
-    filter(ImpCrit %in% input$criticalityLevels) %>% 
+  improve_data <- improve_data %>%
+    mutate(ImpCrit = -ImpCrit)
+  
+  if("Criticality" %in% input$filterCommentsBy){
+
+    improve_data <- improve_data %>%
+      filter(ImpCrit %in% input$criticalityLevels)
+  }
+
+  if("Themes" %in% input$filterCommentsBy){
+
+    improve_data <- improve_data %>%
+      filter(Imp1 %in% input$topSixThemes |
+               Imp2 %in% input$topSixThemes)
+  }
+  
+  improve_data <- improve_data %>% 
     filter(!is.na(Improve))
   
-  req(nrow(commentsFrame) > 0)
+  # req(nrow(improve_data) > 0)
   
-  paste0("<p>", commentsFrame$Improve, " (", 
-         commentsFrame$Location, ")</p>", collapse = "")
+  paste0("<p>", improve_data$Improve, " (", 
+         improve_data$Location, ")</p>", collapse = "")
 })
 
 output$showBest <- renderText({
   
-  if(!is.null(input$searchTextInclude)){
+  improve_data <- passData()[["currentData"]]
+  
+  # "Text search"
+  
+  if(isTruthy(input$searchTextInclude)){ # or overwrite if search string exists
     
-    best_data <- passData()[["currentData"]] %>% 
-      filter(grepl(paste(fixSearchString(), collapse = "|"), Best))
-  } else {
-    
-    best_data <- passData()[["currentData"]]
+    improve_data <- improve_data %>%
+      filter(grepl(paste(
+        trimws(unlist(strsplit(input$searchTextInclude, ","))), 
+        collapse = "|"), Best))
   }
   
-  commentsFrame <- best_data %>%
-    filter(Best1 %in% input$topSixThemes |
-             Best2 %in% input$topSixThemes) %>%
-    filter(BestCrit %in% input$criticalityLevels) %>% 
+  if(isTruthy(input$textSearchExclude)){
+    
+    improve_data <- improve_data %>%
+      filter(!grepl(paste(
+        trimws(unlist(strsplit(input$textSearchExclude, ","))), 
+        collapse = "|"), Best))
+  }
+  
+  if("Criticality" %in% input$filterCommentsBy){
+
+    improve_data <- improve_data %>%
+      filter(BestCrit %in% input$criticalityLevels)
+  }
+
+  if("Themes" %in% input$filterCommentsBy){
+
+    improve_data <- improve_data %>%
+      filter(Best1 %in% input$topSixThemes |
+               Best2 %in% input$topSixThemes)
+  }
+  
+  improve_data <- improve_data %>% 
     filter(!is.na(Best))
   
-  req(nrow(commentsFrame) > 0)
-  
-  paste0("<p>", commentsFrame$Best, " (", 
-         commentsFrame$Location, ")</p>", collapse = "")
+  paste0("<p>", improve_data$Best, " (", 
+         improve_data$Location, ")</p>", collapse = "")
 })
 
 # this is being cached so the plot click can access it
