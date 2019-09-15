@@ -156,14 +156,14 @@ output$downloadCommentSearch <- downloadHandler(
   filename = "SearchComments.docx",
   content = function(file){
     
-    ### do stuff
+    params <- generate_rmd_parameters()
     
-    render("reports/AllComments.Rmd", output_format = "word_document",
+    render("reports/SearchComments.Rmd", output_format = "word_document",
            quiet = TRUE, params = params,
            envir = new.env(parent = globalenv()))
     
     # copy docx to 'file'
-    file.copy("reports/AllComments.docx", file, overwrite = TRUE)
+    file.copy("reports/SearchComments.docx", file, overwrite = TRUE)
     
   }
 )
