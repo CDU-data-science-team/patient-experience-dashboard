@@ -423,4 +423,61 @@ returnTopComments <- function(the_data, nth_row, type){
               "return_comments" = return_comments))
 }
 
+# function to return text that has been filtered by topic, criticality, and string
+
+returnSearchText <- function(type = "Improve"){
+  
+  # give a set of variable names for each
+  
+  if(type == "Improve"){
+    
+    variable_names <- c("Improve", "Imp1", "Imp2", "ImpCrit")
+  } else {
+    
+    variable_names <- c("Best", "Best1", "Best2", "BestCrit")
+  }
+  
+  text_data <- passData()[["currentData"]]
+  
+  if("Text search" %in% input$filterCommentsBy){
+    
+    if(isTruthy(input$searchTextInclude)){ # or overwrite if search string exists
+      
+      text_data <- text_data %>%
+        filter(grepl(paste(
+          trimws(unlist(strsplit(input$searchTextInclude, ","))), 
+          collapse = "|"), .data[[variable_names[1]]]))
+    }
+    
+    if(isTruthy(input$textSearchExclude)){
+      
+      text_data <- text_data %>%
+        filter(!grepl(paste(
+          trimws(unlist(strsplit(input$textSearchExclude, ","))), 
+          collapse = "|"), .data[[variable_names[1]]]))
+    }
+  }
+  
+  if(type == "Improve"){
+    
+    text_data <- text_data %>%
+      mutate(ImpCrit = -ImpCrit)
+  }
+  
+  if("Criticality" %in% input$filterCommentsBy){
+    
+    text_data <- text_data %>%
+      filter(.data[[variable_names[4]]] %in% input$criticalityLevels)
+  }
+  
+  if("Themes" %in% input$filterCommentsBy){
+    
+    text_data <- text_data %>%
+      filter(.data[[variable_names[2]]] %in% input$topSixThemes |
+               .data[[variable_names[3]]] %in% input$topSixThemes)
+  }
+  
+  text_data <- text_data %>% 
+    filter(!is.na(.data[[variable_names[1]]]))
+}
 
