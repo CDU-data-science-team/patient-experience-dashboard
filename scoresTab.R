@@ -104,7 +104,6 @@ output$stackedTableCarerModal <- renderDT({
     formatRound(TRUE, 1)
 })
 
-
 # generate scores to put underneath the stacked plot
 
 output$fftScore = renderText({
