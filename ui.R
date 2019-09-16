@@ -11,16 +11,7 @@ function(request) {
     
     dashboardSidebar(
       
-      sidebarMenu(
-        id = "tabs",
-        menuItem("Summary", tabName = "summary", icon = icon("dashboard")),
-        menuItem("Scores", tabName = "scores", icon = icon("bar-chart")),
-        menuItem("Comments", tabName = "comments", icon = icon("comment")),
-        menuItem("All comments", tabName = "allComments", icon = icon("comment")),
-        menuItem("Search comments", tabName = "commentSearch", icon = icon("question-circle"))
-        # menuItem("Text analysis", tabName = "textAnalysis", icon = icon("font")),
-        # menuItem("Sentiment analysis", tabName = "sentimentAnalysis", icon = icon("font"))
-      ),
+      sidebarMenuOutput("sidebarMenu"),
       
       bookmarkButton(),
       
@@ -54,7 +45,7 @@ function(request) {
       ),
       
       checkboxInput("showTeams", "Show all teams"),
-
+      
       # toggle advanced controls
       
       # checkboxInput("custom", "Advanced controls", value = FALSE),
@@ -206,14 +197,14 @@ function(request) {
                            condition = "input.categoryCriticality == 'Sub category'",
                            htmlOutput("filterTextSubcategory")
                          )
-                )
+                  )
                 )
         ),
         tabItem(tabName = "allComments",
                 fluidRow(
                   column(6, radioButtons("sortCategoryCriticality", 
-                                          "Sort by category or Criticality?",
-                                          choices = c("Category", "Criticality"))),
+                                         "Sort by category or Criticality?",
+                                         choices = c("Category", "Criticality"))),
                   column(6, downloadButton("downloadAllComments", "Download all comments"))
                 ),
                 fluidRow(
@@ -225,6 +216,9 @@ function(request) {
                 fluidRow(
                   uiOutput("commentSearchOutput")
                 )
+        ),
+        tabItem(tabName = "patientVoices",
+                  uiOutput("patientVoicesOutput")
         ),
         tabItem(tabName = "textAnalysis",
                 fluidRow(
@@ -250,4 +244,3 @@ function(request) {
       )
     )
   )}    
-    
