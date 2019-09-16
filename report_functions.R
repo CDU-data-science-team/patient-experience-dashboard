@@ -23,7 +23,8 @@ generate_rmd_parameters <- function(){
                    area_name = area_name,
                    date_from = input$dateRange[1],
                    date_to = input$dateRange[2],
-                   comment_summary = input$commentSummary)
+                   comment_summary = input$commentSummary
+          )
   }
   
   if(report_area == "division"){
@@ -512,7 +513,7 @@ returnTopComments <- function(the_data, nth_row, type){
 
 # function to return text that has been filtered by topic, criticality, and string
 
-returnSearchText <- function(type = "Improve"){
+returnSearchText <- function(text_data, type = "Improve"){
   
   # give a set of variable names for each
   
@@ -523,8 +524,6 @@ returnSearchText <- function(type = "Improve"){
     
     variable_names <- c("Best", "Best1", "Best2", "BestCrit")
   }
-  
-  text_data <- passData()[["currentData"]]
   
   if("Text search" %in% input$filterCommentsBy){
     

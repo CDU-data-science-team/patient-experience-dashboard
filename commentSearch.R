@@ -84,7 +84,7 @@ observeEvent(input$showTimeline, {
 
 output$showImprove <- renderText({
   
-  text_df <- returnSearchText("Improve")
+  text_df <- returnSearchText(passData()[["currentData"]], "Improve")
   
   paste0("<p>", text_df$Improve, " (", 
          text_df$Location, ")</p>", collapse = "")
@@ -92,7 +92,7 @@ output$showImprove <- renderText({
 
 output$showBest <- renderText({
   
-  text_df <- returnSearchText("Best")
+  text_df <- returnSearchText(passData()[["currentData"]], "Best")
   
   paste0("<p>", text_df$Best, " (", 
          text_df$Location, ")</p>", collapse = "")
@@ -164,7 +164,6 @@ output$downloadCommentSearch <- downloadHandler(
     
     # copy docx to 'file'
     file.copy("reports/SearchComments.docx", file, overwrite = TRUE)
-    
   }
 )
 
