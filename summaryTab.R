@@ -499,26 +499,30 @@ zeroRespondingData <- reactive({
   # need to filter counts according to division/ directorate/ team
   
   sub_counts = counts %>% # if the whole Trust is selected do this
-    filter(date_from >= input$dateRange[1], date_from < input$dateRange[2])
-  
+    filter(date_from >= floor_date(input$dateRange[1], "quarter"), 
+           date_from < ceiling_date(input$dateRange[2], "quarter"))
+
   if(!is.null(input$Division)){ 
     
     sub_counts = counts %>% 
-      filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
+      filter(date_from >= floor_date(input$dateRange[1], "quarter"), 
+             date_from < ceiling_date(input$dateRange[2], "quarter")) %>% 
       filter(Division %in% input$Division)
   } 
   
   if(!is.null(input$selDirect)){ # otherwise look at the directorate code
     
     sub_counts = counts %>% 
-      filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
+      filter(date_from >= floor_date(input$dateRange[1], "quarter"), 
+             date_from < ceiling_date(input$dateRange[2], "quarter")) %>% 
       filter(Directorate %in% input$selDirect)
   }
   
   if(!is.null(input$selTeam)){
     
     sub_counts = counts %>% 
-      filter(date_from >= input$dateRange[1], date_from < input$dateRange[2]) %>% 
+      filter(date_from >= floor_date(input$dateRange[1], "quarter"), 
+             date_from < ceiling_date(input$dateRange[2], "quarter")) %>% 
       filter(TeamC %in% input$TeamC) 
   }
   
