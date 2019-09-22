@@ -1,94 +1,6 @@
 
 # all report functions go in here, out the way of Shiny code
 
-# Set up parameters to pass to Rmd document- this works for all Rmd documents
-
-generate_rmd_parameters <- function(){
-  
-  # find which areas are selected
-  
-  report_area <- case_when(
-    isTruthy(input$selTeam) ~ "team",
-    isTruthy(input$selDirect) ~ "directorate",
-    isTruthy(input$Division) ~ "division",
-    TRUE ~ "trust"
-  )
-  
-  if(report_area == "trust"){
-    
-    area_name <- "the whole Trust"
-    
-    params <- list(division = "NA",
-                   carerSU = input$carerSU,
-                   area_name = area_name,
-                   date_from = input$dateRange[1],
-                   date_to = input$dateRange[2],
-                   comment_summary = input$commentSummary
-          )
-  }
-  
-  if(report_area == "division"){
-    
-    area_name <- c("Local Partnerships- Mental Healthcare", 
-                   "Forensic Services", 
-                   "Local Partnerships- General Healthcare")[as.numeric(input$Division) + 1]
-    
-    params <- list(division = input$Division,
-                   carerSU = input$carerSU,
-                   area_name = area_name,
-                   date_from = input$dateRange[1],
-                   date_to = input$dateRange[2],
-                   comment_summary = input$commentSummary)
-  }
-  
-  if(report_area == "directorate"){
-    
-    first_date <- input$dateRange[1]
-    
-    end_date <- input$dateRange[2]
-    
-    number_rows = trustData %>%
-      filter(Directorate %in% input$selDirect) %>% 
-      filter(Date >= first_date, Date <= end_date) %>% 
-      nrow()
-    
-    if(number_rows >= 10){
-
-      area_name <- dirTable %>% 
-        filter(DirC %in% input$selDirect) %>% 
-        pull(DirT) %>% 
-        paste(collapse = ", ")
-      
-      params <- list(directorate = input$selDirect,
-                     carerSU = input$carerSU,
-                     area_name = area_name,
-                     date_from = input$dateRange[1],
-                     date_to = input$dateRange[2],
-                     comment_summary = input$commentSummary)
-    } else {
-      
-      return(NULL)
-    }
-  }
-  
-  if(report_area == "team"){
-    
-    area_name_team <- passData()[["currentData"]] %>% 
-      pull(TeamN) %>% 
-      unique() %>% 
-      paste(collapse = ", ")
-    
-    params <- list(team = input$selTeam,
-                   carerSU = input$carerSU,
-                   area_name = area_name_team,
-                   date_from = input$dateRange[1],
-                   date_to = input$dateRange[2],
-                   comment_summary = input$commentSummary)
-  }
-  
-  return(params)
-}
-
 # function to return values to value box and to reports
 
 reportFunction <- function(report_data){
@@ -513,7 +425,10 @@ returnTopComments <- function(the_data, nth_row, type){
 
 # function to return text that has been filtered by topic, criticality, and string
 
-returnSearchText <- function(text_data, type = "Improve"){
+returnSearchText <- function(text_data, type = "Improve", 
+                             filterCommentsBy,
+                             searchTextInclude, textSearchExclude,
+                             criticalityLevels, topSixThemes){
   
   # give a set of variable names for each
   
@@ -525,21 +440,21 @@ returnSearchText <- function(text_data, type = "Improve"){
     variable_names <- c("Best", "Best1", "Best2", "BestCrit")
   }
   
-  if("Text search" %in% input$filterCommentsBy){
+  if("Text search" %in% filterCommentsBy){
     
-    if(isTruthy(input$searchTextInclude)){ # or overwrite if search string exists
+    if(isTruthy(searchTextInclude)){ # or overwrite if search string exists
       
       text_data <- text_data %>%
         filter(grepl(paste(
-          trimws(unlist(strsplit(input$searchTextInclude, ","))), 
+          trimws(unlist(strsplit(searchTextInclude, ","))), 
           collapse = "|"), .data[[variable_names[1]]]))
     }
     
-    if(isTruthy(input$textSearchExclude)){
+    if(isTruthy(textSearchExclude)){
       
       text_data <- text_data %>%
         filter(!grepl(paste(
-          trimws(unlist(strsplit(input$textSearchExclude, ","))), 
+          trimws(unlist(strsplit(textSearchExclude, ","))), 
           collapse = "|"), .data[[variable_names[1]]]))
     }
   }
@@ -550,20 +465,22 @@ returnSearchText <- function(text_data, type = "Improve"){
       mutate(ImpCrit = -ImpCrit)
   }
   
-  if("Criticality" %in% input$filterCommentsBy){
+  if("Criticality" %in% filterCommentsBy){
     
     text_data <- text_data %>%
-      filter(.data[[variable_names[4]]] %in% input$criticalityLevels)
+      filter(.data[[variable_names[4]]] %in% criticalityLevels)
   }
   
-  if("Themes" %in% input$filterCommentsBy){
+  if("Themes" %in% filterCommentsBy){
     
     text_data <- text_data %>%
-      filter(.data[[variable_names[2]]] %in% input$topSixThemes |
-               .data[[variable_names[3]]] %in% input$topSixThemes)
+      filter(.data[[variable_names[2]]] %in% topSixThemes |
+               .data[[variable_names[3]]] %in% topSixThemes)
   }
   
   text_data <- text_data %>% 
     filter(!is.na(.data[[variable_names[1]]]))
+  
+  return(text_data)
 }
 
