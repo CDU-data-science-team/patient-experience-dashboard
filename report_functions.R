@@ -171,6 +171,11 @@ trend_function <- function(trend_data, type){
                       "Communication", "Respect", "InformContact", "Privacy")
   }
   
+  if(type == "patient_voices"){
+    
+    theQuestions = c("Service", "Promoter", "Positive")
+  }
+  
   # useful test- poor data
   # trend_data <- trustData %>% filter(TeamC %in% 505, Date > Sys.Date() - 365 * 2)
   # no data
@@ -206,12 +211,23 @@ trend_function <- function(trend_data, type){
     
     return(NULL)
   }
+  
+  if(type == "patient_voices"){
     
-  data_for_graph %>%   
-    ggplot(aes(x = Quarter, y = value.x, group = value.y, colour = value.y)) +
-    geom_line() +  geom_point() +
-    ylab("%") + theme(legend.title=element_blank()) +
-    ylim(minimum_value, 100) 
+    data_for_graph %>%   
+      ggplot(aes(x = Quarter, y = value.x, group = value.y)) +
+      geom_line(aes(linetype = value.y)) +
+      geom_point(aes(shape = value.y), size = 3) +
+      ylab("%") + theme(legend.title=element_blank()) +
+      ylim(minimum_value, 100) 
+  } else {
+    
+    data_for_graph %>%   
+      ggplot(aes(x = Quarter, y = value.x, group = value.y, colour = value.y)) +
+      geom_line() +  geom_point() +
+      ylab("%") + theme(legend.title=element_blank()) +
+      ylim(minimum_value, 100) 
+  }
 }
 
 # this function returns all comments sorted by category/ criticality & could improve/ do well

@@ -23,7 +23,49 @@ function(input, output, session){
   source("sentimentTab.R", local = TRUE)
   source("report_functions.R", local = TRUE)
   source("commentSearch.R", local = TRUE)
+  source("patientVoices.R", local = TRUE)
   # source("topicExplorer.R", local = TRUE)
+  
+  # handle reactive UI that draws sidebar
+  
+  output$sidebarMenu <- renderMenu({
+    
+    # check to see if there is a search string
+    
+    if(isTruthy(session$clientData$url_search)){
+      
+      searchString <- parseQueryString(session$clientData$url_search)
+      
+      # then check to see what it is
+      
+      if(searchString[["call_back"]] == "advanced_graphics"){
+        
+        sidebarMenu(
+          id = "tabs",
+          menuItem("Summary", tabName = "summary", icon = icon("dashboard"), selected = TRUE),
+          menuItem("Scores", tabName = "scores", icon = icon("bar-chart")),
+          menuItem("Comments", tabName = "comments", icon = icon("comment")),
+          menuItem("All comments", tabName = "allComments", icon = icon("comment")),
+          menuItem("Search comments", tabName = "commentSearch", icon = icon("question-circle")),
+          menuItem("Patient voices", tabName = "patientVoices", icon = icon("pencil"))
+          # menuItem("Text analysis", tabName = "textAnalysis", icon = icon("font")),
+          # menuItem("Sentiment analysis", tabName = "sentimentAnalysis", icon = icon("font"))
+        )
+      }
+    } else {
+      
+      sidebarMenu(
+        id = "tabs",
+        menuItem("Summary", tabName = "summary", icon = icon("dashboard"), selected = TRUE),
+        menuItem("Scores", tabName = "scores", icon = icon("bar-chart")),
+        menuItem("Comments", tabName = "comments", icon = icon("comment")),
+        menuItem("All comments", tabName = "allComments", icon = icon("comment")),
+        menuItem("Search comments", tabName = "commentSearch", icon = icon("question-circle"))
+        # menuItem("Text analysis", tabName = "textAnalysis", icon = icon("font")),
+        # menuItem("Sentiment analysis", tabName = "sentimentAnalysis", icon = icon("font"))
+      )
+    }
+  })
   
   # handle reactive UI from division selection
   
@@ -189,7 +231,7 @@ function(input, output, session){
       
       finalData = finalData %>% 
         filter(!is.na(Directorate), Directorate %in% input$selDirect)
-
+      
     }
     if(!is.null(input$selTeam)){
       
@@ -245,12 +287,12 @@ function(input, output, session){
       
       comparisonData <- NULL
     }
-
+    
     return(list("currentData" = currentData, 
                 "comparisonData" = comparisonData,
                 "trendData" = trendData))
   })
-
+  
   # download graphs buttons
   
   output$downloadData.stack <- downloadHandler(
