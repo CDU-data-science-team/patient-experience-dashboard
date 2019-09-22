@@ -419,4 +419,97 @@ function(input, output, session){
     )
   }, ignoreInit = TRUE, once = TRUE)
   
+  # Set up parameters to pass to Rmd document- this works for all Rmd documents
+  
+  generate_rmd_parameters <- function(){
+    
+    # find which areas are selected
+    
+    report_area <- case_when(
+      isTruthy(input$selTeam) ~ "team",
+      isTruthy(input$selDirect) ~ "directorate",
+      isTruthy(input$Division) ~ "division",
+      TRUE ~ "trust"
+    )
+    
+    if(report_area == "trust"){
+      
+      area_name <- "the whole Trust"
+      
+      params <- list(division = "NA",
+                     carerSU = input$carerSU,
+                     area_name = area_name,
+                     date_from = input$dateRange[1],
+                     date_to = input$dateRange[2],
+                     comment_summary = input$commentSummary
+      )
+    }
+    
+    if(report_area == "division"){
+      
+      area_name <- c("Local Partnerships- Mental Healthcare", 
+                     "Forensic Services", 
+                     "Local Partnerships- General Healthcare")[as.numeric(input$Division) + 1]
+      
+      params <- list(division = input$Division,
+                     carerSU = input$carerSU,
+                     area_name = area_name,
+                     date_from = input$dateRange[1],
+                     date_to = input$dateRange[2],
+                     comment_summary = input$commentSummary)
+    }
+    
+    if(report_area == "directorate"){
+      
+      first_date <- input$dateRange[1]
+      
+      end_date <- input$dateRange[2]
+      
+      number_rows = trustData %>%
+        filter(Directorate %in% input$selDirect) %>% 
+        filter(Date >= first_date, Date <= end_date) %>% 
+        nrow()
+      
+      if(number_rows >= 10){
+        
+        area_name <- dirTable %>% 
+          filter(DirC %in% input$selDirect) %>% 
+          pull(DirT) %>% 
+          paste(collapse = ", ")
+        
+        params <- list(directorate = input$selDirect,
+                       carerSU = input$carerSU,
+                       area_name = area_name,
+                       date_from = input$dateRange[1],
+                       date_to = input$dateRange[2],
+                       comment_summary = input$commentSummary)
+      } else {
+        
+        return(NULL)
+      }
+    }
+    
+    if(report_area == "team"){
+      
+      area_name_team <- passData()[["currentData"]] %>% 
+        pull(TeamN) %>% 
+        unique() %>% 
+        paste(collapse = ", ")
+      
+      params <- list(team = input$selTeam,
+                     carerSU = input$carerSU,
+                     area_name = area_name_team,
+                     date_from = input$dateRange[1],
+                     date_to = input$dateRange[2],
+                     comment_summary = input$commentSummary)
+    }
+    
+    params = c(params, list(filterCommentsBy = input$filterCommentsBy,
+                            searchTextInclude = input$searchTextInclude,
+                            textSearchExclude = input$textSearchExclude,
+                            criticalityLevels = input$criticalityLevels,
+                            topSixThemes = input$topSixThemes))
+    
+    return(params)
+  }
 }

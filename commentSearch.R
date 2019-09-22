@@ -22,6 +22,8 @@ output$commentSearchSelector <- renderUI({
   
   tagList(
     
+    box(width = 12, downloadButton("downloadCommentSearch", "Download filtered comments")),
+    
     box(width = 6, height = 130, checkboxGroupInput("filterCommentsBy", "Filter comments by...", 
                                                     choices = c("Text search", "Criticality", "Themes"),
                                                     selected = "Text search")),
@@ -82,93 +84,28 @@ observeEvent(input$showTimeline, {
 
 output$showImprove <- renderText({
   
-  improve_data <- passData()[["currentData"]]
+  text_df <- returnSearchText(passData()[["currentData"]], "Improve", 
+                              filterCommentsBy = input$filterCommentsBy,
+                              searchTextInclude = input$searchTextInclude, 
+                              textSearchExclude = input$textSearchExclude,
+                              criticalityLevels = input$criticalityLevels, 
+                              topSixThemes = input$topSixThemes)
   
-  if("Text search" %in% input$filterCommentsBy){
-    
-    if(isTruthy(input$searchTextInclude)){ # or overwrite if search string exists
-      
-      improve_data <- improve_data %>%
-        filter(grepl(paste(
-          trimws(unlist(strsplit(input$searchTextInclude, ","))), 
-          collapse = "|"), Improve))
-    }
-    
-    if(isTruthy(input$textSearchExclude)){
-      
-      improve_data <- improve_data %>%
-        filter(!grepl(paste(
-          trimws(unlist(strsplit(input$textSearchExclude, ","))), 
-          collapse = "|"), Improve))
-    }
-  }
-  
-  improve_data <- improve_data %>%
-    mutate(ImpCrit = -ImpCrit)
-  
-  if("Criticality" %in% input$filterCommentsBy){
-    
-    improve_data <- improve_data %>%
-      filter(ImpCrit %in% input$criticalityLevels)
-  }
-  
-  if("Themes" %in% input$filterCommentsBy){
-    
-    improve_data <- improve_data %>%
-      filter(Imp1 %in% input$topSixThemes |
-               Imp2 %in% input$topSixThemes)
-  }
-  
-  improve_data <- improve_data %>% 
-    filter(!is.na(Improve))
-  
-  # req(nrow(improve_data) > 0)
-  
-  paste0("<p>", improve_data$Improve, " (", 
-         improve_data$Location, ")</p>", collapse = "")
+  paste0("<p>", text_df$Improve, " (", 
+         text_df$Location, ")</p>", collapse = "")
 })
 
 output$showBest <- renderText({
   
-  improve_data <- passData()[["currentData"]]
+  text_df <- returnSearchText(passData()[["currentData"]], "Best", 
+                              filterCommentsBy = input$filterCommentsBy,
+                              searchTextInclude = input$searchTextInclude, 
+                              textSearchExclude = input$textSearchExclude,
+                              criticalityLevels = input$criticalityLevels, 
+                              topSixThemes = input$topSixThemes)
   
-  if("Text search" %in% input$filterCommentsBy){
-    
-    if(isTruthy(input$searchTextInclude)){ # or overwrite if search string exists
-      
-      improve_data <- improve_data %>%
-        filter(grepl(paste(
-          trimws(unlist(strsplit(input$searchTextInclude, ","))), 
-          collapse = "|"), Best))
-    }
-    
-    if(isTruthy(input$textSearchExclude)){
-      
-      improve_data <- improve_data %>%
-        filter(!grepl(paste(
-          trimws(unlist(strsplit(input$textSearchExclude, ","))), 
-          collapse = "|"), Best))
-    }
-  }
-  
-  if("Criticality" %in% input$filterCommentsBy){
-    
-    improve_data <- improve_data %>%
-      filter(BestCrit %in% input$criticalityLevels)
-  }
-  
-  if("Themes" %in% input$filterCommentsBy){
-    
-    improve_data <- improve_data %>%
-      filter(Best1 %in% input$topSixThemes |
-               Best2 %in% input$topSixThemes)
-  }
-  
-  improve_data <- improve_data %>% 
-    filter(!is.na(Best))
-  
-  paste0("<p>", improve_data$Best, " (", 
-         improve_data$Location, ")</p>", collapse = "")
+  paste0("<p>", text_df$Best, " (", 
+         text_df$Location, ")</p>", collapse = "")
 })
 
 # this is being cached so the plot click can access it
@@ -224,5 +161,19 @@ output$beeswarmText <- renderText({
   
 })
 
-
+output$downloadCommentSearch <- downloadHandler(
+  
+  filename = "SearchComments.docx",
+  content = function(file){
+    
+    params <- generate_rmd_parameters()
+    
+    render("reports/SearchComments.Rmd", output_format = "word_document",
+           quiet = TRUE, params = params,
+           envir = new.env(parent = globalenv()))
+    
+    # copy docx to 'file'
+    file.copy("reports/SearchComments.docx", file, overwrite = TRUE)
+  }
+)
 

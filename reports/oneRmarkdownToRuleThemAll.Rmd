@@ -1,5 +1,4 @@
 ---
-title: Custom report
 output: html_document
 params:
   division: NA
@@ -9,43 +8,72 @@ params:
   date_to: NA
   carerSU: NA
   area_name: NA
-  comment_summary: NA
+  comment_summary: writtenSummary
+  filterCommentsBy: NA
+  searchTextInclude: NA
+  textSearchExclude: NA
+  criticalityLevels: NA
+  topSixThemes: NA
 ---
 
 ```{r setup, include=FALSE}
 
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+if(!exists("trustData")){
+  
+  load("../shiny.Rdata")
+}
 
 # source the code with the functions in
 
-source("../report_functions.R")
+source("../report_functions.R", local = TRUE)
 
 report_list <- report_data(division = params$division, directorate = params$directorate, 
-                           team = params$team, date_from = params$date_from, date_to = params$date_to, 
+                           team = params$team, date_from = as.Date(params$date_from), 
+                           date_to = as.Date(params$date_to), 
                            carerSU = params$carerSU, area_name = params$area_name,
                            comment_summary = params$comment_summary)
 
 suceData <- report_list[["suceData"]]
 
+two_year_data <- report_list[["two_year_data"]]
+
+report_information <- report_list[["report_information"]]
+
 ```
 
 ## Summary
 
-This report summarises data from `r params$date_from` to `r params$date_to`
-
 ```{r, results = "asis"}
-
-report_information <- report_list[["report_information"]]
 
 if(is.null(report_information)){
   
   myString = "Within the selected time and area there were no responses"
 } else {
   
+  if(params$carerSU == "SU"){
+    
+    cat(paste0("This report summarises data from the service user experience survey between ", 
+               params$date_from, " and ", params$date_to, ".  \n  \n"))
+  }
+  
+  if(params$carerSU == "carer"){
+    
+    cat(paste0("This report summarises data from the carer experience survey between ", 
+               params$date_from, " and ", params$date_to, ".  \n  \n"))
+  }
+  
+  if(params$carerSU == "bothCarerSU"){
+    
+    cat(paste0("This report summarises data from the service user experience survey and the carer experience survey between ", 
+               params$date_from, " and ", params$date_to, ".  \n  \n"))
+  }
+  
   myString = paste0("<p>Within ", params$area_name, " in the selected time there were ", report_information[["NR"]],
-                    " responses.</p><br>",
-                    "<p>There were ", report_information[["IC"]], " 'What could we do better' responses and ",
-                    report_information[["BC"]], " 'What did we do well' responses</p><br>",
+                    " responses.</p><br>", "<p>There were ", report_information[["IC"]], 
+                    " 'What could we do better' responses and ", report_information[["BC"]],
+                    " 'What did we do well' responses</p><br>",
                     ifelse(report_information[["NFFT"]] > 9,
                            paste0("<p>The Friends and Family Test Score is the proportion of patients
       who are extremely likely or likely to recommend a service. In the selected period of time it was ",
@@ -72,13 +100,58 @@ cat(myString)
 
 ```{r fig.width=7, fig.height=6, echo=FALSE, warning=FALSE, fig.cap="Percentage of responses", dpi=400}
 
-stack_function(suceData)
+if(params$carerSU == "SU"){
+  
+  if(!is.null(stack_function(suceData, type = "suce_report"))){
+    
+    stack_function(suceData, type = "suce_report")
+  }
+}
+
+if(params$carerSU == "carer"){
+  
+  if(!is.null(stack_function(suceData, type = "carer_report"))){
+    
+    stack_function(suceData, type = "carer_report")
+  }
+}
+
+if(params$carerSU == "bothCarerSU"){
+  
+  if(!is.null(stack_function(suceData, type = "carer_report"))){
+    
+    stack_function(suceData, type = "suce_dashboard")
+    
+    stack_function(suceData, type = "carer_dashboard")
+    
+  }
+}
 
 ```
 
 ```{r fig.width=7, fig.height=6, echo=FALSE, warning=FALSE, fig.cap="Trend over time", dpi=400}
 
-trend_function(report_list[["two_year_data"]])
+if(!is.null(trend_function(two_year_data, type = "suce_report"))){
+  
+  if(params$carerSU == "SU"){
+    
+    trend_function(two_year_data, type = "suce_report")
+  }
+  
+  if(params$carerSU == "carer"){
+    
+    trend_function(two_year_data, type = "carer_report")
+  }
+  
+  if(params$carerSU == "bothCarerSU"){
+    
+    trend_function(two_year_data, type = "suce_dashboard")
+    
+    trend_function(two_year_data, type = "carer_dashboard")
+  }
+  
+}
+
 
 ```
 
@@ -92,7 +165,7 @@ if(params$comment_summary == "textSummary"){
   
   if(is.null(improve_1)){
     
-    cat("Insufficient data for this type of summary. Please rerun report and select \"verbatim comments\"  \n  \n")
+    cat("Insufficient data for this type of summary.  \n  \n")
   } else {
     
     improve_2 <- returnTopComments(suceData, 2, "Improve")[["return_table"]]
@@ -118,7 +191,7 @@ if(params$comment_summary == "textSummary"){
   
   if(is.null(best_1)){
     
-    cat("Insufficient data for this type of summary. Please rerun report and select verbatim comments  \n  \n")
+    cat("Insufficient data for this type of summary.   \n  \n")
   } else {
     
     cat("## What did we do well?  \n")
@@ -136,14 +209,9 @@ if(params$comment_summary == "textSummary"){
     cat("The third most common comment category was ", 
         paste0(best_3$Super, ": ", best_3$Category, " ", paste0(best_3$percent, "%. ")),
         "Example comments include: ", returnTopComments(suceData, 3, "Best")[["return_comments"]])
+    
   }
-}
-
-```
-
-```{r, results = "asis"}
-
-if(params$comment_summary == "verbatimComments"){
+} else {
   
   do_better <- suceData %>% 
     filter(!is.na(Improve), (Imp1 != 4444 | is.na(Imp1))) %>% 
@@ -176,7 +244,7 @@ if(params$comment_summary == "verbatimComments"){
     mutate(comment_with_location_best = paste0(Best, " (", Location, ")")) %>% 
     pull(comment_with_location_best)
   
-  if(length(do_well) > 1000){
+  if(length(do_better) > 1000){
     
     cat("Error. Too many comments. Please reduce your selection  \n")
   } else {
@@ -191,4 +259,30 @@ if(params$comment_summary == "verbatimComments"){
 
 ```
 
+```{r, results = "asis", message = FALSE}
 
+# this is where if it's a directorate report I'm going to produce
+# a set of links that go to all the team reports that exist
+
+if(params$directorate != "NA"){
+  
+  cat("## Team reports, click to download  \n")
+  
+  team_numbers <- suceData %>%
+    group_by(TeamC) %>%
+    count() %>%
+    filter(n > 2) %>%
+    inner_join(counts) %>%
+    arrange(desc(date_from)) %>% 
+    filter(!duplicated(TeamC)) %>%
+    ungroup()
+  
+  team_numbers %>%
+    mutate(print = paste0("[", TeamN, "](http://suce.co.uk:8000/word?team=", TeamC, "&carer_su=", params$carerSU,
+                          "&date_from=", params$date_from, "&date_to=", params$date_to,
+                          "&area_name=", url_encode(TeamN), ")  \n  \n")) %>%
+    pull(print) %>%
+    cat()
+}
+
+```
