@@ -239,7 +239,7 @@ output$downloadDoc <- downloadHandler(
                        date_from = first_date,
                        date_to = end_date,
                        comment_summary = "textSummary")
-
+        
       } else {
         
         area_name <- "the whole Trust"
@@ -275,7 +275,7 @@ output$downloadDoc <- downloadHandler(
                          date_from = first_date,
                          date_to = end_date,
                          comment_summary = "verbatimComments")
-
+          
         } else {
           
           showModal(
@@ -333,12 +333,12 @@ output$downloadDoc <- downloadHandler(
       }
     }
     
-      render(paste0("reports/oneRmarkdownToRuleThemAll.Rmd"), output_format = "word_document",
-             output_file = "quarterly_report.docx", quiet = TRUE, params = params,
-             envir = new.env(parent = globalenv()))
-      
-      # copy docx to 'file'
-      file.copy(paste0("reports/quarterly_report.docx"), file, overwrite = TRUE)
+    render(paste0("reports/oneRmarkdownToRuleThemAll.Rmd"), output_format = "word_document",
+           output_file = "quarterly_report.docx", quiet = TRUE, params = params,
+           envir = new.env(parent = globalenv()))
+    
+    # copy docx to 'file'
+    file.copy(paste0("reports/quarterly_report.docx"), file, overwrite = TRUE)
   }
 )
 
@@ -346,69 +346,12 @@ output$downloadCurrent <- downloadHandler(
   filename = "CustomReport.docx",
   content = function(file){
     
-    # Set up parameters to pass to Rmd document
-    
-    # find which areas are selected
-    
-    report_area <- case_when(
-      isTruthy(input$selTeam) ~ "team",
-      isTruthy(input$selDirect) ~ "directorate",
-      isTruthy(input$Division) ~ "division",
-      TRUE ~ "trust"
-    )
-    
-    if(report_area == "trust"){
+    params <- generate_rmd_parameters()
       
-      area_name <- "the whole Trust"
+      # check number of rows for directorate
       
-      params <- list(division = "NA",
-                     carerSU = input$carerSU,
-                     area_name = area_name,
-                     date_from = input$dateRange[1],
-                     date_to = input$dateRange[2],
-                     comment_summary = input$commentSummary)
-    }
-    
-    if(report_area == "division"){
-      
-      area_name <- c("Local Partnerships- Mental Healthcare", 
-                     "Forensic Services", 
-                     "Local Partnerships- General Healthcare")[as.numeric(input$Division) + 1]
-      
-      params <- list(division = input$Division,
-                     carerSU = input$carerSU,
-                     area_name = area_name,
-                     date_from = input$dateRange[1],
-                     date_to = input$dateRange[2],
-                     comment_summary = input$commentSummary)
-    }
-    
-    if(report_area == "directorate"){
-      
-      first_date <- input$dateRange[1]
-      
-      end_date <- input$dateRange[2]
-      
-      number_rows = trustData %>%
-        filter(Directorate %in% input$selDirect) %>% 
-        filter(Date >= first_date, Date <= end_date) %>% 
-        nrow()
-      
-      if(number_rows >= 10){
-        
-        area_name <- dirTable %>% 
-          filter(DirC %in% input$selDirect) %>% 
-          pull(DirT) %>% 
-          paste(collapse = ", ")
-        
-        params <- list(directorate = input$selDirect,
-                       carerSU = input$carerSU,
-                       area_name = area_name,
-                       date_from = input$dateRange[1],
-                       date_to = input$dateRange[2],
-                       comment_summary = input$commentSummary)
-      } else {
-        
+      if(is.null(params)){
+
         showModal(
           modalDialog(
             title = "Error!",
@@ -416,25 +359,7 @@ output$downloadCurrent <- downloadHandler(
             easyClose = TRUE
           )
         )
-        
-        return()
       }
-    }
-    
-    if(report_area == "team"){
-      
-      area_name_team <- passData()[["currentData"]] %>% 
-        pull(TeamN) %>% 
-        unique() %>% 
-        paste(collapse = ", ")
-      
-      params <- list(team = input$selTeam,
-                     carerSU = input$carerSU,
-                     area_name = area_name_team,
-                     date_from = input$dateRange[1],
-                     date_to = input$dateRange[2],
-                     comment_summary = input$commentSummary)
-    }
     
     render(paste0("reports/oneRmarkdownToRuleThemAll.Rmd"), output_format = "word_document",
            output_file = "custom_report.docx", quiet = TRUE, params = params,
@@ -558,11 +483,11 @@ output$zeroRespondingTeams <- renderValueBox({
     nrow()
   
   zerobox <- valueBox(value = zero_teams,
-           subtitle = HTML("<p title = 'Click to show response numbers for individual teams'>
+                      subtitle = HTML("<p title = 'Click to show response numbers for individual teams'>
                              Zero responding<br>teams</p>"),
-           href = 'Link to team names'
+                      href = 'Link to team names'
   )
-
+  
   zerobox$children[[1]]$attribs$class<-"action-button"
   zerobox$children[[1]]$attribs$id<-"zerobox"
   
@@ -576,7 +501,7 @@ observeEvent(input$zerobox, {
       a(href = "/apps/feedback_tracker", "Link to directorate response reports"),
       htmlOutput("zeroTeamsText"),
       size = "l", easyClose = TRUE)
-    )
+  )
 })
 
 output$zeroTeamsText <- renderText({
@@ -586,7 +511,7 @@ output$zeroTeamsText <- renderText({
     left_join(zeroRespondingData()[["sub_counts"]], by = "TeamC") %>% 
     distinct(TeamC, .keep_all = TRUE) %>% 
     pull(TeamN) 
-
+  
   HTML(paste0("<h2>Zero responding teams</h2><p>(click 
         anywhere to dismiss this dialogue)</p>", 
               paste0("<p>", list_of_teams, "</p>", collapse = "")))
@@ -646,7 +571,7 @@ output$changeInCriticality <- renderValueBox({
 })
 
 # third row----
-                    
+
 output$topCompliment1 <- renderValueBox({
   
   # fetch from function
