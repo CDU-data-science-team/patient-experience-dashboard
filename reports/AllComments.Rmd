@@ -1,0 +1,126 @@
+---
+title: Comments report
+output: html_document
+params:
+  division: NA
+  directorate: NA
+  team: NA
+  date_from: NA
+  date_to: NA
+  carerSU: NA
+  area_name: NA
+  comment_sort: NA
+  comment_summary: NA
+  filterCommentsBy: NA
+  searchTextInclude: NA
+  textSearchExclude: NA
+  criticalityLevels: NA
+  topSixThemes: NA
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# source the code with the functions in
+
+source("../report_functions.R")
+
+report_list <- report_data(division = params$division, directorate = params$directorate, 
+                           team = params$team, date_from = params$date_from, date_to = params$date_to, 
+                           carerSU = params$carerSU, area_name = params$area_name)
+
+suceData <- report_list[["suceData"]]
+
+```
+
+## What could we do better?
+
+```{r, results = "asis"}
+
+df <- allComments(suceData, params$comment_sort, "Improve")
+
+if(params$comment_sort == "Category"){
+  
+  finalText = map(unique(df$Super), function(x) {
+    
+    commentsFrame = df %>% 
+      filter(Super == x) %>% 
+      ungroup() %>% 
+      select(Improve, Location) %>% 
+      set_names(c("Comment", "Location"))
+    
+    cat(paste0("### ", x, "  \n",
+               paste0("<p>", commentsFrame$Comment, " (",
+                      commentsFrame$Location, ")</p>", collapse = "")
+    ))
+  })
+}
+
+if(params$comment_sort == "Criticality"){
+  
+  nameVector = c("Mildly critical", "Somewhat critical", "Very critical")
+  
+  finalText = map(3 : 1, function(x) {
+    
+    commentsFrame = df %>% 
+      filter(ImpCrit == x) %>% 
+      select(Improve, Location) %>% 
+      set_names(c("Comment", "Location"))
+    
+    if(nrow(commentsFrame) > 0){
+      
+      cat(paste0("### ", nameVector[x], "  \n",
+             paste0("<p>", commentsFrame$Comment, " (",
+                    commentsFrame$Location, ")</p>", collapse = "")
+      ))
+    }
+  })
+}
+
+```
+
+## What did we do well?
+
+```{r, results = "asis"}
+
+df <- allComments(suceData, params$comment_sort, "Best")
+
+if(params$comment_sort == "Category"){
+  
+  finalText = map(unique(df$Super), function(x) {
+    
+    commentsFrame = df %>% 
+      filter(Super == x) %>% 
+      ungroup() %>% 
+      select(Best, Location) %>% 
+      set_names(c("Comment", "Location"))
+    
+    cat(paste0("### ", x, "  \n",
+               paste0("<p>", commentsFrame$Comment, " (",
+                      commentsFrame$Location, ")</p>", collapse = "")
+    ))
+  })
+}
+
+if(params$comment_sort == "Criticality"){
+  
+  nameVector = c("Mildly complimentary", "Somewhat complimentary", "Very complimentary")
+  
+  finalText = map(3 : 1, function(x) {
+    
+    commentsFrame = df %>% 
+      filter(BestCrit == x) %>% 
+      select(Best, Location) %>% 
+      set_names(c("Comment", "Location"))
+    
+    if(nrow(commentsFrame) > 0){
+      
+      cat(paste0("### ", nameVector[x], "  \n",
+             paste0("<p>", commentsFrame$Comment, " (",
+                    commentsFrame$Location, ")</p>", collapse = "")
+      ))
+    }
+  })
+}
+```

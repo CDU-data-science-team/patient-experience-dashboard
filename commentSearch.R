@@ -84,7 +84,12 @@ observeEvent(input$showTimeline, {
 
 output$showImprove <- renderText({
   
-  text_df <- returnSearchText(passData()[["currentData"]], "Improve")
+  text_df <- returnSearchText(passData()[["currentData"]], "Improve", 
+                              filterCommentsBy = input$filterCommentsBy,
+                              searchTextInclude = input$searchTextInclude, 
+                              textSearchExclude = input$textSearchExclude,
+                              criticalityLevels = input$criticalityLevels, 
+                              topSixThemes = input$topSixThemes)
   
   paste0("<p>", text_df$Improve, " (", 
          text_df$Location, ")</p>", collapse = "")
@@ -92,7 +97,12 @@ output$showImprove <- renderText({
 
 output$showBest <- renderText({
   
-  text_df <- returnSearchText(passData()[["currentData"]], "Best")
+  text_df <- returnSearchText(passData()[["currentData"]], "Best", 
+                              filterCommentsBy = input$filterCommentsBy,
+                              searchTextInclude = input$searchTextInclude, 
+                              textSearchExclude = input$textSearchExclude,
+                              criticalityLevels = input$criticalityLevels, 
+                              topSixThemes = input$topSixThemes)
   
   paste0("<p>", text_df$Best, " (", 
          text_df$Location, ")</p>", collapse = "")
