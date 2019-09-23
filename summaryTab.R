@@ -347,19 +347,19 @@ output$downloadCurrent <- downloadHandler(
   content = function(file){
     
     params <- generate_rmd_parameters()
+    
+    # check number of rows for directorate
+    
+    if(is.null(params)){
       
-      # check number of rows for directorate
-      
-      if(is.null(params)){
-
-        showModal(
-          modalDialog(
-            title = "Error!",
-            HTML("Too few responses in the last quarter"),
-            easyClose = TRUE
-          )
+      showModal(
+        modalDialog(
+          title = "Error!",
+          HTML("Too few responses in the last quarter"),
+          easyClose = TRUE
         )
-      }
+      )
+    }
     
     render(paste0("reports/oneRmarkdownToRuleThemAll.Rmd"), output_format = "word_document",
            output_file = "custom_report.docx", quiet = TRUE, params = params,
@@ -381,7 +381,12 @@ dataSummary <- reactive({
 
 output$sqBox <- renderValueBox({
   
-  if(is.null(dataSummary()[["SQ"]])){
+  if(input$carerSU == "carer"){
+    
+    valueBox(value = "NA", 
+             subtitle = HTML("Not included<br>in carers' survey"))
+    
+  } else if(is.null(dataSummary()[["SQ"]])){
     
     valueBox(value = "Error", 
              subtitle = HTML("Not enough<br>data"))
@@ -426,7 +431,7 @@ zeroRespondingData <- reactive({
   sub_counts = counts %>% # if the whole Trust is selected do this
     filter(date_from >= floor_date(input$dateRange[1], "quarter"), 
            date_from < ceiling_date(input$dateRange[2], "quarter"))
-
+  
   if(!is.null(input$Division)){ 
     
     sub_counts = counts %>% 
