@@ -13,6 +13,8 @@ function(request) {
       
       sidebarMenuOutput("sidebarMenu"),
       
+      uiOutput("advancedControls"),
+      
       bookmarkButton(),
       
       # date range

@@ -254,6 +254,17 @@ function(input, output, session){
       # nothing!
     }
     
+    # filter for CMHS
+    
+    if(advancedControls()){
+      
+      if(input$showCMHS){
+        
+        finalData <- finalData %>% 
+          filter(addedby == "NMHS")
+      }
+    }
+    
     # filter by date
     
     currentData <- finalData %>% 
@@ -512,4 +523,40 @@ function(input, output, session){
     
     return(params)
   }
+  
+  # store whether we are on advanced controls
+  
+  advancedControls <- reactive(
+    
+    # check to see if there is a search string
+    
+    if(isTruthy(session$clientData$url_search)){
+      
+      searchString <- parseQueryString(session$clientData$url_search)
+      
+      # then check to see what it is
+      
+      if(searchString[["call_back"]] == "advanced_graphics"){
+        
+        return(TRUE)
+        
+      } else {
+        
+        return(FALSE) # return FALSE if the wrong search string is used
+      }
+    } else {
+      
+      return(FALSE) # return FALSE if there is no search string
+    }
+  )
+  
+  output$advancedControls <- renderUI({
+    
+    if(advancedControls()){
+      
+      checkboxInput("showCMHS", "Show only CMHS")
+    }
+  })
+  
 }
+
