@@ -519,7 +519,8 @@ function(input, output, session){
                             searchTextInclude = input$searchTextInclude,
                             textSearchExclude = input$textSearchExclude,
                             criticalityLevels = input$criticalityLevels,
-                            topSixThemes = input$topSixThemes))
+                            topSixThemes = input$topSixThemes,
+                            comment_sort = input$sortCategoryCriticality))
     
     return(params)
   }
