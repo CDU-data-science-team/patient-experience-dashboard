@@ -6,7 +6,6 @@ library(tidyverse)
 library(rmarkdown)
 library(DT)
 library(lubridate)
-library(pander)
 library(magrittr)
 library(tidytext)
 library(igraph)
@@ -20,9 +19,17 @@ if(Sys.info()["nodename"] == "otis"){
   
   load("/opt/shiny-server/apps/SUCE/shiny.Rdata")
   
+  date_update <- file.info("/opt/shiny-server/apps/SUCE/shiny.Rdata")
+  
+  date_update <- format(date_update, "%d/%m/%Y")
+  
 } else {
   
   load("~/shiny.Rdata")
+  
+  date_update <- as.Date(file.info("~/shiny.Rdata")$mtime)
+  
+  date_update <- format(date_update, "%d/%m/%Y")
 }
 
 # filter out the staff teams from the counts object
