@@ -17,6 +17,10 @@ function(request) {
       
       bookmarkButton(),
       
+      div(class = "shiny-input-container", 
+          p(paste0("Data updated: ", date_update))
+      ),
+      
       # date range
       
       dateRangeInput("dateRange", label = "Date range",
@@ -220,7 +224,7 @@ function(request) {
                 )
         ),
         tabItem(tabName = "patientVoices",
-                  uiOutput("patientVoicesOutput")
+                uiOutput("patientVoicesOutput")
         ),
         tabItem(tabName = "textAnalysis",
                 fluidRow(
