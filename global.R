@@ -19,8 +19,8 @@ if(Sys.info()["nodename"] == "otis"){
   
   load("/opt/shiny-server/apps/SUCE/shiny.Rdata")
   
-  date_update <- file.info("/opt/shiny-server/apps/SUCE/shiny.Rdata")
-  
+  date_update <- as.Date(file.info("/opt/shiny-server/apps/SUCE/shiny.Rdata")$mtime)
+
   date_update <- format(date_update, "%d/%m/%Y")
   
 } else {
