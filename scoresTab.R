@@ -54,6 +54,7 @@ output$stackedTableSuceModal <- renderDT({
     mutate(prop = prop.table(n) * 100) %>%
     select(-n) %>%
     mutate(value.x = factor(value.x, levels = 1:5)) %>% 
+    filter(!is.na(value.x)) %>% 
     spread(value.x, prop, drop = FALSE) %>%
     ungroup() %>%
     setNames(c("Question", rev(c("Excellent", "Good", "Fair", "Poor", "Very poor")))) %>% 
@@ -80,6 +81,9 @@ output$stackedTableCarerModal <- renderDT({
   
   # remove decimals from historic data
   
+  fixedData = data.frame(apply(trustData[, unlist(theQuestions)], 1:2,
+                               function(x) round(x + .01)))
+  
   fixedData = data.frame(apply(passData()[["currentData"]][, unlist(theQuestions)], 1:2,
                                function(x) round(x + .01)))
   
@@ -95,6 +99,7 @@ output$stackedTableCarerModal <- renderDT({
     mutate(prop = prop.table(n) * 100) %>%
     select(-n) %>%
     mutate(value.x = factor(value.x, levels = 1:5)) %>% 
+    filter(!is.na(value.x)) %>% 
     spread(value.x, prop, drop = FALSE) %>%
     ungroup() %>%
     setNames(c("Question", rev(c("Excellent", "Good", "Fair", "Poor", "Very poor")))) %>% 
