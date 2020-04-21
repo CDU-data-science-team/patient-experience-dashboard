@@ -119,13 +119,8 @@ if(params$carerSU == "carer"){
 
 if(params$carerSU == "bothCarerSU"){
   
-  if(!is.null(stack_function(suceData, type = "carer_report"))){
-    
     stack_function(suceData, type = "suce_dashboard")
-    
     stack_function(suceData, type = "carer_dashboard")
-    
-  }
 }
 
 ```
@@ -162,6 +157,8 @@ if(!is.null(trend_function(two_year_data, type = "suce_report"))){
 
 if(params$comment_summary == "textSummary"){
   
+  cat("## What could we do better?  \n")
+  
   improve_1 <- returnTopComments(suceData, 1, "Improve")[["return_table"]]
   
   if(is.null(improve_1)){
@@ -171,8 +168,6 @@ if(params$comment_summary == "textSummary"){
     
     improve_2 <- returnTopComments(suceData, 2, "Improve")[["return_table"]]
     improve_3 <- returnTopComments(suceData, 3, "Improve")[["return_table"]]
-    
-    cat("## What could we do better?  \n")
     
     cat("The most common comment category was ", 
         paste0(improve_1$Super, ": ", improve_1$Category, " ", paste0(improve_1$percent, "%. ")),
