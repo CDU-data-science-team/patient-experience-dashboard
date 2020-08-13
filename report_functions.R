@@ -138,8 +138,9 @@ stack_function <- function(stack_data, type){
     ungroup() %>%
     ggplot(aes(x = value.y, y = prop, fill = factor(value.x))) +
     geom_bar(position = "fill", stat = "identity") + ylab("Proportion responding") + 
-    scale_fill_manual(values = rainbow(5), "Response", limits = c(1:5), breaks = c(5:1),
-                      labels = c("Excellent", "Good", "Fair", "Poor", "Very poor")) +
+    scale_fill_viridis_d("Response", limits = c(1:5), breaks = c(5:1),
+                      labels = c("Excellent", "Good", "Fair", "Poor", "Very poor"),
+                      direction = -1) +
     scale_y_continuous(labels = percent_format()) +
     guides(fill = guide_legend(reverse = TRUE)) + 
     scale_x_discrete() + coord_flip() + xlab("Question")
@@ -445,6 +446,12 @@ returnSearchText <- function(text_data, type = "Improve",
                              filterCommentsBy,
                              searchTextInclude, textSearchExclude,
                              criticalityLevels, topSixThemes){
+  
+  # remove trailing punctuation from both input strings
+  
+  searchTextInclude <- sub("[[:punct:]]$", "", trimws(searchTextInclude))
+  
+  textSearchExclude <- sub("[[:punct:]]$", "", trimws(textSearchExclude))
   
   # give a set of variable names for each
   
