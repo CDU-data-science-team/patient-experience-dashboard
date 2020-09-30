@@ -274,7 +274,7 @@ if(params$directorate != "NA"){
     ungroup()
   
   team_numbers %>%
-    mutate(print = paste0("[", TeamN, "](http://suce.co.uk:7000/word?team=", TeamC, "&carer_su=", params$carerSU,
+    mutate(print = paste0("[", TeamN, "](http://involve.nottshc.nhs.uk:7000/word?team=", TeamC, "&carer_su=", params$carerSU,
                           "&date_from=", params$date_from, "&date_to=", params$date_to,
                           "&area_name=", url_encode(TeamN), ")  \n  \n")) %>%
     pull(print) %>%
