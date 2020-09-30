@@ -66,16 +66,16 @@ subCategories = function(y){ # this is a function that calculates
   
   data.frame(
     "Category" =
-      staffCategories %>% # rownames made from
+      categoriesTable %>% # rownames made from
       filter(Super == y) %$% # the unique values below
       unique(Category),
     "Percent" =
-      staffCategories %>% # for unique values of subcategory
+      categoriesTable %>% # for unique values of subcategory
       filter(Super == y) %$% # that match the supercategory
       unique(Category) %>% # given by string y
       
       map(function(x) {
-        staffCategories %>% # for every category pull all the numbers
+        categoriesTable %>% # for every category pull all the numbers
           filter(Category == x) %>% # related to it
           pull(Number)
       }) %>%
@@ -113,8 +113,8 @@ superCategories = function(){
   # remove invalid categories
   
   tableData = passData()[["currentData"]] %>%
-    filter(Imp1 %in% staffCategories$Number) %>%
-    filter(Imp2 %in% staffCategories$Number)
+    filter(Imp1 %in% categoriesTable$Number) %>%
+    filter(Imp2 %in% categoriesTable$Number)
   
   impCodes = c(
     tableData %>%
@@ -126,10 +126,10 @@ superCategories = function(){
   )
   
   data.frame(
-    "Category" = unique(staffCategories$Super),
-    "Percentage" = unique(staffCategories$Super) %>% # for unique values of supercategory
+    "Category" = unique(categoriesTable$Super),
+    "Percentage" = unique(categoriesTable$Super) %>% # for unique values of supercategory
       map(function(x) {
-        staffCategories %>%
+        categoriesTable %>%
           filter(Super == x) %>% # just pull the numbers for that supercategory
           pull(Number)
       }) %>%
@@ -314,7 +314,7 @@ output$filterText = renderText({ # this is for the category tables
   
   theClick = as.character(wholeTable$Category[subRow])
   
-  theNumbers = staffCategories %>% # for unique values of subcategory
+  theNumbers = categoriesTable %>% # for unique values of subcategory
     filter(Super == superCategorySelected) %>% # that match the supercategory
     filter(Category == theClick) %>% # that match the subcategory
     pull(Number)

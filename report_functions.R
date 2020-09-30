@@ -15,7 +15,7 @@ reportFunction <- function(report_data){
     
     # FFT score
     
-    promoterScores = suceData[, "Promoter2"]
+    promoterScores = suceData$Promoter2
     
     if(length(promoterScores[!is.na(promoterScores)]) > 2) {
       
@@ -28,11 +28,11 @@ reportFunction <- function(report_data){
     
     # Quality score
     
-    serviceScores <- suceData[, "Service"]
+    serviceScores <- suceData$Service
     
     if(length(serviceScores[!is.na(serviceScores)]) > 2){
       
-      SQ = round(mean(suceData[, "Service"], na.rm = TRUE) * 20, 0)
+      SQ = round(mean(serviceScores, na.rm = TRUE) * 20, 0)
     } else {
       
       SQ = NULL
