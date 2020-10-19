@@ -15,6 +15,7 @@ library(stringr)
 library(shinyWidgets)
 library(urltools)
 library(pins)
+library(plumber)
 
 board_register_rsconnect("SPACED",
                          server = "https://involve.nottshc.nhs.uk:8443",

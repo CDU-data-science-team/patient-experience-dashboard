@@ -30,30 +30,6 @@ function(input, output, session){
   
   output$sidebarMenu <- renderMenu({
     
-    # check to see if there is a search string
-    
-    if(isTruthy(session$clientData$url_search)){
-      
-      searchString <- parseQueryString(session$clientData$url_search)
-      
-      # then check to see what it is
-      
-      if(searchString[["call_back"]] == "advanced_graphics"){
-        
-        sidebarMenu(
-          id = "tabs",
-          menuItem("Summary", tabName = "summary", icon = icon("dashboard"), selected = TRUE),
-          menuItem("Scores", tabName = "scores", icon = icon("bar-chart")),
-          menuItem("Comments", tabName = "comments", icon = icon("comment")),
-          menuItem("All comments", tabName = "allComments", icon = icon("comment")),
-          menuItem("Search comments", tabName = "commentSearch", icon = icon("question-circle")),
-          menuItem("Patient voices", tabName = "patientVoices", icon = icon("pencil"))
-          # menuItem("Text analysis", tabName = "textAnalysis", icon = icon("font")),
-          # menuItem("Sentiment analysis", tabName = "sentimentAnalysis", icon = icon("font"))
-        )
-      }
-    } else {
-      
       sidebarMenu(
         id = "tabs",
         menuItem("Summary", tabName = "summary", icon = icon("dashboard"), selected = TRUE),
@@ -64,7 +40,6 @@ function(input, output, session){
         # menuItem("Text analysis", tabName = "textAnalysis", icon = icon("font")),
         # menuItem("Sentiment analysis", tabName = "sentimentAnalysis", icon = icon("font"))
       )
-    }
   })
   
   # handle reactive UI from division selection
@@ -196,29 +171,6 @@ function(input, output, session){
     
     finalData = trustData
     
-    # deal with demographics
-    
-    if(as.numeric(input$responder) != 9){
-      
-      finalData = finalData[finalData$SU %in% as.numeric(input$responder), ]
-    }
-    
-    if(input$sex != "All") finalData = finalData[finalData$Gender %in% input$sex, ]
-    
-    if(input$commInp == "community") finalData = finalData[finalData$TeamC %in% communityTeams, ]
-    
-    if(input$commInp == "inpatient") finalData = finalData[finalData$TeamC %in% inpatientTeams, ]
-    
-    if(input$ethnic != "All") finalData = finalData[finalData$Ethnic %in% input$ethnic, ]
-    
-    if(input$disability != "All") finalData = finalData[grep(input$disability, finalData$Disability), ]
-    
-    if(input$religion != "All") finalData = finalData[finalData$Religion %in% input$religion, ]
-    
-    if(input$sexuality != "All") finalData = finalData[finalData$Sexuality %in% input$sexuality, ]
-    
-    if(input$age != "All") finalData = finalData[finalData$Age %in% input$age, ]
-    
     # now filter for every available filter
     
     if(!is.null(input$Division)){ 
@@ -252,17 +204,6 @@ function(input, output, session){
     } else if(input$carerSU == "bothCarerSU"){
       
       # nothing!
-    }
-    
-    # filter for CMHS
-    
-    if(advancedControls()){
-      
-      if(input$showCMHS){
-        
-        finalData <- finalData %>% 
-          filter(addedby == "NMHS")
-      }
     }
     
     # filter by date
@@ -524,40 +465,5 @@ function(input, output, session){
     
     return(params)
   }
-  
-  # store whether we are on advanced controls
-  
-  advancedControls <- reactive(
-    
-    # check to see if there is a search string
-    
-    if(isTruthy(session$clientData$url_search)){
-      
-      searchString <- parseQueryString(session$clientData$url_search)
-      
-      # then check to see what it is
-      
-      if(searchString[["call_back"]] == "advanced_graphics"){
-        
-        return(TRUE)
-        
-      } else {
-        
-        return(FALSE) # return FALSE if the wrong search string is used
-      }
-    } else {
-      
-      return(FALSE) # return FALSE if there is no search string
-    }
-  )
-  
-  output$advancedControls <- renderUI({
-    
-    if(advancedControls()){
-      
-      checkboxInput("showCMHS", "Show only CMHS")
-    }
-  })
-  
 }
 

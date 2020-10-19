@@ -50,78 +50,7 @@ function(request) {
         uiOutput("dirControls")
       ),
       
-      checkboxInput("showTeams", "Show all teams"),
-      
-      # toggle advanced controls
-      
-      # checkboxInput("custom", "Advanced controls", value = FALSE),
-      
-      # advanced controls follow
-      
-      conditionalPanel(
-        condition = "input.custom == true",
-        
-        # community/ inpatient
-        
-        selectInput("commInp", "Community/ Inpatient",
-                    list("All" = "all", "Community" = "community", "Inpatient" = "inpatient")),
-        
-        # service user/ carer
-        
-        selectInput("responder", "Responder type",
-                    list("All" = 9, "Service user" = 0, "Carer" = 1)),
-        
-        # carer type
-        
-        conditionalPanel(
-          condition = "input.carerSU == 'carer'",
-          selectInput("carertype", "Carer of someone with...",
-                      choices = list("Mental health" = "1", "Learning disability" = "2",
-                                     "Physical health" = "3", "Dementia" = "4",
-                                     "Substance misuse" = "5", "End of life" = "6",
-                                     "With eating disorder" = "7", "Young carer" = "8"),
-                      multiple = TRUE)
-        ),
-        
-        # male/ female
-        
-        selectInput("sex", "Gender", list("All" = "All", "Men"= "M", "Women"= "F")),
-        
-        selectInput("ethnic", "Ethnicity",
-                    list("All" = "All", "White British" = "WB", "White Irish" = "WI",
-                         "White Other" = "WO", "Black Caribbean" = "BC",
-                         "Black African" = "BA", "Other Black" = "BO",
-                         "Asian Indian" = "AI", "Asian Pakistani" = "AP",
-                         "Asian Bangladeshi" = "AB", "Asian Other" = "AO",
-                         "Mixed white/ Black Caribbean" = "MC",
-                         "Mixed white/ Black African" = "MA",
-                         "White Asian" = "WA", "Other Mixed" = "MO",
-                         "Chinese" = "CC", "Other" = "OO"),
-                    selected = "All"),
-        
-        # disability
-        
-        selectInput("disability", "Do you have a disability?",
-                    list("All" = "All", "Yes" = "Y", "No" = "N")),
-        
-        # religion
-        
-        selectInput("religion", "Religion",
-                    list("All" = "All", "Christian" = "C", "Buddhist" = "B", "Hindu" = "H",
-                         "Jewish" = "J", "Muslim" = "M", "Sikh" = "S", "Other" = "O",
-                         "No religion" = "N")),
-        
-        # sexuality
-        
-        selectInput("sexuality", "Sexuality",
-                    list("All" = "All", "Heterosexual/ straight" = "S", "Gay man" = "G",
-                         "Lesbian/ gay woman" = "L", "Bisexual" = "B")),
-        
-        # age
-        
-        selectInput("age", "Age", list("All" = "All", "Under 12" = 1, "12- 17" = 2, "18-25" = 3,
-                                       "26-39" = 4, "40-64" = 5, "65-79" = 6, "80+" = 7))
-      )
+      checkboxInput("showTeams", "Show all teams")
     ),
     
     # dashboard body ----
