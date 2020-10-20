@@ -13,8 +13,6 @@ function(request) {
       
       sidebarMenuOutput("sidebarMenu"),
       
-      uiOutput("advancedControls"),
-      
       bookmarkButton(),
       
       div(class = "shiny-input-container", 
@@ -150,6 +148,11 @@ function(request) {
         tabItem(tabName = "commentSearch",
                 fluidRow(
                   uiOutput("commentSearchOutput")
+                )
+        ),
+        tabItem(tabName = "demographics",
+                fluidRow(
+                  uiOutput("demographics")
                 )
         ),
         tabItem(tabName = "patientVoices",
