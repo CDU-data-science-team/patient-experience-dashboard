@@ -19,16 +19,23 @@ params:
 
 ```{r setup, include=FALSE}
 
+library(pins)
+library(plumber)
+
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 if(!exists("trustData")){
   
-  load("../shiny.Rdata")
+board_register_rsconnect("SPACED",
+                         server = "https://involve.nottshc.nhs.uk:8443",
+                         key = Sys.getenv("CONNECT_API_KEY"))
+
+trustData <- pin_get("trustData", board = "SPACED")
 }
 
 # source the code with the functions in
 
-source("../report_functions.R", local = TRUE)
+source("../R/report_functions.R", local = TRUE)
 
 report_list <- report_data(division = params$division, directorate = params$directorate, 
                            team = params$team, date_from = as.Date(params$date_from), 
