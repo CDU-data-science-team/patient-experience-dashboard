@@ -35,7 +35,7 @@ observeEvent(input$stacked_suce_click, {
 
 output$stackedTableSuceModal <- renderDT({
   
-  theQuestions <- c("Service", "Promoter", "Positive", "Respect", "InformContact", "Privacy")
+  theQuestions <- c("Service", "Promoter", "Positive", "Respect", "Privacy")
   
   # remove decimals from historic data
   
@@ -77,7 +77,7 @@ observeEvent(input$stacked_carer_click, {
 
 output$stackedTableCarerModal <- renderDT({
   
-  theQuestions = c("InvCare", "Listening", "Communication", "CarersAssess", "SupportServices")
+  theQuestions = c("InvCare", "Listening", "Communication", "SupportServices")
   
   # remove decimals from historic data
   
