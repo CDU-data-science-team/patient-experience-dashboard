@@ -92,12 +92,12 @@ stack_function <- function(stack_data, type){
   
   if(type == "suce_dashboard"){
     
-    theQuestions = c("Service", "Promoter", "Positive", "Respect", "InformContact", "Privacy")
+    theQuestions = c("Service", "Promoter", "Positive", "Respect", "Privacy")
   }
   
   if(type == "carer_dashboard"){
     
-    theQuestions = c("InvCare", "Listening", "Communication", "CarersAssess", "SupportServices")
+    theQuestions = c("InvCare", "Listening", "Communication", "SupportServices")
   }
   
   if(type == "suce_report"){
@@ -108,8 +108,8 @@ stack_function <- function(stack_data, type){
   
   if(type == "carer_report"){
     
-    theQuestions <- c("CarersAssess", "SupportServices", "Promoter", "Listening", 
-                      "Communication", "Respect", "InformContact", "Privacy")
+    theQuestions <- c("SupportServices", "Promoter", "Listening", 
+                      "Communication", "Respect", "Privacy")
   }
   
   # remove decimals from historic data
@@ -152,12 +152,12 @@ trend_function <- function(trend_data, type){
   
   if(type == "suce_dashboard"){
     
-    theQuestions = c("Service", "Promoter", "Positive", "Respect", "InformContact", "Privacy")
+    theQuestions = c("Service", "Promoter", "Positive", "Respect", "Privacy")
   }
   
   if(type == "carer_dashboard"){
     
-    theQuestions = c("InvCare", "Listening", "Communication", "CarersAssess", "SupportServices")
+    theQuestions = c("InvCare", "Listening", "Communication", "SupportServices")
   }
   
   if(type == "suce_report"){
@@ -168,8 +168,8 @@ trend_function <- function(trend_data, type){
   
   if(type == "carer_report"){
     
-    theQuestions <- c("CarersAssess", "SupportServices", "Promoter", "Listening", 
-                      "Communication", "Respect", "InformContact", "Privacy")
+    theQuestions <- c("SupportServices", "Promoter", "Listening", 
+                      "Communication", "Respect", "Privacy")
   }
   
   if(type == "patient_voices"){
