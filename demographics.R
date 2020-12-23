@@ -1,6 +1,7 @@
 
 output$demographics <- renderUI({
   
+  
   fluidPage(
     
     tagList(

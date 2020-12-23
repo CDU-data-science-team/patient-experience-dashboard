@@ -418,7 +418,7 @@ output$numberResponsesBox <- renderValueBox({
            subtitle = HTML("<p title = 'Click to show response numbers for individual teams'>
                              Number of<br>responses</p>"),
            icon = icon("book-open"),
-           href = "/apps/feedback_tracker"
+           href = "/feedback_tracker"
   )
 })
 
@@ -503,7 +503,7 @@ observeEvent(input$zerobox, {
   
   showModal(
     modalDialog(
-      a(href = "/apps/feedback_tracker", "Link to directorate response reports"),
+      a(href = "/feedback_tracker", "Link to directorate response reports"),
       htmlOutput("zeroTeamsText"),
       size = "l", easyClose = TRUE)
   )
