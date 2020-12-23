@@ -61,7 +61,7 @@ output$stackedTableSuceModal <- renderDT({
     mutate_if(is.numeric, funs(replace(., is.na(.), 0))) %>%
     mutate(Score = (Excellent * 5 + Good * 4 + Fair * 3 + Poor * 2 + `Very poor` * 1) / 5) %>%
     datatable(rownames = FALSE) %>%
-    formatRound(TRUE, 1)
+    formatRound(c("Very poor", "Poor", "Fair", "Good", "Excellent", "Score"), 1)
 })
 
 # produce click interaction to bring up table
@@ -106,7 +106,7 @@ output$stackedTableCarerModal <- renderDT({
     mutate_if(is.numeric, funs(replace(., is.na(.), 0))) %>%
     mutate(Score = (Excellent * 5 + Good * 4 + Fair * 3 + Poor * 2 + `Very poor` * 1) / 5) %>%
     datatable(rownames = FALSE) %>%
-    formatRound(TRUE, 1)
+    formatRound(c("Very poor", "Poor", "Fair", "Good", "Excellent", "Score"), 1)
 })
 
 # generate scores to put underneath the stacked plot
