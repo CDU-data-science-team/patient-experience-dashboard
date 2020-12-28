@@ -1,4 +1,8 @@
 
+############################################
+# this is the old version of the dashboard #
+############################################
+
 library(shinydashboard)
 library(scales)
 library(knitr)
@@ -34,7 +38,16 @@ dirTable <- pin_get("dirTable", board = "SPACED")
 date_update <- max(trustData$Date)
 
 date_update <- format(date_update, "%d/%m/%Y")
-  
+
+# recode new criticality
+
+trustData <- trustData %>% 
+  mutate(ImpCrit = case_when(
+    Date >= "2020-10-01" & ImpCrit %in% 0:1 ~ 1,
+    Date >= "2020-10-01" & ImpCrit %in% 2:3 ~ 2,
+    Date >= "2020-10-01" & ImpCrit %in% 4:5 ~ 3
+  ))
+
 # filter out the staff teams from the counts object
 
 counts <- counts %>% 

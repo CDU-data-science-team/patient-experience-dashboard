@@ -235,10 +235,15 @@ trend_function <- function(trend_data, type){
 
 allComments <- function(comment_data, category_criticality, improve_do_well){
   
+  df = comment_data
+  
   if(improve_do_well == "Improve"){
     
     improve_well_code <- "Imp1"
     improve_well_crit <- "ImpCrit"
+    
+    df <- df %>% 
+      filter(ImpCrit != 4444)
     
   } else {
     
@@ -252,12 +257,12 @@ allComments <- function(comment_data, category_criticality, improve_do_well){
     # going to left join the improve codes to the category table to produce
     # a fully labelled dataframe with all comments, sub and super categories
     
-    df = comment_data %>% 
-      filter(!is.na(!!(sym(improve_well_code))), !is.na(!!(sym(improve_do_well)))) %>% 
+    df = df %>% 
+      filter(!is.na(!!(sym(improve_do_well)))) %>% 
       left_join(categoriesTable, by = setNames("Number", improve_well_code)) %>%  
       select(key : Time, Improve : CommentCoderBest, 
              Location, Division, Directorate, Division2 : type) %>% 
-      filter(!is.na(Super)) %>% 
+      mutate(Super = replace_na(Super, "Uncategorised")) %>% 
       group_by(Super) %>% 
       mutate(count = n()) %>% 
       arrange(-count, Location)

@@ -14,7 +14,7 @@ output$allImproveComments = renderText({
         set_names(c("Comment", "Location"))
       
       paste0("<h3>", x, "</h3>", 
-             paste0("<p>", commentsFrame$Comment, " (", 
+             paste0("<p>", gsub("[<>]", "", commentsFrame$Comment), " (", 
                     commentsFrame$Location, ")</p>", collapse = "")
       )
     })

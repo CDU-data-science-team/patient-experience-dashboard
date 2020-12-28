@@ -5,7 +5,15 @@ library(DT)
 function(request) {
   
   dashboardPage(
-    dashboardHeader(title = "Survey summary"),
+    dashboardHeader(title = "Survey summary",
+                    dropdownMenu(type = "notifications",
+                                 notificationItem(
+                                   text = HTML("Warning:<br>
+                                   Criticality has been recoded<br>
+                                   Comparisons with old data may be<br>
+                                   unreliable"),
+                                   icon("exclamation-triangle")
+                                 ))),
     
     # dashboard siderbar----
     
