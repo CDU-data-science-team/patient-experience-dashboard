@@ -33,6 +33,8 @@ function(request) {
                      start = Sys.Date() - 365,
                      end = Sys.Date(), startview = "year"),
       
+      checkboxInput("oldCodes", "Summarise with pre-October 2020 categories?"),
+      
       # select between service user/ carer data
       
       selectInput("carerSU", "Survey type",

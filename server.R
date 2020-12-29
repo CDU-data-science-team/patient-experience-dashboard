@@ -38,6 +38,24 @@ function(input, output, session){
     }
   })
   
+  # are they working with old codes or new codes?
+  
+  categoriesTable <- reactive({
+    
+    if(input$oldCodes){
+      
+      return(
+        pin_get("categoriesTable", board = "SPACED") %>% 
+          mutate(Number = as.character(Number))
+      )
+    } else{
+      
+      categories <- pin_get("newCategories", board = "SPACED") %>% 
+        set_names(c("Super", "Number", "Category")) %>% 
+        mutate(type = "both")
+    }
+  })
+  
   # handle reactive UI that draws sidebar
   
   output$sidebarMenu <- renderMenu({

@@ -52,8 +52,8 @@ subCategories = function(y){ # this is a function that calculates
   }
   
   tableData = passData()[["currentData"]] %>%
-    filter(UQ(sym(variableName[1])) %in% categoriesTable$Number) %>%
-    filter(UQ(sym(variableName[2])) %in% categoriesTable$Number)
+    filter(UQ(sym(variableName[1])) %in% categoriesTable()$Number) %>%
+    filter(UQ(sym(variableName[2])) %in% categoriesTable()$Number)
   
   impCodes = c(
     tableData %>%
@@ -66,16 +66,16 @@ subCategories = function(y){ # this is a function that calculates
   
   data.frame(
     "Category" =
-      categoriesTable %>% # rownames made from
+      categoriesTable() %>% # rownames made from
       filter(Super == y) %$% # the unique values below
       unique(Category),
     "Percent" =
-      categoriesTable %>% # for unique values of subcategory
+      categoriesTable() %>% # for unique values of subcategory
       filter(Super == y) %$% # that match the supercategory
       unique(Category) %>% # given by string y
       
       map(function(x) {
-        categoriesTable %>% # for every category pull all the numbers
+        categoriesTable() %>% # for every category pull all the numbers
           filter(Category == x) %>% # related to it
           pull(Number)
       }) %>%
@@ -113,8 +113,8 @@ superCategories = function(){
   # remove invalid categories
   
   tableData = passData()[["currentData"]] %>%
-    filter(Imp1 %in% categoriesTable$Number) %>%
-    filter(Imp2 %in% categoriesTable$Number)
+    filter(Imp1 %in% categoriesTable()$Number) %>%
+    filter(Imp2 %in% categoriesTable()$Number)
   
   impCodes = c(
     tableData %>%
@@ -126,10 +126,10 @@ superCategories = function(){
   )
   
   data.frame(
-    "Category" = unique(categoriesTable$Super),
-    "Percentage" = unique(categoriesTable$Super) %>% # for unique values of supercategory
+    "Category" = unique(categoriesTable()$Super),
+    "Percentage" = unique(categoriesTable()$Super) %>% # for unique values of supercategory
       map(function(x) {
-        categoriesTable %>%
+        categoriesTable() %>%
           filter(Super == x) %>% # just pull the numbers for that supercategory
           pull(Number)
       }) %>%
@@ -237,12 +237,12 @@ subCategoryTableFunction <- reactive({
     
     check1 <- passData()[["currentData"]] %>% 
       filter(!is.na(Imp1)) %>% 
-      left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
+      left_join(categoriesTable(), by = c("Imp1" = "Number")) %>% 
       select(Category, Super)
     
     check2 <- passData()[["currentData"]] %>% 
       filter(!is.na(Imp2)) %>% 
-      left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
+      left_join(categoriesTable(), by = c("Imp2" = "Number")) %>% 
       select(Category, Super)
   }
   
@@ -250,12 +250,12 @@ subCategoryTableFunction <- reactive({
     
     check1 <- passData()[["currentData"]] %>% 
       filter(!is.na(Best1)) %>% 
-      left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
+      left_join(categoriesTable(), by = c("Best1" = "Number")) %>% 
       select(Category, Super)
     
     check2 <- passData()[["currentData"]] %>% 
       filter(!is.na(Best2)) %>% 
-      left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
+      left_join(categoriesTable(), by = c("Best2" = "Number")) %>% 
       select(Category, Super)
   }
 
@@ -314,7 +314,7 @@ output$filterText = renderText({ # this is for the category tables
   
   theClick = as.character(wholeTable$Category[subRow])
   
-  theNumbers = categoriesTable %>% # for unique values of subcategory
+  theNumbers = categoriesTable() %>% # for unique values of subcategory
     filter(Super == superCategorySelected) %>% # that match the supercategory
     filter(Category == theClick) %>% # that match the subcategory
     pull(Number)
@@ -379,7 +379,7 @@ output$filterTextSubcategory <- renderText({
   
   theClick <- strsplit(theClick, ": ")[[1]]
   
-  relevant_comment_codes <- categoriesTable %>% 
+  relevant_comment_codes <- categoriesTable() %>% 
     filter(Super == theClick[1]) %>% 
     filter(Category == theClick[2]) %>% 
     pull(Number)

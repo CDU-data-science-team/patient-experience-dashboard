@@ -233,7 +233,8 @@ trend_function <- function(trend_data, type){
 
 # this function returns all comments sorted by category/ criticality & could improve/ do well
 
-allComments <- function(comment_data, category_criticality, improve_do_well){
+allComments <- function(comment_data, category_criticality, 
+                        improve_do_well, category_table){
   
   df = comment_data
   
@@ -243,7 +244,7 @@ allComments <- function(comment_data, category_criticality, improve_do_well){
     improve_well_crit <- "ImpCrit"
     
     df <- df %>% 
-      filter(ImpCrit != 4444)
+      filter(!Imp1 %in% c("4444", "XN", "XX"))
     
   } else {
     
@@ -259,7 +260,7 @@ allComments <- function(comment_data, category_criticality, improve_do_well){
     
     df = df %>% 
       filter(!is.na(!!(sym(improve_do_well)))) %>% 
-      left_join(categoriesTable, by = setNames("Number", improve_well_code)) %>%  
+      left_join(category_table, by = setNames("Number", improve_well_code)) %>%  
       select(key : Time, Improve : CommentCoderBest, 
              Location, Division, Directorate, Division2 : type) %>% 
       mutate(Super = replace_na(Super, "Uncategorised")) %>% 

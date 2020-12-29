@@ -1,7 +1,10 @@
 
 output$allImproveComments = renderText({
   
-  df <- allComments(passData()[["currentData"]], input$sortCategoryCriticality, "Improve")
+  df <- allComments(comment_data = passData()[["currentData"]], 
+                    category_criticality = input$sortCategoryCriticality, 
+                    improve_do_well = "Improve",
+                    category_table = categoriesTable())
   
   if(input$sortCategoryCriticality == "Category"){
     
@@ -44,8 +47,11 @@ output$allImproveComments = renderText({
 })
 
 output$allBestComments = renderText({
-  
-  df <- allComments(passData()[["currentData"]], input$sortCategoryCriticality, "Best")
+
+  df <- allComments(comment_data = passData()[["currentData"]], 
+                    category_criticality = input$sortCategoryCriticality, 
+                    improve_do_well = "Best",
+                    category_table = categoriesTable())
   
   if(input$sortCategoryCriticality == "Category"){
     
