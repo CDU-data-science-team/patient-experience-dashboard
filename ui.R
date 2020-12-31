@@ -30,7 +30,7 @@ function(request) {
       # date range
       
       dateRangeInput("dateRange", label = "Date range",
-                     start = Sys.Date() - 365,
+                     start = as.Date("2020-10-01"),
                      end = Sys.Date(), startview = "year"),
       
       checkboxInput("oldCodes", "Summarise with pre-October 2020 categories?"),

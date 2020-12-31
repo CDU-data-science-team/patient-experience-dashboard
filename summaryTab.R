@@ -581,7 +581,7 @@ output$topCompliment1 <- renderValueBox({
   
   # fetch from function
   
-  count_table = returnTopComments(passData()[["currentData"]], 1, "Best")[["return_table"]]
+  count_table = returnTopComments(passData()[["currentData"]], 1, "Best", categoriesTable())[["return_table"]]
   
   if(is.null(count_table)){
     
@@ -599,7 +599,7 @@ output$topCompliment2 <- renderValueBox({
   
   # fetch from function
   
-  count_table = returnTopComments(passData()[["currentData"]], 2, "Best")[["return_table"]]
+  count_table = returnTopComments(passData()[["currentData"]], 2, "Best", categoriesTable())[["return_table"]]
   
   if(is.null(count_table)){
     
@@ -617,7 +617,7 @@ output$topCompliment3 <- renderValueBox({
   
   # fetch from function
   
-  count_table = returnTopComments(passData()[["currentData"]], 3, "Best")[["return_table"]]
+  count_table = returnTopComments(passData()[["currentData"]], 3, "Best", categoriesTable())[["return_table"]]
   
   if(is.null(count_table)){
     
@@ -637,22 +637,22 @@ output$changeCompliment <- renderValueBox({
   
   current1 <- passData()[["currentData"]] %>% 
     filter(!is.na(Best1)) %>% 
-    left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
+    left_join(categoriesTable(), by = c("Best1" = "Number")) %>% 
     select(Category, Super)
   
   current2 <- passData()[["currentData"]] %>% 
     filter(!is.na(Best2)) %>% 
-    left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
+    left_join(categoriesTable(), by = c("Best2" = "Number")) %>% 
     select(Category, Super)
   
   previous1 <- passData()[["comparisonData"]] %>% 
     filter(!is.na(Best1)) %>% 
-    left_join(categoriesTable, by = c("Best1" = "Number")) %>% 
+    left_join(categoriesTable(), by = c("Best1" = "Number")) %>% 
     select(Category, Super)
   
   previous2 <- passData()[["comparisonData"]] %>% 
     filter(!is.na(Best2)) %>% 
-    left_join(categoriesTable, by = c("Best2" = "Number")) %>% 
+    left_join(categoriesTable(), by = c("Best2" = "Number")) %>% 
     select(Category, Super)
   
   current_final <- rbind(current1, current2)
@@ -722,7 +722,7 @@ output$topCriticism1 <- renderValueBox({
   
   # fetch from function
   
-  count_table = returnTopComments(passData()[["currentData"]], 1, "Improve")[["return_table"]]
+  count_table = returnTopComments(passData()[["currentData"]], 1, "Improve", categoriesTable())[["return_table"]]
   
   if(is.null(count_table)){
     
@@ -740,7 +740,7 @@ output$topCriticism2 <- renderValueBox({
   
   # fetch from function
   
-  count_table = returnTopComments(passData()[["currentData"]], 2, "Improve")[["return_table"]]
+  count_table = returnTopComments(passData()[["currentData"]], 2, "Improve", categoriesTable())[["return_table"]]
   
   if(is.null(count_table)){
     
@@ -758,7 +758,7 @@ output$topCriticism3 <- renderValueBox({
   
   # fetch from function
   
-  count_table = returnTopComments(passData()[["currentData"]], 3, "Improve")[["return_table"]]
+  count_table = returnTopComments(passData()[["currentData"]], 3, "Improve", categoriesTable())[["return_table"]]
   
   if(is.null(count_table)){
     
@@ -780,7 +780,7 @@ output$changeCriticism <- renderValueBox({
   
   current1 <- passData()[["currentData"]] %>% 
     filter(!is.na(Imp1)) %>% 
-    left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
+    left_join(categoriesTable(), by = c("Imp1" = "Number")) %>% 
     select(Category, Super)
   
   current2 <- passData()[["currentData"]] %>% 
