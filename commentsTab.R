@@ -53,14 +53,16 @@ subCategories = function(y){ # this is a function that calculates
   
   tableData = passData()[["currentData"]] %>%
     filter(UQ(sym(variableName[1])) %in% categoriesTable()$Number) %>%
-    filter(UQ(sym(variableName[2])) %in% categoriesTable()$Number)
+    filter(!UQ(sym(variableName[1])) %in% c("4444", "5555", "XX", "XN")) %>% 
+    filter(is.na(UQ(sym(variableName[2]))) | 
+             UQ(sym(variableName[2])) %in% categoriesTable()$Number)
   
   impCodes = c(
     tableData %>%
-      filter(!is.na(UQ(sym(variableName[1]))) & UQ(sym(variableName[1])) < 4000) %>%
+      filter(!is.na(UQ(sym(variableName[1])))) %>%
       pull(UQ(sym(variableName[1]))),
     tableData %>%
-      filter(!is.na(UQ(sym(variableName[2]))) & UQ(sym(variableName[2])) < 4000) %>%
+      filter(!is.na(UQ(sym(variableName[2])))) %>%
       pull(UQ(sym(variableName[2])))
   )
   
@@ -113,15 +115,17 @@ superCategories = function(){
   # remove invalid categories
   
   tableData = passData()[["currentData"]] %>%
-    filter(Imp1 %in% categoriesTable()$Number) %>%
-    filter(Imp2 %in% categoriesTable()$Number)
+    filter(UQ(sym(variableName[1])) %in% categoriesTable()$Number) %>%
+    filter(!UQ(sym(variableName[1])) %in% c("4444", "5555", "XX", "XN")) %>% 
+    filter(is.na(UQ(sym(variableName[2]))) | 
+             UQ(sym(variableName[2])) %in% categoriesTable()$Number)
   
   impCodes = c(
     tableData %>%
-      filter(!is.na(UQ(sym(variableName[1]))) & UQ(sym(variableName[1])) < 4000) %>%
+      filter(!is.na(UQ(sym(variableName[1])))) %>%
       pull(UQ(sym(variableName[1]))),
     tableData %>%
-      filter(!is.na(UQ(sym(variableName[2]))) & UQ(sym(variableName[2])) < 4000) %>%
+      filter(!is.na(UQ(sym(variableName[2])))) %>%
       pull(UQ(sym(variableName[2])))
   )
   
@@ -258,7 +262,7 @@ subCategoryTableFunction <- reactive({
       left_join(categoriesTable(), by = c("Best2" = "Number")) %>% 
       select(Category, Super)
   }
-
+  
   check_final <- rbind(check1, check2)
   
   check_final <- check_final %>% 
@@ -341,7 +345,7 @@ output$filterText = renderText({ # this is for the category tables
     set_names(c("Comment", "Location")) %>% 
     mutate(final_comment = paste0(Comment, " (", Location, ")")) %>% 
     pull(final_comment)
-
+  
   HTML(
     paste("<p>", theComments, "</p>", collapse = "")
   )
@@ -372,8 +376,8 @@ output$filterTextSubcategory <- renderText({
   # now find the one they clicked
   
   subRow <- ifelse(input$commentsTab == "What could be improved?",
-                  input$subCategoryTableImprove_rows_selected,
-                  input$subCategoryTableBest_rows_selected)
+                   input$subCategoryTableImprove_rows_selected,
+                   input$subCategoryTableBest_rows_selected)
   
   theClick  <- as.character(wholeTable$Category[subRow])
   
@@ -387,12 +391,12 @@ output$filterTextSubcategory <- renderText({
   theComments = passData()[["currentData"]] %>% 
     filter(!is.na(UQ(sym(longName)))) %>% 
     filter(UQ(sym(variableName[1])) %in% relevant_comment_codes |
-                         UQ(sym(variableName[2])) %in% relevant_comment_codes) %>% 
+             UQ(sym(variableName[2])) %in% relevant_comment_codes) %>% 
     select(UQ(sym(longName)), Location) %>% 
     set_names(c("Comment", "Location")) %>% 
     mutate(final_comment = paste0(Comment, " (", Location, ")")) %>% 
     pull(final_comment)
-
+  
   HTML(
     paste("<p>", theComments, "</p>", collapse = "")
   )

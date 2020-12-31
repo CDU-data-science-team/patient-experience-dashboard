@@ -54,13 +54,22 @@ trustData <- trustData %>%
   mutate(Imp1 = case_when(
     Date >= "2020-10-01" ~ Imp_N1,
     TRUE ~ Imp1
+  )) %>% 
+  mutate(Imp2 = case_when(
+    Date >= "2020-10-01" ~ Imp_N2,
+    TRUE ~ Imp2
   ))
 
 trustData <- trustData %>% 
   mutate(Best1 = case_when(
     Date >= "2020-10-01" ~ Best_N1,
     TRUE ~ Best1
+  )) %>% 
+  mutate(Best2 = case_when(
+    Date >= "2020-10-01" ~ Best_N2,
+    TRUE ~ Best2
   ))
+
 
 # filter out the staff teams from the counts object
 

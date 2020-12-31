@@ -350,7 +350,7 @@ report_data <- function(division = "NA", directorate = "NA", team = "NA",
 
 # produce all the variables and then place them inline below the chunk
 
-returnTopComments <- function(the_data, nth_row, type){
+returnTopComments <- function(the_data, nth_row, type, category_table){
   
   check_improve <- rbind(
     the_data %>% 
@@ -409,7 +409,7 @@ returnTopComments <- function(the_data, nth_row, type){
     mutate(percent = round(n / sum(n) * 100, 1)) %>% 
     arrange(-percent) %>% 
     slice(nth_row) %>% 
-    left_join(categoriesTable)
+    left_join(category_table)
   
   # return three comments that are exemplars of that comment
   # the "both" method returns rubbish because it doesn't work and 

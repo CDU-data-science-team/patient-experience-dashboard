@@ -48,11 +48,13 @@ function(input, output, session){
         pin_get("categoriesTable", board = "SPACED") %>% 
           mutate(Number = as.character(Number))
       )
-    } else{
+    } else {
       
-      categories <- pin_get("newCategories", board = "SPACED") %>% 
-        set_names(c("Super", "Number", "Category")) %>% 
-        mutate(type = "both")
+      return(
+        pin_get("newCategories", board = "SPACED") %>% 
+          set_names(c("Super", "Number", "Category")) %>% 
+          mutate(type = "both")
+      )
     }
   })
   
