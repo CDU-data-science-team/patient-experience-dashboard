@@ -785,17 +785,17 @@ output$changeCriticism <- renderValueBox({
   
   current2 <- passData()[["currentData"]] %>% 
     filter(!is.na(Imp2)) %>% 
-    left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
+    left_join(categoriesTable(), by = c("Imp2" = "Number")) %>% 
     select(Category, Super)
   
   previous1 <- passData()[["comparisonData"]] %>% 
     filter(!is.na(Imp1)) %>% 
-    left_join(categoriesTable, by = c("Imp1" = "Number")) %>% 
+    left_join(categoriesTable(), by = c("Imp1" = "Number")) %>% 
     select(Category, Super)
   
   previous2 <- passData()[["comparisonData"]] %>% 
     filter(!is.na(Imp2)) %>% 
-    left_join(categoriesTable, by = c("Imp2" = "Number")) %>% 
+    left_join(categoriesTable(), by = c("Imp2" = "Number")) %>% 
     select(Category, Super)
   
   current_final <- rbind(current1, current2)
