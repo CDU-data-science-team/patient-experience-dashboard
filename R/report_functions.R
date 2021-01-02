@@ -392,7 +392,7 @@ returnTopComments <- function(the_data, nth_row, type, category_table){
   }
   
   check_final <- check_final %>% 
-    filter(!Number %in% c("XN", "XX"))
+    filter(!Number %in% c("XN", "XX", "4444"))
   
   if(nrow(check_final) < 10){
     
