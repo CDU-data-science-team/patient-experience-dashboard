@@ -858,11 +858,11 @@ highLowScoreChange <- reactive({
   
   all_data <- rbind(
     current_data <- passData()[["currentData"]] %>% 
-      select(c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+      select(c("Service", "Listening", "Communication", "Respect", "Positive")) %>% 
       mutate(time = "current"),
     
     previous_data <- passData()[["comparisonData"]] %>% 
-      select(c("Service", "Promoter", "Listening", "Communication", "Respect", "Positive")) %>% 
+      select(c("Service", "Listening", "Communication", "Respect", "Positive")) %>% 
       mutate(time = "previous")
   )
   
@@ -874,7 +874,8 @@ highLowScoreChange <- reactive({
   
   summary_data <- rbind(summary_data, summary_data[1, ] - summary_data[2, ])
   
-  names(summary_data) <- c("Service", "Likely to recommend", "Listening", "Communication", "Respect", "Positive difference")
+  names(summary_data) <- c("Service", "Listening", "Communication", 
+                           "Respect", "Positive difference")
   
   low_score_index <- summary_data %>% 
     slice(1) %>% 
