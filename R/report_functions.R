@@ -92,7 +92,7 @@ stack_function <- function(stack_data, type){
   
   if(type == "suce_dashboard"){
     
-    theQuestions = c("Service", "Promoter", "Positive", "Respect", "Privacy")
+    theQuestions = c("Service", "Positive", "Respect", "Privacy")
   }
   
   if(type == "carer_dashboard"){
@@ -102,13 +102,13 @@ stack_function <- function(stack_data, type){
   
   if(type == "suce_report"){
     
-    theQuestions <- c("Service", "InvCare", "Positive", "Promoter", "Listening", 
+    theQuestions <- c("Service", "InvCare", "Positive", "Listening", 
                       "Communication", "Respect")
   }
   
   if(type == "carer_report"){
     
-    theQuestions <- c("SupportServices", "Promoter", "Listening", 
+    theQuestions <- c("SupportServices", "Listening", 
                       "Communication", "Respect", "Privacy")
   }
   
@@ -152,7 +152,7 @@ trend_function <- function(trend_data, type){
   
   if(type == "suce_dashboard"){
     
-    theQuestions = c("Service", "Promoter", "Positive", "Respect", "Privacy")
+    theQuestions = c("Service", "Positive", "Respect", "Privacy")
   }
   
   if(type == "carer_dashboard"){
@@ -162,19 +162,19 @@ trend_function <- function(trend_data, type){
   
   if(type == "suce_report"){
     
-    theQuestions <- c("Service", "InvCare", "Positive", "Promoter", "Listening", 
+    theQuestions <- c("Service", "InvCare", "Positive", "Listening", 
                       "Communication", "Respect")
   }
   
   if(type == "carer_report"){
     
-    theQuestions <- c("SupportServices", "Promoter", "Listening", 
+    theQuestions <- c("SupportServices", "Listening", 
                       "Communication", "Respect", "Privacy")
   }
   
   if(type == "patient_voices"){
     
-    theQuestions = c("Service", "Promoter", "Positive")
+    theQuestions = c("Service", "Positive")
   }
   
   # useful test- poor data
