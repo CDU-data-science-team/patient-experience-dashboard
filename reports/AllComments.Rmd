@@ -16,6 +16,7 @@ params:
   textSearchExclude: NA
   criticalityLevels: NA
   topSixThemes: NA
+  categoryTable: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -38,7 +39,7 @@ suceData <- report_list[["suceData"]]
 
 ```{r, results = "asis"}
 
-df <- allComments(suceData, params$comment_sort, "Improve")
+df <- allComments(suceData, params$comment_sort, "Improve", category_table = params$categoryTable)
 
 if(params$comment_sort == "Category"){
   
@@ -84,7 +85,7 @@ if(params$comment_sort == "Criticality"){
 
 ```{r, results = "asis"}
 
-df <- allComments(suceData, params$comment_sort, "Best")
+df <- allComments(suceData, params$comment_sort, "Best", category_table = params$categoryTable)
 
 if(params$comment_sort == "Category"){
   

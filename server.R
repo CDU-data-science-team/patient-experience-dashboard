@@ -507,7 +507,8 @@ function(input, output, session){
                             textSearchExclude = input$textSearchExclude,
                             criticalityLevels = input$criticalityLevels,
                             topSixThemes = input$topSixThemes,
-                            comment_sort = input$sortCategoryCriticality))
+                            comment_sort = input$sortCategoryCriticality,
+                            categoryTable = categoriesTable()))
     
     return(params)
   }

@@ -6,12 +6,18 @@ output$commentSearchSelector <- renderUI({
   
   # 1. top 6 themes- preprocess
   
-  if(!isTruthy(returnTopComments(passData()[["currentData"]], 1 : 6, "Both")[["return_table"]])){
+  if(!isTruthy(returnTopComments(passData()[["currentData"]], 
+                                 1 : 6, 
+                                 "Both", 
+                                 categoriesTable())[["return_table"]])){
     
     return(p("No tagged data available, please expand your search"))
   }
 
-  comment_table <- returnTopComments(passData()[["currentData"]], 1 : 6, "Both")[["return_table"]]
+  comment_table <- returnTopComments(passData()[["currentData"]], 
+                                     1 : 6, 
+                                     "Both", 
+                                     categoriesTable())[["return_table"]]
   
   list_names <- comment_table$Number
   
