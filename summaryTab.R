@@ -136,9 +136,9 @@ output$reportCustomAreaSelector <- renderUI({
   
   if(input$serviceArea == "Division"){
     
-    selectInput("report_division", "Division (leave blank for whole Trust)", 
-                list("Local Partnerships- Mental Healthcare" = 0,
-                     "Local Partnerships- General Healthcare" = 2, "Forensic" = 1),
+    selectInput("report_division", 
+                "Division (leave blank for whole Trust)", 
+                divisions_labels,
                 multiple = TRUE)
     
   } else if(input$serviceArea == "Directorate"){
@@ -229,9 +229,7 @@ output$downloadDoc <- downloadHandler(
       
       if(isTruthy(input$report_division)){
         
-        area_name <- c("Local Partnerships- Mental Healthcare", 
-                       "Forensic Services", 
-                       "Local Partnerships- General Healthcare")[as.numeric(input$report_division) + 1]
+        area_name <- names(divisions_labels)[as.numeric(input$report_division) + 1]
         
         params <- list(division = input$report_division,
                        carerSU = input$carerSU,

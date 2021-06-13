@@ -45,8 +45,7 @@ function(request) {
       # first set up All/ Division results
       
       selectInput("Division", HTML("Select division<br/> (defaults to whole Trust)"),
-                  list("Local Partnerships- Mental Healthcare" = 0,
-                       "Local Partnerships- General Healthcare" = 2, "Forensic" = 1),
+                  divisions_labels,
                   multiple = TRUE),
       
       uiOutput("divControls"),

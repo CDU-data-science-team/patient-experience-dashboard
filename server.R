@@ -445,9 +445,7 @@ function(input, output, session){
     
     if(report_area == "division"){
       
-      area_name <- c("Local Partnerships- Mental Healthcare", 
-                     "Forensic Services", 
-                     "Local Partnerships- General Healthcare")[as.numeric(input$Division) + 1]
+      area_name <- names(divisions_labels)[as.numeric(input$Division) + 1]
       
       params <- list(division = input$Division,
                      carerSU = input$carerSU,
