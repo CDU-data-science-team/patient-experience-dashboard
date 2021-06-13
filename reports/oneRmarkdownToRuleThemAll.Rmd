@@ -15,6 +15,7 @@ params:
   criticalityLevels: NA
   topSixThemes: NA
   comment_sort: NA
+  categoryTable: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -272,6 +273,7 @@ if(params$comment_summary == "textSummary"){
 # a set of links that go to all the team reports that exist
 
 if(params$directorate != "NA"){
+# if(FALSE){
   
   cat("## Team reports, click to download  \n")
   

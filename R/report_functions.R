@@ -408,8 +408,9 @@ returnTopComments <- function(the_data, nth_row, type, category_table){
   return_table <- count_table %>% 
     mutate(percent = round(n / sum(n) * 100, 1)) %>% 
     arrange(-percent) %>% 
-    slice(nth_row) %>% 
-    left_join(category_table)
+    left_join(category_table) %>% 
+    filter(!is.na(Super)) %>% # some of the categories are wrong
+    slice(nth_row) 
   
   # return three comments that are exemplars of that comment
   # the "both" method returns rubbish because it doesn't work and 

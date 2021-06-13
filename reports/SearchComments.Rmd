@@ -16,6 +16,7 @@ params:
   textSearchExclude: NA
   criticalityLevels: NA
   topSixThemes: NA
+  categoryTable: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -24,7 +25,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 # source the code with the functions in
 
-source("../report_functions.R")
+source("../R/report_functions.R")
 
 report_list <- report_data(division = params$division, directorate = params$directorate, 
                            team = params$team, date_from = params$date_from, date_to = params$date_to, 
