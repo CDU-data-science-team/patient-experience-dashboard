@@ -20,7 +20,7 @@ library(pins)
 library(plumber)
 
 board_register_rsconnect("SPACED",
-                         server = "https://involve.nottshc.nhs.uk:8443",
+                         server = "https://involve.nottshc.nhs.uk",
                          key = Sys.getenv("CONNECT_API_KEY"))
 
 trustData <- pin_get("trustData", board = "SPACED") %>% 
