@@ -261,7 +261,7 @@ allComments <- function(comment_data, category_criticality,
     df = df %>% 
       filter(!is.na(!!(sym(improve_do_well)))) %>% 
       left_join(category_table, by = setNames("Number", improve_well_code)) %>%  
-      select(key : Time, Improve : CommentCoderBest, 
+      select(key : Time, Improve : Best_N2, 
              Location, Division, Directorate, Division2 : type) %>% 
       mutate(Super = replace_na(Super, "Uncategorised")) %>% 
       group_by(Super) %>% 
@@ -277,7 +277,7 @@ allComments <- function(comment_data, category_criticality,
     
     df = comment_data %>%
       filter(!is.na(!!(sym(improve_well_crit))), !is.na(!!(sym(improve_do_well)))) %>%
-      select(key : Time, Improve : CommentCoderBest,
+      select(key : Time, Improve : Best_N2,
              Location, Division, Directorate, Division2) %>%
       arrange(Location)
     

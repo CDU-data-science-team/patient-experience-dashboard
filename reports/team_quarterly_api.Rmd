@@ -59,21 +59,21 @@ suceData = trustData %>%
 two_year_data <- suceData %>% 
   filter(Date > end_date - 365 * 2)
 
-suceData <- suceData %>% 
+suceData <- suceData %>%
   filter(Date >= first_date, Date <= end_date)
 
 if(params$carer_su == "SU"){
-  
+
   suceData = suceData %>%
     filter(is.na(formtype) | formtype != "SUCE")
-  
+
 } else if(params$carer_su == "carer"){
-  
+
   suceData = suceData %>%
     filter(formtype == "carer")
-  
+
 } else if(params$carer_su == "bothCarerSU"){
-  
+
   # nothing!
 }
 
@@ -89,7 +89,7 @@ report_information <- reportFunction(suceData)
 
 ## Summary
 
-This report summarises data from `r first_date` to `r end_date`
+This report summarises data from `r first_date` to `r end_date`. There were `r nrow(suceData)` responses.
 
 ```{r, results = "asis"}
 
