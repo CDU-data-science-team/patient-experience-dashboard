@@ -76,7 +76,15 @@ output$summaryOutputs = renderUI({
       
       valueBoxOutput("numberResponsesBox", width = 3), # number respones
       
-      valueBoxOutput("zeroRespondingTeams", width = 3) # breakdown of teams responding (zero responding teams, <3 responding teams)
+      # valueBoxOutput("zeroRespondingTeams", width = 3) # breakdown of teams responding (zero responding teams, <3 responding teams)
+      
+      tags$a(
+        href = "/rsconnect/feedback_tracker", # Link to open
+        target = "_blank", # Open in new window
+        valueBox(value = "",
+                 subtitle = HTML("Show response<br>numbers</p>"), width = 3
+        )
+      )
       
     ),
     
@@ -416,7 +424,7 @@ output$numberResponsesBox <- renderValueBox({
            subtitle = HTML("<p title = 'Click to show response numbers for individual teams'>
                              Number of<br>responses</p>"),
            icon = icon("book-open"),
-           href = "/feedback_tracker"
+           href = "/rsconnect/feedback_tracker"
   )
 })
 
@@ -485,23 +493,31 @@ output$zeroRespondingTeams <- renderValueBox({
   zero_teams <- zeroRespondingData()[["zero_table"]] %>% 
     nrow()
   
-  zerobox <- valueBox(value = zero_teams,
-                      subtitle = HTML("<p title = 'Click to show response numbers for individual teams'>
-                             Zero responding<br>teams</p>"),
-                      href = 'Link to team names'
+  # zerobox <- valueBox(value = zero_teams,
+  #                     subtitle = HTML("<p title = 'Click to show response numbers for individual teams'>
+  #                            Zero responding<br>teams</p>"),
+  #                     href = 'Link to team names'
+  # )
+  
+  tags$a(
+    href = "/rsconnect/feedback_tracker", # Link to open
+    target = "_blank", # Open in new window
+    valueBox(value = "",
+             subtitle = HTML("Show response<br>numbers</p>")
+    )
   )
   
-  zerobox$children[[1]]$attribs$class<-"action-button"
-  zerobox$children[[1]]$attribs$id<-"zerobox"
-  
-  return(zerobox)
+  # zerobox$children[[1]]$attribs$class<-"action-button"
+  # zerobox$children[[1]]$attribs$id<-"zerobox"
+  # 
+  # return(zerobox)
 })
 
 observeEvent(input$zerobox, {
   
   showModal(
     modalDialog(
-      a(href = "/feedback_tracker", "Link to directorate response reports"),
+      a(href = "/rsconnect/feedback_tracker", "Link to directorate response reports"),
       htmlOutput("zeroTeamsText"),
       size = "l", easyClose = TRUE)
   )
@@ -517,7 +533,7 @@ output$zeroTeamsText <- renderText({
   
   HTML(paste0("<h2>Zero responding teams</h2><p>(click 
         anywhere to dismiss this dialogue)</p>", 
-              paste0("<p>", list_of_teams, "</p>", collapse = "")))
+        paste0("<p>", list_of_teams, "</p>", collapse = "")))
   
 })
 
