@@ -2,4 +2,4 @@
 
 Also known as the patient experience dashboard.
 
-Link: http://suce.co.uk:8080/apps/SUCE/
+Link: https://involve.nottshc.nhs.uk/rsconnect/experience/
