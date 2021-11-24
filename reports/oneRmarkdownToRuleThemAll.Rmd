@@ -35,7 +35,7 @@ if(file.exists("CONNECT_API_KEY")){
 }
 
 board_register_rsconnect("SPACED",
-                         server = "https://involve.nottshc.nhs.uk:8443",
+                         server = "https://involve.nottshc.nhs.uk/rsconnect",
                          key = connect_key)
 
 catTable <- pin_get("newCategories", board = "SPACED") %>% 

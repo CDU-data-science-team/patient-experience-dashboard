@@ -1,8 +1,4 @@
 
-############################################
-# this is the old version of the dashboard #
-############################################
-
 library(shinydashboard)
 library(scales)
 library(knitr)
@@ -20,17 +16,17 @@ library(pins)
 library(plumber)
 
 board_register_rsconnect("SPACED",
-                         server = "https://involve.nottshc.nhs.uk",
+                         server = "https://involve.nottshc.nhs.uk/rsconnect",
                          key = Sys.getenv("CONNECT_API_KEY"))
 
-trustData <- pin_get("trustData", board = "SPACED") %>% 
+trustData <- pin_get("chrisbeeley/trustData", board = "SPACED") %>% 
   mutate(across(all_of(c("Imp1", "Imp2", "Best1", "Best2")), as.character))
 
-questionFrame <- pin_get("questionFrame", board = "SPACED")
+questionFrame <- pin_get("chrisbeeley/questionFrame", board = "SPACED")
 
-counts <- pin_get("counts", board = "SPACED")
+counts <- pin_get("chrisbeeley/counts", board = "SPACED")
 
-dirTable <- pin_get("dirTable", board = "SPACED")
+dirTable <- pin_get("chrisbeeley/dirTable", board = "SPACED")
 
 date_update <- max(trustData$Date)
 
