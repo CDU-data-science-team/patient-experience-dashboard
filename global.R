@@ -40,10 +40,18 @@ divisions_labels <- list("Local Partnerships- Mental Healthcare" = 0,
 
 trustData <- trustData %>% 
   mutate(ImpCrit = case_when(
-    Date >= "2020-10-01" & ImpCrit %in% 0:1 ~ 1L,
+    Date >= "2020-10-01" & ImpCrit %in% 1 ~ 1L,
     Date >= "2020-10-01" & ImpCrit %in% 2:3 ~ 2L,
     Date >= "2020-10-01" & ImpCrit %in% 4:5 ~ 3L,
     TRUE ~ ImpCrit
+  ))
+
+trustData <- trustData %>% 
+  mutate(BestCrit = case_when(
+    Date >= "2020-10-01" & BestCrit %in% 1 ~ 1L,
+    Date >= "2020-10-01" & BestCrit %in% 2:3 ~ 2L,
+    Date >= "2020-10-01" & BestCrit %in% 4:5 ~ 3L,
+    TRUE ~ BestCrit
   ))
 
 # add the new codes to the bottom of the old codes
