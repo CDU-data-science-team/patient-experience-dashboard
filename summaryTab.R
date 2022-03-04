@@ -90,6 +90,17 @@ output$summaryOutputs = renderUI({
     
     fluidRow(
       
+      valueBoxOutput("paperNumbers", width = 3),
+      
+      valueBoxOutput("onlineNumbers", width = 3),
+      
+      valueBoxOutput("smsNumbers", width = 3),
+      
+      valueBoxOutput("otherNumbers", width = 3)
+    ),
+    
+    fluidRow(
+      
       valueBoxOutput("impCritOneBox", width = 3), # minmally critical
       
       valueBoxOutput("impCritTwoBox", width = 3), # mildy critical
@@ -123,17 +134,6 @@ output$summaryOutputs = renderUI({
       valueBoxOutput("topCriticism3", width = 3),
       
       valueBoxOutput("changeCriticism", width = 3)
-    ),
-    
-    fluidRow(
-      
-      valueBoxOutput("topScore", width = 3), # best score
-      
-      valueBoxOutput("lowestScore", width = 3), # lowest score
-      
-      valueBoxOutput("biggestIncrease", width = 3), # lowest score
-      
-      valueBoxOutput("biggestDecrease", width = 3) # lowest score
     )
   )
 })
@@ -539,6 +539,40 @@ output$zeroTeamsText <- renderText({
 
 # second row----
 
+output$paperNumbers <- renderValueBox({
+  
+  valueBox(value = count_type("paper", passData()[["currentData"]]), 
+           subtitle = HTML("No. of paper<br>surveys")
+  )
+
+})
+
+output$onlineNumbers <- renderValueBox({
+  
+  valueBox(value = count_type("online", passData()[["currentData"]]), 
+           subtitle = HTML("No. of online<br>surveys")
+  )
+  
+})
+
+output$smsNumbers <- renderValueBox({
+  
+  valueBox(value = count_type("SMS", passData()[["currentData"]]), 
+           subtitle = HTML("No. of SMS<br>surveys")
+  )
+  
+})
+
+output$otherNumbers <- renderValueBox({
+  
+  valueBox(value = count_type("other", passData()[["currentData"]]), 
+           subtitle = HTML("No. of other<br>types of survey")
+  )
+  
+})
+
+# third row----
+
 output$impCritOneBox <- renderValueBox({
   
   valueBox(value = dataSummary()[["improve_numbers"]][1], 
@@ -589,7 +623,7 @@ output$changeInCriticality <- renderValueBox({
   )
 })
 
-# third row----
+# fourth row----
 
 output$topCompliment1 <- renderValueBox({
   
@@ -730,7 +764,7 @@ observeEvent(input$button_box_01, {
   updateTabItems(session, "tabs", "comments")
 })
 
-# fourth row----
+# fifth row----
 
 output$topCriticism1 <- renderValueBox({
   
@@ -861,157 +895,3 @@ output$changeCriticism <- renderValueBox({
              icon = icon("frown"))
   }
 })
-
-# fifth row----
-
-# this is a reactive which returns the top and bottom score, and the biggest change score
-
-highLowScoreChange <- reactive({
-  
-  req(passData()[["comparisonData"]])
-  
-  all_data <- rbind(
-    current_data <- passData()[["currentData"]] %>% 
-      select(c("Service", "Listening", "Communication", "Respect", "Positive")) %>% 
-      mutate(time = "current"),
-    
-    previous_data <- passData()[["comparisonData"]] %>% 
-      select(c("Service", "Listening", "Communication", "Respect", "Positive")) %>% 
-      mutate(time = "previous")
-  )
-  
-  summary_data <- all_data %>% 
-    group_by(time) %>% 
-    summarise_all(function(x) mean(x, na.rm = TRUE) * 20) %>%
-    ungroup() %>%  
-    select(-time)
-  
-  summary_data <- rbind(summary_data, summary_data[1, ] - summary_data[2, ])
-  
-  names(summary_data) <- c("Service", "Listening", "Communication", 
-                           "Respect", "Positive difference")
-  
-  low_score_index <- summary_data %>% 
-    slice(1) %>% 
-    apply(2, min) %>% 
-    which.min()
-  
-  high_score_index <- summary_data %>% 
-    slice(1) %>% 
-    apply(2, max) %>% 
-    which.max()
-  
-  increase_index <- summary_data %>% 
-    slice(3) %>% 
-    apply(2, max) %>% 
-    which.max()
-  
-  decrease_index <- summary_data %>% 
-    slice(3) %>% 
-    apply(2, min) %>% 
-    which.min()
-  
-  low_score <- summary_data %>% 
-    select(low_score_index) %>% 
-    slice(1)
-  
-  high_score <- summary_data %>% 
-    select(high_score_index) %>% 
-    slice(1)
-  
-  biggest_increase <- summary_data %>% 
-    select(increase_index) %>% 
-    slice(3)
-  
-  biggest_decrease <- summary_data %>% 
-    select(decrease_index) %>% 
-    slice(3)
-  
-  return(
-    list("low_score" = low_score, "high_score" = high_score,
-         "biggest_increase" = biggest_increase,
-         "biggest_decrease" = biggest_decrease)
-  )
-  
-})
-
-output$topScore <- renderValueBox({
-  
-  req(highLowScoreChange()[["high_score"]])
-  
-  top_score <- round(as.numeric(highLowScoreChange()[["high_score"]]), 1)
-  
-  top_score_name = names(highLowScoreChange()[["high_score"]])
-  
-  valueBox(value = paste0(top_score, "%"),
-           subtitle = HTML(paste0("<p title = 'Highest score'>", 
-                                  top_score_name, "</p>")),
-           color = "green")
-})
-
-output$lowestScore <- renderValueBox({
-  
-  req(highLowScoreChange()[["low_score"]])
-  
-  low_score <- round(as.numeric(highLowScoreChange()[["low_score"]]), 1)
-  
-  low_score_name = names(highLowScoreChange()[["low_score"]])
-  
-  valueBox(value = paste0(low_score, "%"),
-           subtitle = HTML(paste0("<p title = 'Lowest score'>", 
-                                  low_score_name, "</p>")),
-           color = "red")
-})
-
-output$biggestIncrease <- renderValueBox({
-  
-  req(highLowScoreChange()[["biggest_increase"]])
-  
-  biggest_increase = round(as.numeric(highLowScoreChange()[["biggest_increase"]]), 1)
-  
-  if(is.na(biggest_increase)){
-    
-    valueBox(value = "Error", 
-             subtitle = HTML("Not enough<br>data"))
-  } else {
-    
-    if(biggest_increase > 0){
-      
-      biggest_increase <- paste0("+", biggest_increase)
-    }
-    
-    biggest_increase_name = names(highLowScoreChange()[["biggest_increase"]])
-    
-    valueBox(value = paste0(biggest_increase, "%"),
-             subtitle = HTML(paste0("<p title = 'Largest increase (or smallest decrease)'>", 
-                                    biggest_increase_name, "</p>")),
-             color = "green")
-  }
-})
-
-output$biggestDecrease <- renderValueBox({
-  
-  req(highLowScoreChange()[["biggest_decrease"]])
-  
-  biggest_decrease = round(as.numeric(highLowScoreChange()[["biggest_decrease"]]), 1)
-  
-  if(is.na(biggest_decrease)){
-    
-    valueBox(value = "Error", 
-             subtitle = HTML("Not enough<br>data"))
-  } else {
-    
-    if(biggest_decrease > 0){
-      
-      biggest_decrease <- paste0("+", biggest_decrease)
-    }
-    
-    biggest_decrease_name = names(highLowScoreChange()[["biggest_decrease"]])
-    
-    valueBox(value = paste0(biggest_decrease, "%"),
-             subtitle = HTML(paste0("<p title = 'Largest decrease (or smallest increase)'>", 
-                                    biggest_decrease_name, "</p>")),
-             color = "red")
-  }
-})
-

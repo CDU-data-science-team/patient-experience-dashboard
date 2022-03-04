@@ -51,7 +51,7 @@ function(input, output, session){
     } else {
       
       return(
-        pin_get("newCategories", board = "SPACED") %>% 
+        pin_get("chrisbeeley/newCategories", board = "SPACED") %>% 
           set_names(c("Super", "Number", "Category")) %>% 
           mutate(type = "both")
       )

@@ -29,7 +29,8 @@ output$bestCritTable = renderDT({
   
   names(bestFrame) = c("Criticality", "Frequency")
   
-  bestFrame$Criticality = c("Mildly Complimentary", "Fairly Complimentary", "Highly Complimentary")
+  bestFrame$Criticality = c("Mildly Complimentary", "Fairly Complimentary", 
+                            "Highly Complimentary")
   
   bestFrame},
   selection = 'single', rownames = FALSE, extensions = 'Buttons', 
