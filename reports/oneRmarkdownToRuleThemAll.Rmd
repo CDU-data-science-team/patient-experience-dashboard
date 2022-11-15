@@ -35,7 +35,7 @@ if(file.exists("CONNECT_API_KEY")){
 }
 
 board_register_rsconnect("SPACED",
-                         server = "https://involve.nottshc.nhs.uk/rsconnect",
+                         server = "https://feedbackmatters.uk/rsconnect",
                          key = connect_key)
 
 catTable <- pin_get("chrisbeeley/newCategories", board = "SPACED") %>% 
@@ -282,27 +282,27 @@ if(params$comment_summary == "textSummary"){
 # this is where if it's a directorate report I'm going to produce
 # a set of links that go to all the team reports that exist
 
-if(params$directorate != "NA"){
-  # if(FALSE){
-  
-  cat("## Team reports, click to download  \n")
-  
-  team_numbers <- suceData %>%
-    group_by(TeamC) %>%
-    count() %>%
-    filter(n > 2) %>%
-    inner_join(counts) %>%
-    arrange(desc(date_from)) %>% 
-    filter(!duplicated(TeamC)) %>%
-    ungroup()
-  
-  team_numbers %>%
-    mutate(print = paste0("[", TeamN, "](http://involve.nottshc.nhs.uk:7000/word?team=",
-                          TeamC, "&carer_su=", params$carerSU,
-                          "&date_from=", params$date_from, "&date_to=", params$date_to,
-                          "&area_name=", url_encode(TeamN), ")  \n  \n")) %>%
-    pull(print) %>%
-    cat()
-}
+# if(params$directorate != "NA"){
+#   # if(FALSE){
+#   
+#   cat("## Team reports, click to download  \n")
+#   
+#   team_numbers <- suceData %>%
+#     group_by(TeamC) %>%
+#     count() %>%
+#     filter(n > 2) %>%
+#     inner_join(counts) %>%
+#     arrange(desc(date_from)) %>% 
+#     filter(!duplicated(TeamC)) %>%
+#     ungroup()
+#   
+#   team_numbers %>%
+#     mutate(print = paste0("[", TeamN, "](http://involve.nottshc.nhs.uk:7000/word?team=",
+#                           TeamC, "&carer_su=", params$carerSU,
+#                           "&date_from=", params$date_from, "&date_to=", params$date_to,
+#                           "&area_name=", url_encode(TeamN), ")  \n  \n")) %>%
+#     pull(print) %>%
+#     cat()
+# }
 
 ```
