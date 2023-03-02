@@ -33,14 +33,20 @@ function(request) {
                      start = as.Date("2020-10-01"),
                      end = Sys.Date(), startview = "year"),
       
-      checkboxInput("oldCodes", "Summarise with pre-October 2020 categories?"),
+      # Note that this goes team, directorate, division so it appears nicer
+      # on the page
       
-      # select between service user/ carer data
+      # checkboxInput("showTeams", "Show all teams"),
       
-      selectInput("carerSU", "Survey type",
-                  list("Service user survey" = "SU",
-                       "Carer survey" = "carer",
-                       "Data from both surveys" = "bothCarerSU")),
+      # this panel appears if a particular directorate is selected
+      
+      uiOutput("divControls"),
+      
+      conditionalPanel(
+        condition = "input.selDirect != 99",
+        uiOutput("dirControls")
+      ),
+      
       
       # first set up All/ Division results
       
@@ -48,16 +54,13 @@ function(request) {
                   divisions_labels,
                   multiple = TRUE),
       
-      uiOutput("divControls"),
+      # select between service user/ carer data
       
-      # this panel appears if a particular directorate is selected
+      selectInput("carerSU", "Survey type",
+                  list("Service user survey" = "SU",
+                       "Carer survey" = "carer",
+                       "Data from both surveys" = "bothCarerSU"))
       
-      conditionalPanel(
-        condition = "input.selDirect != 99",
-        uiOutput("dirControls")
-      ),
-      
-      checkboxInput("showTeams", "Show all teams")
     ),
     
     # dashboard body ----
