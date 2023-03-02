@@ -42,20 +42,20 @@ function(input, output, session){
   
   categoriesTable <- reactive({
     
-    if(input$oldCodes){
-      
-      return(
-        pin_get("categoriesTable", board = "SPACED") %>% 
-          mutate(Number = as.character(Number))
-      )
-    } else {
+    # if(input$oldCodes){
+    #   
+    #   return(
+    #     pin_get("categoriesTable", board = "SPACED") %>% 
+    #       mutate(Number = as.character(Number))
+    #   )
+    # } else {
       
       return(
         pin_get("chrisbeeley/newCategories", board = "SPACED") %>% 
           set_names(c("Super", "Number", "Category")) %>% 
           mutate(type = "both")
       )
-    }
+    # }
   })
   
   # handle reactive UI that draws sidebar
