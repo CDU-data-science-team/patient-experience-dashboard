@@ -21,8 +21,6 @@ function(request) {
       
       sidebarMenuOutput("sidebarMenu"),
       
-      bookmarkButton(),
-      
       div(class = "shiny-input-container", 
           p(paste0("Data updated: ", date_update))
       ),
@@ -36,17 +34,6 @@ function(request) {
       # Note that this goes team, directorate, division so it appears nicer
       # on the page
       
-      # checkboxInput("showTeams", "Show all teams"),
-      
-      # this panel appears if a particular directorate is selected
-      
-      uiOutput("divControls"),
-      
-      conditionalPanel(
-        condition = "input.selDirect != 99",
-        uiOutput("dirControls")
-      ),
-      
       
       # first set up All/ Division results
       
@@ -54,12 +41,25 @@ function(request) {
                   divisions_labels,
                   multiple = TRUE),
       
+      uiOutput("divControls"),
+      
+      # this panel appears if a particular directorate is selected
+      
+      conditionalPanel(
+        condition = "input.selDirect != 99",
+        uiOutput("dirControls")
+      ),
+      
+      checkboxInput("showTeams", "Show all teams"),
+
       # select between service user/ carer data
       
       selectInput("carerSU", "Survey type",
                   list("Service user survey" = "SU",
                        "Carer survey" = "carer",
-                       "Data from both surveys" = "bothCarerSU"))
+                       "Data from both surveys" = "bothCarerSU")),
+      
+      bookmarkButton()
       
     ),
     
