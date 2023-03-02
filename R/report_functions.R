@@ -307,7 +307,7 @@ report_data <- function(division = "NA", directorate = "NA", team = "NA",
     suceData = trustData %>%
       filter(Directorate %in% directorate)
     
-  } else if(team != "NA"){
+  } else if(!"NA" %in% team){
     
     suceData = trustData %>%
       filter(TeamC %in% team)
