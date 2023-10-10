@@ -13,6 +13,14 @@ function(request) {
                                    Comparisons with old data may be<br>
                                    unreliable"),
                                    icon("exclamation-triangle")
+                                   ),
+                                 notificationItem(
+                                   text = HTML("Warning:<br>
+                                   Feedback from over three years ago has<br>
+                                   been removed form the dashboard. Please 
+                                   contact the Experience team should historic 
+                                   data be required"),
+                                   icon("exclamation-triangle")
                                  ))),
     
     # dashboard siderbar----
@@ -28,7 +36,9 @@ function(request) {
       # date range
       
       dateRangeInput("dateRange", label = "Date range",
-                     start = as.Date("2020-10-01"),
+                     start = as.Date(paste0(year(today()) - 3, "-",
+                                            month(today()), "-",
+                                            "01")),
                      end = Sys.Date(), startview = "year"),
       
       # Note that this goes team, directorate, division so it appears nicer
