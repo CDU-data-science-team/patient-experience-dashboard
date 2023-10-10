@@ -35,8 +35,8 @@ date_update <- max(trustData$Date)
 
 date_update <- format(date_update, "%d/%m/%Y")
 
-divisions_labels <- list("Local Partnerships- Mental Healthcare" = 0,
-                         "Forensic" = 1,
+divisions_labels <- list("Mental health services" = 0,
+                         "Forensic services" = 1,
                          "Community health services" = 2)
   
 # recode new criticality
