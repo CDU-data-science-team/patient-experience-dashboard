@@ -8,18 +8,15 @@ function(request) {
     dashboardHeader(title = "Survey summary",
                     dropdownMenu(type = "notifications",
                                  notificationItem(
-                                   text = HTML("Warning:<br>
-                                   Criticality has been recoded<br>
-                                   Comparisons with old data may be<br>
-                                   unreliable"),
+                                   text = HTML("Warning: Feedback from over 
+                                   three<br> years ago has been removed. Please
+                                   contact<br> the Experience team if required"),
                                    icon("exclamation-triangle")
                                    ),
                                  notificationItem(
-                                   text = HTML("Warning:<br>
-                                   Feedback from over three years ago has<br>
-                                   been removed form the dashboard. Please 
-                                   contact the Experience team should historic 
-                                   data be required"),
+                                   text = HTML("Warning: Criticality has been
+                                   recoded.<br> Comparisons with old data may be<br>
+                                   unreliable"),
                                    icon("exclamation-triangle")
                                  ))),
     
