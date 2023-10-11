@@ -9,7 +9,7 @@ params:
 ```{r setup, include=FALSE}
 
 library(lubridate)
-library(tidyverse)
+#library(tidyverse)
 library(scales)
 library(pins)
 
@@ -174,7 +174,8 @@ if(params$carer_su == "bothCarerSU"){
   trend_function(two_year_data, type = "carer_dashboard")
 }
 
-trend_function(two_year_data)
+# remove - needs type setting
+#trend_function(two_year_data)
 
 ```
 

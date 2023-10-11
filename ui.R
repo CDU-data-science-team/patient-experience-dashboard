@@ -8,9 +8,14 @@ function(request) {
     dashboardHeader(title = "Survey summary",
                     dropdownMenu(type = "notifications",
                                  notificationItem(
-                                   text = HTML("Warning:<br>
-                                   Criticality has been recoded<br>
-                                   Comparisons with old data may be<br>
+                                   text = HTML("Warning: Feedback from over 
+                                   three<br> years ago has been removed. Please
+                                   contact<br> the Experience team if required"),
+                                   icon("exclamation-triangle")
+                                   ),
+                                 notificationItem(
+                                   text = HTML("Warning: Criticality has been
+                                   recoded.<br> Comparisons with old data may be<br>
                                    unreliable"),
                                    icon("exclamation-triangle")
                                  ))),
@@ -28,7 +33,9 @@ function(request) {
       # date range
       
       dateRangeInput("dateRange", label = "Date range",
-                     start = as.Date("2020-10-01"),
+                     start = as.Date(paste0(year(today()) - 3, "-",
+                                            month(today()), "-",
+                                            "01")),
                      end = Sys.Date(), startview = "year"),
       
       # Note that this goes team, directorate, division so it appears nicer
