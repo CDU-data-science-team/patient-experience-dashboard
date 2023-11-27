@@ -17,6 +17,7 @@ library(shinyWidgets)
 library(urltools)
 library(pins)
 library(plumber)
+library(shiny)
 
 board_register_rsconnect("SPACED",
                          server = "https://feedbackmatters.uk/rsconnect",
@@ -38,6 +39,10 @@ date_update <- format(date_update, "%d/%m/%Y")
 divisions_labels <- list("Mental health services" = 0,
                          "Forensic services" = 1,
                          "Community health services" = 2)
+
+categorise_table <- pin_get("chrisbeeley/newCategories", board = "SPACED") %>% 
+  set_names(c("Super", "Number", "Category")) %>% 
+  mutate(type = "both")
   
 # recode new criticality
 

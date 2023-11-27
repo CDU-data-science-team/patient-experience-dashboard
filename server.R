@@ -42,6 +42,11 @@ function(input, output, session){
   
   categoriesTable <- reactive({
     
+    # note: update below to avoid reading in table each time refreshed. 
+    # categoriesTable() used in lots of places, quick fix below to make more 
+    # efficient without having to do find & replace on all uses of 
+    # categoriesTable()
+    
     # if(input$oldCodes){
     #   
     #   return(
@@ -50,12 +55,14 @@ function(input, output, session){
     #   )
     # } else {
       
-      return(
-        pin_get("chrisbeeley/newCategories", board = "SPACED") %>% 
-          set_names(c("Super", "Number", "Category")) %>% 
-          mutate(type = "both")
-      )
+    #  return(
+    #    pin_get("chrisbeeley/newCategories", board = "SPACED") %>% 
+    #      set_names(c("Super", "Number", "Category")) %>% 
+    #      mutate(type = "both")
+    #  )
     # }
+    
+    return(categorise_table)
   })
   
   # handle reactive UI that draws sidebar
