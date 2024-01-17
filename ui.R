@@ -5,6 +5,7 @@ library(DT)
 function(request) {
   
   dashboardPage(
+    
     dashboardHeader(title = "Survey summary",
                     dropdownMenu(type = "notifications",
                                  notificationItem(
@@ -44,7 +45,8 @@ function(request) {
       
       # first set up All/ Division results
       
-      selectInput("Division", HTML("Select division<br/> (defaults to whole Trust)"),
+      selectInput("Division", 
+                  HTML("Select division<br/> (defaults to whole Trust)"),
                   divisions_labels,
                   multiple = TRUE),
       
@@ -73,6 +75,16 @@ function(request) {
     # dashboard body ----
     
     dashboardBody(
+
+      #tags$head(
+      #  tags$style(
+      #    HTML(".shiny-notification {
+      #       position:fixed;
+      #       top: calc(90%);
+      #       left: calc(15%);
+      #       opacity: 0.95;
+      #       }"))
+      #  ),
       
       tabItems(
         tabItem(tabName = "summary",

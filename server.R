@@ -26,6 +26,13 @@ function(input, output, session){
   source("demographics.R", local = TRUE)
   # source("topicExplorer.R", local = TRUE)
   
+  #showNotification(
+  #  "Please note this dashboard will be unavailable on the morning of Wendnesday
+  #  17th January  for maintenance. Apologies for any inconvenience. ", 
+  #  duration = 60, 
+  #  type = "warning"
+  #)
+  
   # are they logged in?
   
   loggedIn <- reactive({
@@ -409,13 +416,42 @@ function(input, output, session){
                     }
     )
   
-  # show modal with warning if they click "show all teams"
+  # re-set date and give warning if date range goes outside of data set
+  observeEvent(input$dateRange, {
+    
+    if (input$dateRange[1] < as.Date(paste0(year(today()) - 3, "-",
+                                            month(today()), "-",
+                                            "01")) ) {
+      
+      start_date <- as.Date(paste0(year(today()) - 3, "-",
+                                   month(today()), "-",
+                                   "01")) 
+      
+      # rest start date
+      reset(id = "dateRange")
   
+      # give warning
+      showModal(
+        modalDialog(
+          title = "Warning",
+          HTML(paste0("Feedback data included in the dashboard does not go back 
+          prior to ", start_date, ". The date range can therefore not be set to 
+          earlier than this date. Please contact the Involvement, Experience & 
+          Volunteering team if historic data is required. 
+          <br>
+             (click anywhere to dismiss this message).")),
+          easyClose = TRUE)
+        )
+      }
+    })
+    
+    
+  # show modal with warning if they click "show all teams"
   observeEvent(input$showTeams, {
     
     showModal(
       modalDialog(
-        title = "Warning!",
+        title = "Warning",
         HTML("There are a lot of teams. Search by typing or deselect this control 
               and narrow your search by directorate<br>
              (click anywhere to dismiss this message)."),

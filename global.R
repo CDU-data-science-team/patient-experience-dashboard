@@ -18,6 +18,7 @@ library(urltools)
 library(pins)
 library(plumber)
 library(shiny)
+library(shinyjs)
 
 board_register_rsconnect("SPACED",
                          server = "https://feedbackmatters.uk/rsconnect",
