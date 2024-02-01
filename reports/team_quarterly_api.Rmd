@@ -21,7 +21,7 @@ board_register_rsconnect("SPACED",
                          server = "https://feedbackmatters.uk/rsconnect",
                          key = connect_key)
 
-trustData <- pin_get("trustData", board = "SPACED") %>% 
+trustData <- pin_get("trustData_test", board = "SPACED") %>% 
   mutate(across(all_of(c("Imp1", "Imp2", "Best1", "Best2")), as.character))
 
 # source the code with the functions in

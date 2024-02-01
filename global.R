@@ -24,14 +24,14 @@ board_register_rsconnect("SPACED",
                          server = "https://feedbackmatters.uk/rsconnect",
                          key = Sys.getenv("CONNECT_API_KEY"))
 
-trustData <- pin_get("chrisbeeley/trustData", board = "SPACED") %>% 
+trustData <- pin_get("chrisbeeley/trustData_test", board = "SPACED") %>% 
   mutate(across(all_of(c("Imp1", "Imp2", "Best1", "Best2")), as.character))
 
-questionFrame <- pin_get("chrisbeeley/questionFrame", board = "SPACED")
+questionFrame <- pin_get("chrisbeeley/questionFrame_test", board = "SPACED")
 
-counts <- pin_get("chrisbeeley/counts", board = "SPACED")
+counts <- pin_get("chrisbeeley/counts_test", board = "SPACED")
 
-dirTable <- pin_get("chrisbeeley/dirTable", board = "SPACED")
+dirTable <- pin_get("chrisbeeley/dirTable_test", board = "SPACED")
 
 date_update <- max(trustData$Date)
 
@@ -41,7 +41,7 @@ divisions_labels <- list("Mental health services" = 0,
                          "Forensic services" = 1,
                          "Community health services" = 2)
 
-categorise_table <- pin_get("chrisbeeley/newCategories", board = "SPACED") %>% 
+categorise_table <- pin_get("chrisbeeley/newCategories_test", board = "SPACED") %>% 
   set_names(c("Super", "Number", "Category")) %>% 
   mutate(type = "both")
   

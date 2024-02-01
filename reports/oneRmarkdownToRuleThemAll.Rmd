@@ -38,14 +38,14 @@ board_register_rsconnect("SPACED",
                          server = "https://feedbackmatters.uk/rsconnect",
                          key = connect_key)
 
-catTable <- pin_get("chrisbeeley/newCategories", board = "SPACED") %>% 
+catTable <- pin_get("chrisbeeley/newCategories_test", board = "SPACED") %>% 
   set_names(c("Super", "Number", "Category")) %>% 
   mutate(type = "both")
 
 if(!exists("trustData")){
   
-  trustData <- pin_get("trustData", board = "SPACED")
-  questionFrame <- pin_get("questionFrame", board = "SPACED")
+  trustData <- pin_get("trustData_test", board = "SPACED")
+  questionFrame <- pin_get("questionFrame_test", board = "SPACED")
 }
 
 # source the code with the functions in
