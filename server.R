@@ -26,12 +26,18 @@ function(input, output, session){
   source("demographics.R", local = TRUE)
   # source("topicExplorer.R", local = TRUE)
   
-  #showNotification(
-  #  "Please note this dashboard will be unavailable on the morning of Wendnesday
-  #  17th January  for maintenance. Apologies for any inconvenience. ", 
-  #  duration = 60, 
-  #  type = "warning"
-  #)
+  showNotification(
+    "Please note: some of the responses stating 'nothing' to improve or 'nothing'
+    was good have been re-coded to reflect the criticality. These responses have
+    also been removed from the sections presenting counts of comments for 
+    'What could be improved?' and 'Best thing'. These updates have mainly 
+    changed the proportions of sub categories in the 'Comments' page under 
+    'What could be Improved?', where 'Miscellaneous: Nothin to Improve' was 
+    previously the main sub-category but has now been removed to support 
+    identifying themes of what could be improved. ", 
+    duration = 60, 
+    type = "warning"
+  )
   
   # are they logged in?
   
