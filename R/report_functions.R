@@ -65,6 +65,7 @@ reportFunction <- function(report_data){
     improve_numbers <- map_int(c(1, 2, 3), function(x){
       
       suceData %>% 
+        filter(Imp1 != "XN") %>%
         filter(ImpCrit == x) %>% 
         nrow()
     })
@@ -74,6 +75,7 @@ reportFunction <- function(report_data){
     best_numbers <- map_int(c(1, 2, 3), function(x){
       
       suceData %>% 
+        filter(Best1 != "XG") %>%
         filter(BestCrit == x) %>% 
         nrow()
     })
@@ -251,6 +253,9 @@ allComments <- function(comment_data, category_criticality,
     improve_well_code <- "Best1"
     improve_well_crit <- "BestCrit"
     
+    df <- df %>% 
+      filter(!Best1 %in% c("4444", "XG", "XX"))
+    
   }
   
   if(category_criticality == "Category"){
@@ -392,7 +397,7 @@ returnTopComments <- function(the_data, nth_row, type, category_table){
   }
   
   check_final <- check_final %>% 
-    filter(!Number %in% c("XN", "XX", "4444"))
+    filter(!Number %in% c("XN", "XX", "4444", "XG"))
   
   if(nrow(check_final) < 10){
     

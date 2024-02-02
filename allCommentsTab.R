@@ -25,6 +25,7 @@ output$allImproveComments = renderText({
     return(unlist(finalText))
     
   } else {
+    
     nameVector = c("Mildly critical", "Somewhat critical", "Very critical")
     
     finalText = map(3 : 1, function(x) {
