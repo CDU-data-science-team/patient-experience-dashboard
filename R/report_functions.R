@@ -326,7 +326,7 @@ report_data <- function(division = "NA", directorate = "NA", team = "NA",
   if(carerSU == "SU"){
     
     suceData = suceData %>%
-      filter(is.na(formtype) | formtype != "SUCE")
+      filter(is.na(formtype) | formtype != "carer")
     
   } else if(carerSU == "carer"){
     
