@@ -76,15 +76,15 @@ function(request) {
     
     dashboardBody(
 
-      #tags$head(
-      #  tags$style(
-      #    HTML(".shiny-notification {
-      #       position:fixed;
-      #       top: calc(90%);
-      #       left: calc(15%);
-      #       opacity: 0.95;
-      #       }"))
-      #  ),
+      tags$head(
+        tags$style(
+          HTML(".shiny-notification {
+             position:fixed;
+             top: calc(90%);
+             left: calc(15%);
+             opacity: 0.95;
+             }"))
+        ),
       
       tabItems(
         tabItem(tabName = "summary",

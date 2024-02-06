@@ -38,14 +38,14 @@ board_register_rsconnect("SPACED",
                          server = "https://feedbackmatters.uk/rsconnect",
                          key = connect_key)
 
-catTable <- pin_get("chrisbeeley/newCategories", board = "SPACED") %>% 
+catTable <- pin_get("chrisbeeley/newCategories_test", board = "SPACED") %>% 
   set_names(c("Super", "Number", "Category")) %>% 
   mutate(type = "both")
 
 if(!exists("trustData")){
   
-  trustData <- pin_get("trustData", board = "SPACED")
-  questionFrame <- pin_get("questionFrame", board = "SPACED")
+  trustData <- pin_get("trustData_test", board = "SPACED")
+  questionFrame <- pin_get("questionFrame_test", board = "SPACED")
 }
 
 # source the code with the functions in
@@ -232,7 +232,7 @@ if(params$comment_summary == "textSummary"){
 } else {
   
   do_better <- suceData %>% 
-    filter(!is.na(Improve), (Imp1 != 4444 | is.na(Imp1))) %>% 
+    filter(!is.na(Improve), (!(Imp1 %in% c("4444", "XN", "XX")) | is.na(Imp1))) %>% 
     mutate(comment_with_location = paste0(Improve, " (", Location, ")")) %>% 
     pull(comment_with_location)
   
@@ -244,7 +244,7 @@ if(params$comment_summary == "textSummary"){
     cat("## What could we do better?  \n")
     
     number_of_4444 <- suceData %>% 
-      filter(Imp1 == 4444) %>% 
+      filter(Imp1 %in% c("4444", "XN")) %>% 
       nrow()
     
     if(number_of_4444 > 0){

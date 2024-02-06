@@ -26,12 +26,18 @@ function(input, output, session){
   source("demographics.R", local = TRUE)
   # source("topicExplorer.R", local = TRUE)
   
-  #showNotification(
-  #  "Please note this dashboard will be unavailable on the morning of Wendnesday
-  #  17th January  for maintenance. Apologies for any inconvenience. ", 
-  #  duration = 60, 
-  #  type = "warning"
-  #)
+  showNotification(
+    "Please note: some responses stating 'nothing to improve' or 
+    'nothing was good' have been re-coded to give consistent criticality values.
+    These comments have also been removed from counts of comments by 
+    'What could be improved?' and 'Best thing' to support interpretation of this
+    information. These updates have mainly 
+    changed the proportions of sub-categories in the 'Comments' page under 
+    'What could be Improved?', where 'Miscellaneous: Nothing to Improve' was 
+    previously the main sub-category but has now been removed. ", 
+    duration = 60, 
+    type = "warning"
+  )
   
   # are they logged in?
   
@@ -57,13 +63,13 @@ function(input, output, session){
     # if(input$oldCodes){
     #   
     #   return(
-    #     pin_get("categoriesTable", board = "SPACED") %>% 
+    #     pin_get("categoriesTable_test", board = "SPACED") %>% 
     #       mutate(Number = as.character(Number))
     #   )
     # } else {
       
     #  return(
-    #    pin_get("chrisbeeley/newCategories", board = "SPACED") %>% 
+    #    pin_get("chrisbeeley/newCategories_test", board = "SPACED") %>% 
     #      set_names(c("Super", "Number", "Category")) %>% 
     #      mutate(type = "both")
     #  )

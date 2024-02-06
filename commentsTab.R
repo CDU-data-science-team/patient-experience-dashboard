@@ -3,7 +3,9 @@
 
 output$impCritTable = renderDT({
   
-  impVariable = passData()[["currentData"]]$ImpCrit
+  impVariable = passData()[["currentData"]] %>%
+    filter(Imp_N1 != "XN") %>%
+    pull(ImpCrit)
   
   impVariable = factor(impVariable, levels = 1:3)
   
@@ -21,7 +23,9 @@ output$impCritTable = renderDT({
 
 output$bestCritTable = renderDT({
   
-  bestVariable = passData()[["currentData"]]$BestCrit
+  bestVariable = passData()[["currentData"]] %>%
+    filter(Best_N1 != "XG") %>%
+    pull(BestCrit)
   
   bestVariable = factor(bestVariable, levels = 1:3)
   
@@ -54,7 +58,7 @@ subCategories = function(y){ # this is a function that calculates
   
   tableData = passData()[["currentData"]] %>%
     filter(UQ(sym(variableName[1])) %in% categoriesTable()$Number) %>%
-    filter(!UQ(sym(variableName[1])) %in% c("4444", "5555", "XX", "XN")) %>% 
+    filter(!UQ(sym(variableName[1])) %in% c("4444", "5555", "XX", "XN", "XG")) %>% 
     filter(is.na(UQ(sym(variableName[2]))) | 
              UQ(sym(variableName[2])) %in% categoriesTable()$Number)
   
@@ -117,7 +121,7 @@ superCategories = function(){
   
   tableData = passData()[["currentData"]] %>%
     filter(UQ(sym(variableName[1])) %in% categoriesTable()$Number) %>%
-    filter(!UQ(sym(variableName[1])) %in% c("4444", "5555", "XX", "XN")) %>% 
+    filter(!UQ(sym(variableName[1])) %in% c("4444", "5555", "XX", "XN", "XG")) %>% 
     filter(is.na(UQ(sym(variableName[2]))) | 
              UQ(sym(variableName[2])) %in% categoriesTable()$Number)
   
@@ -242,11 +246,13 @@ subCategoryTableFunction <- reactive({
     
     check1 <- passData()[["currentData"]] %>% 
       filter(!is.na(Imp1)) %>% 
+      filter(Imp1 != "XN") %>%
       left_join(categoriesTable(), by = c("Imp1" = "Number")) %>% 
       select(Category, Super)
     
     check2 <- passData()[["currentData"]] %>% 
       filter(!is.na(Imp2)) %>% 
+      filter(Imp2 != "XN") %>%
       left_join(categoriesTable(), by = c("Imp2" = "Number")) %>% 
       select(Category, Super)
   }
@@ -255,11 +261,13 @@ subCategoryTableFunction <- reactive({
     
     check1 <- passData()[["currentData"]] %>% 
       filter(!is.na(Best1)) %>% 
+      filter(Best1 != "XG") %>%
       left_join(categoriesTable(), by = c("Best1" = "Number")) %>% 
       select(Category, Super)
     
     check2 <- passData()[["currentData"]] %>% 
       filter(!is.na(Best2)) %>% 
+      filter(Best1 != "XG") %>%
       left_join(categoriesTable(), by = c("Best2" = "Number")) %>% 
       select(Category, Super)
   }
@@ -277,7 +285,7 @@ subCategoryTableFunction <- reactive({
   count_sum <- sum(count_table$n)
   
   return(
-    count_table %>% 
+   count_table %>% 
       mutate(percent = round(n / count_sum * 100, 1)) %>% 
       arrange(-percent) %>% 
       select(-n)
