@@ -63,13 +63,13 @@ function(input, output, session){
     # if(input$oldCodes){
     #   
     #   return(
-    #     pin_get("categoriesTable_test", board = "SPACED") %>% 
+    #     pin_get("categoriesTable", board = "SPACED") %>% 
     #       mutate(Number = as.character(Number))
     #   )
     # } else {
       
     #  return(
-    #    pin_get("chrisbeeley/newCategories_test", board = "SPACED") %>% 
+    #    pin_get("chrisbeeley/newCategories", board = "SPACED") %>% 
     #      set_names(c("Super", "Number", "Category")) %>% 
     #      mutate(type = "both")
     #  )
