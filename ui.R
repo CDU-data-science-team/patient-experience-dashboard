@@ -46,7 +46,7 @@ function(request) {
       # first set up All/ Division results
       
       selectInput("Division", 
-                  HTML("Select division<br/> (defaults to whole Trust)"),
+                  HTML("Select Care Group<br/> (defaults to whole Trust)"),
                   divisions_labels,
                   multiple = TRUE),
       

@@ -137,7 +137,7 @@ function(input, output, session){
     names(directorates) = finalTable %>%
       pull(DirT)
     
-    selectInput("selDirect", "Choose directorate(s)",
+    selectInput("selDirect", "Choose Care Unit(s)",
                 directorates, multiple = TRUE)
     
   })
