@@ -392,6 +392,14 @@ output$filterTextSubcategory <- renderText({
   
   theClick <- strsplit(theClick, ": ")[[1]]
   
+  # Category field can also have":" in it, meaning the above will split these as
+  # well. Paste these back together if this has happened so below filter 
+  # still works
+  if (length(theClick) == 3) {
+    theClick <- c(theClick[1],
+                  paste0(theClick[2], ": ", theClick[3]))
+  }
+  
   relevant_comment_codes <- categoriesTable() %>% 
     filter(Super == theClick[1]) %>% 
     filter(Category == theClick[2]) %>% 
