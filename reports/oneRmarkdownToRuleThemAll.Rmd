@@ -34,18 +34,24 @@ if(file.exists("CONNECT_API_KEY")){
   connect_key <- Sys.getenv("CONNECT_API_KEY")
 }
 
-board_register_rsconnect("SPACED",
-                         server = "https://feedbackmatters.uk/rsconnect",
-                         key = connect_key)
 
-catTable <- pin_get("chrisbeeley/newCategories", board = "SPACED") %>% 
+
+#board_register_rsconnect("SPACED",
+#                         server = "https://feedbackmatters.uk/rsconnect",
+#                         key = connect_key)
+
+board <- board_connect(name = "SPACED",
+                       key =  Sys.getenv("CONNECT_API_KEY"),
+                       server = "https://feedbackmatters.uk/rsconnect")
+
+catTable <- pin_read(board, "chrisbeeley/newCategories") %>% 
   set_names(c("Super", "Number", "Category")) %>% 
   mutate(type = "both")
 
 if(!exists("trustData")){
   
-  trustData <- pin_get("trustData", board = "SPACED")
-  questionFrame <- pin_get("questionFrame", board = "SPACED")
+  trustData <- pin_read(board, "chrisbeeley/trustData") 
+  questionFrame <- pin_read(board, "chrisbeeley/questionFrame")
 }
 
 # source the code with the functions in

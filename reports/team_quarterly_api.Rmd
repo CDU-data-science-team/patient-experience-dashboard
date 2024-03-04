@@ -17,11 +17,11 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 connect_key <- readLines("CONNECT_API_KEY")
 
-board_register_rsconnect("SPACED",
-                         server = "https://feedbackmatters.uk/rsconnect",
-                         key = connect_key)
+board <- board_connect(name = "SPACED",
+                       key =  Sys.getenv("CONNECT_API_KEY"),
+                       server = "https://feedbackmatters.uk/rsconnect")
 
-trustData <- pin_get("trustData", board = "SPACED") %>% 
+trustData <- pin_read(board, "chrisbeeley/trustData") %>% 
   mutate(across(all_of(c("Imp1", "Imp2", "Best1", "Best2")), as.character))
 
 # source the code with the functions in
