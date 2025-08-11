@@ -19,10 +19,11 @@ library(pins)
 library(plumber)
 library(shiny)
 library(shinyjs)
+library(SQLRtools)
 
 
 board <- board_connect(name = "SPACED",
-                       key =  Sys.getenv("CONNECT_API_KEY"),
+                       key =  get_env_var("CONNECT_API_KEY"),
                        server = "https://feedbackmatters.uk/rsconnect")
 
 trustData <- pin_read(board, "chrisbeeley/trustData") %>% 
