@@ -26,13 +26,22 @@ function(input, output, session){
   source("demographics.R", local = TRUE)
   # source("topicExplorer.R", local = TRUE)
   
-  #showNotification(
-  #  "Please note: this dashboard will be unavailable at midday on Monday 
-  #  25th March for 30 minutes whilst maintenance is carried out. We apologise for any
-  #  inconvenience.", 
-  #  duration = 60, 
-  #  type = "warning"
-  #)
+  showNotification(
+    
+    ui = tags$span(
+      "Please note: this dashboard is being replaced on Tuesday 7th April with 
+      an updated version of the dashboard. The new dashboard can currently 
+      be accessed",
+      tags$a(
+        href = "https://feedbackmatters.uk/rsconnect/feedbackmatters_beta/",
+        target = "_blank",               
+        rel = "noopener noreferrer",     
+        "here"
+      )
+    ),
+    duration = 60, 
+    type = "warning"
+  )
   
   # are they logged in?
   
